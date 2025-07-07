@@ -36,20 +36,23 @@ export default function Header() {
                             <li className="nav-item mx-3">
                                 <a className="nav-link text-dark" href="/services">SERVICES</a>
                             </li>
-                            <li className="nav-item mx-3">
-                                <Link to="/payment" className="nav-link text-dark">PAYMENT</Link>
-                            </li>
+
                             {user.isLoggedIn && (
-                                <li className="nav-item mx-3">
-                                    <Link to="/messages" className="nav-link text-dark position-relative">
-                                        MESSAGES
-                                        {unreadCount > 0 && (
-                                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                {unreadCount}
-                                            </span>
-                                        )}
-                                    </Link>
-                                </li>
+                                <>
+                                    <li className="nav-item mx-3">
+                                        <Link to="/payment" className="nav-link text-dark">PAYMENT</Link>
+                                    </li>
+                                    <li className="nav-item mx-3">
+                                        <Link to="/messages" className="nav-link text-dark position-relative">
+                                            MESSAGES
+                                            {unreadCount > 0 && (
+                                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                    {unreadCount}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </li>
+                                </>
                             )}
                         </ul>
                     </div>
