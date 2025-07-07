@@ -1,0 +1,102 @@
+.floating-button {
+  position: fixed;
+  bottom: 20px;
+  right: 100px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.contact-popup {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background-color: #222;
+  padding: 15px;
+  border-radius: 12px;
+  width: 260px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+.contact-item {
+  margin-bottom: 10px;
+}
+
+.contact-link.full-item {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.contact-link.full-item:hover {
+  background-color: #1e88e5;
+}
+
+.icon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+.icon-img {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.text {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.subtext {
+  font-size: 12px;
+  font-style: italic;
+  color: #ccc;
+  margin-top: 2px;
+}
+.register-form-popup {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh; /* giới hạn chiều cao tối đa */
+  overflow-y: auto;  /* cho phép cuộn nếu quá cao */
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  z-index: 999;
+  padding: 20px;
+}
+
+/* Nút đóng (X) */
+.close-form {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #333;
+  cursor: pointer;
+}
+

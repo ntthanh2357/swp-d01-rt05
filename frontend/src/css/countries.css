@@ -1,0 +1,95 @@
+.country-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.country-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+}
+
+.country-card .label {
+  position: absolute;
+  bottom: 15px;
+  left: 20px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-shadow: 1px 1px 4px black;
+  z-index: 1;
+}
+
+.country-card .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 20px;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.country-card:hover .overlay {
+  opacity: 1;
+}
+
+.country-card:hover {
+  transform: scale(1.02);
+}
+
+.bg-custom-gray {
+    background-color: #e0e0e0; 
+}
+.flywire-ad {
+  background-color: #f8f9fa;
+  border-left: 5px solid #0d6efd;
+  position: relative;
+}
+
+.btn-primary {
+  transition: all 0.3s ease;
+  background-color: #ff6b35; 
+  border-color: #ff6b35;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+  background-color: #ff5a1f;
+  border-color: #ff5a1f;
+}
+
+.additional-info {
+  border-left: 4px solid #ff6b35;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .flywire-ad {
+    padding: 1.5rem !important;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+}

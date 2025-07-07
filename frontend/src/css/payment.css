@@ -1,0 +1,154 @@
+/* src/css/payment.css */
+
+/* Kiểu dáng chung cho toàn trang thanh toán */
+.payment-container {
+    padding-top: 3rem; /* Thêm khoảng trống phía trên */
+    padding-bottom: 3rem; /* Thêm khoảng trống phía dưới */
+    background-color: #f8f9fa; /* Màu nền nhẹ nhàng cho toàn trang */
+}
+
+/* Tiêu đề chính */
+.payment-container h1 {
+    font-size: 2.8rem;
+    color: #0056b3; /* Màu xanh đậm hơn cho tiêu đề */
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+/* Mô tả tổng quan */
+.payment-container .lead {
+    font-size: 1.25rem;
+    color: #555;
+    max-width: 800px; /* Giới hạn chiều rộng để dễ đọc */
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+/* Kiểu dáng chung cho các card gói dịch vụ */
+.plan-card {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+    border: 1px solid #dee2e6; /* Border mặc định */
+    border-radius: 0.75rem !important; /* Bo góc nhiều hơn */
+    overflow: hidden; /* Đảm bảo bo góc hoạt động tốt với header */
+}
+
+.plan-card:hover {
+    transform: translateY(-8px); /* Hiệu ứng nổi mạnh hơn khi di chuột qua */
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.18) !important; /* Bóng đổ nổi bật hơn */
+}
+
+/* Header của từng gói */
+.plan-card .card-header {
+    font-size: 1.7rem;
+    padding: 1.25rem 1rem;
+    border-bottom: none; /* Bỏ border mặc định */
+    border-radius: 0.75rem 0.75rem 0 0 !important; /* Bo góc trên */
+}
+
+/* Màu sắc header và border theo từng gói */
+.plan-basic .card-header {
+    background-color: #28a745 !important; /* Xanh lá */
+    color: white !important;
+}
+.plan-basic {
+    border-color: #28a745 !important;
+}
+.plan-basic h4 {
+    color: #28a745 !important;
+}
+.plan-basic .btn-outline-success {
+    border-color: #28a745;
+    color: #28a745;
+}
+.plan-basic .btn-outline-success:hover {
+    background-color: #28a745;
+    color: #fff;
+}
+
+
+.plan-premium .card-header {
+    background-color: #ffc107 !important; /* Vàng */
+    color: #343a40 !important; /* Chữ đen trên nền vàng */
+}
+.plan-premium {
+    border-color: #ffc107 !important;
+}
+.plan-premium h4 {
+    color: #ffc107 !important;
+}
+.plan-premium .btn-outline-warning {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+.plan-premium .btn-outline-warning:hover {
+    background-color: #ffc107;
+    color: #343a40;
+}
+
+.plan-ultimate .card-header {
+    background-color: #dc3545 !important; /* Đỏ */
+    color: white !important;
+}
+.plan-ultimate {
+    border-color: #dc3545 !important;
+}
+.plan-ultimate h4 {
+    color: #dc3545 !important;
+}
+.plan-ultimate .btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+.plan-ultimate .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* List các gạch đầu dòng */
+.plan-card ul {
+    list-style: none; /* Bỏ dấu chấm mặc định */
+    padding-left: 0;
+}
+.plan-card ul li {
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+    color: #343a40;
+}
+.plan-card ul li i {
+    width: 1.5em; /* Đảm bảo icon có chiều rộng cố định để căn chỉnh đều */
+    text-align: center;
+    margin-right: 0.5rem;
+    vertical-align: middle; /* Căn giữa icon với text */
+}
+
+/* Icon màu sắc theo gói */
+.plan-basic ul li .text-success { color: #28a745 !important; }
+.plan-premium ul li .text-warning { color: #ffc107 !important; }
+.plan-ultimate ul li .text-danger { color: #dc3545 !important; }
+.plan-card ul li .text-danger i { color: #dc3545 !important; } /* Icon cho mục "Không bao gồm" */
+
+
+/* Nút "Chọn Gói Này" */
+.plan-card .btn-lg {
+    font-size: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-width: 2px; /* Border dày hơn cho nút */
+}
+
+/* Nút "Có câu hỏi? Liên hệ chúng tôi" */
+.btn-contact {
+    background-color: #007bff; /* Xanh dương đậm hơn */
+    border-color: #007bff;
+    color: #fff;
+    font-size: 1.25rem;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+.btn-contact:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: #fff;
+}

@@ -1,0 +1,56 @@
+.register-form-popup {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh; /* giới hạn chiều cao tối đa */
+  overflow-y: auto;  /* cho phép cuộn nếu quá cao */
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  z-index: 999;
+  padding: 20px;
+}
+
+/* Nút đóng (X) */
+.close-form {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #333;
+  cursor: pointer;
+}
+.scholarship-hero {
+  width: 100vw;
+  height: 450px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+  margin-left: calc(-50vw + 50%); /* Kéo rộng khỏi Container để full chiều ngang */
+}
+
+.scholarship-hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Overlay mờ tối */
+  z-index: 0;
+}
+
+.scholarship-hero > .container {
+  position: relative;
+  z-index: 1;
+  text-shadow: 1px 1px 2px #000;
+}
+.text-white-important {
+  color: white !important;
+}

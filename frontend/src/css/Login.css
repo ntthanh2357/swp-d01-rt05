@@ -1,0 +1,43 @@
+/* Login.css */
+.login-container {
+    min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
+    display: flex;
+    flex-direction: column;
+}
+
+.login-form-container {
+    max-width: 900px;
+    margin: auto;
+}
+
+.login-image-col {
+    padding: 0;
+}
+
+.login-image {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.login-form-col {
+    padding: 3rem !important;
+}
+
+.login-form-title {
+    margin-bottom: 1rem;
+}
+
+.login-form-subtitle {
+    margin-bottom: 2rem;
+}
+
+.login-form-button {
+    width: 100%;
+}
+
+.login-form-link {
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+}
