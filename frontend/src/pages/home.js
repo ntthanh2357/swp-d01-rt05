@@ -12,18 +12,24 @@ import WhyChoose from '../components/Whychoose';
 import RegisterForm from '../components/Register-book';
 import FlywireAd from '../components/FlywireAd';
 import ChatBox from '../components/ChatBox';
+import OrganizationCard from '../components/OrganizationCard';
 
 import { getAllScholarships } from '../services/scholarshipApi';
+import { getAllOrganizations } from '../services/organizationApi';
 import { UserContext } from '../contexts/UserContext';
 
 export default function Home() {
     const [scholarships, setScholarships] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [orgLoading, setOrgLoading] = useState(true);
     const { user } = useContext(UserContext);
 
     // Thêm state cho phân trang
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 18;
+
+    // Thêm state cho danh sách trường học
+    const [organizations, setOrganizations] = useState([]);
 
     useEffect(() => {
         const fetchScholarships = async () => {
@@ -38,6 +44,14 @@ export default function Home() {
         };
         fetchScholarships();
     }, [user]);
+
+    useEffect(() => {
+        setOrgLoading(true);
+        getAllOrganizations()
+            .then(res => setOrganizations(res.data))
+            .catch(() => setOrganizations([]))
+            .finally(() => setOrgLoading(false));
+    }, []);
 
     // Tính toán các học bổng sẽ hiển thị
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -101,6 +115,25 @@ export default function Home() {
                         </ul>
                     </nav>
                 )}
+
+                {/* Danh sách trường học */}
+                <section className="my-5">
+                    <h3 className="fw-bold mb-4">Trường học</h3>
+                    <div className="row g-4">
+                        {orgLoading ? (
+                            <div className="text-center my-5">Đang tải trường học...</div>
+                        ) : organizations.length === 0 ? (
+                            <div className="text-center my-5">Không có trường học nào.</div>
+                        ) : (
+                            organizations.map(org => (
+                                <div className="col-md-4" key={org.organizationId}>
+                                    <OrganizationCard organization={org} />
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </section>
+
                 <FloatingContactButton />
                 <ChatBox />
             </main>            

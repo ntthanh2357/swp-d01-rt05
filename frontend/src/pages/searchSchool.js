@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ScholarshipCard from '../components/ScholarshipCard';
+import OrganizationCard from '../components/OrganizationCard';
 
 import { getAllScholarships } from '../services/scholarshipApi';
 
@@ -29,6 +30,10 @@ const SearchSchool = () => {
     const itemsPerPage = 12;
 
     const location = useLocation();
+
+    // Thêm state cho danh sách trường học
+    const [organizations, setOrganizations] = useState([]);
+    const [selectedOrganization, setSelectedOrganization] = useState(null);
 
     useEffect(() => {
         const fetchScholarships = async () => {
@@ -84,6 +89,13 @@ const SearchSchool = () => {
         fetchScholarships();
     }, [location.search]);
 
+    useEffect(() => {
+        fetch('/api/organizations')
+            .then(res => res.json())
+            .then(data => setOrganizations(data))
+            .catch(() => setOrganizations([]));
+    }, []);
+
     const filterByFields = (scholarship) => {
         if (selectedFields.length === 0) return true;
         try {
@@ -122,13 +134,24 @@ const SearchSchool = () => {
         return true;
     };
 
+    const filterByOrganization = (scholarship) => {
+        if (!selectedOrganization) return true;
+        // Nếu dùng OrganizationDTO trong scholarship
+        if (scholarship.organization && scholarship.organization.organizationId) {
+            return scholarship.organization.organizationId === selectedOrganization;
+        }
+        // Nếu vẫn còn trường organizationId cũ
+        return scholarship.organizationId === selectedOrganization;
+    };
+
     const applyFilter = () => {
         const filtered = scholarships.filter(
             (s) =>
                 filterByFields(s) &&
                 filterByCities(s) &&
                 filterByCost(s) &&
-                filterByLanguageRequirements(s)
+                filterByLanguageRequirements(s) &&
+                filterByOrganization(s)
         );
         setFilteredScholarships(filtered);
         setCurrentPage(1);
@@ -140,12 +163,13 @@ const SearchSchool = () => {
         setSelectedCost(null);
         setSelectedToefl(null);
         setSelectedIelts(null);
+        setSelectedOrganization(null);
         setFilteredScholarships(scholarships);
     };
 
     useEffect(() => {
         applyFilter();
-    }, [selectedFields, selectedCities, selectedCost, selectedToefl, selectedIelts]);
+    }, [selectedFields, selectedCities, selectedCost, selectedToefl, selectedIelts, selectedOrganization]);
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -189,6 +213,17 @@ const SearchSchool = () => {
                                 value={selectedCities.map(c => ({ value: c, label: c }))}
                                 onChange={(selected) => setSelectedCities(selected.map(item => item.value))}
                                 placeholder="Chọn quốc gia"
+                            />
+                        </div>
+
+                        <div className="col-md-3 mb-3">
+                            <label className="fw-semibold mb-1">Trường học</label>
+                            <Select
+                                options={organizations.map(org => ({ value: org.organizationId, label: org.name }))}
+                                value={selectedOrganization ? organizations.filter(org => org.organizationId === selectedOrganization).map(org => ({ value: org.organizationId, label: org.name }))[0] : null}
+                                onChange={selected => setSelectedOrganization(selected ? selected.value : null)}
+                                placeholder="Chọn trường học"
+                                isClearable
                             />
                         </div>
 
@@ -268,6 +303,18 @@ const SearchSchool = () => {
                         </ul>
                     </nav>
                 )}
+
+                {/* Danh sách trường học */}
+                <section className="my-4">
+                    <h4 className="fw-bold mb-3">Tìm kiếm theo trường học</h4>
+                    <div className="row g-4">
+                        {organizations.map(org => (
+                            <div className="col-md-3" key={org.organizationId}>
+                                <OrganizationCard organization={org} />
+                            </div>
+                        ))}
+                    </div>
+                </section>
             </div>
             <Footer />
         </>

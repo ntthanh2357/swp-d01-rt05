@@ -11,6 +11,7 @@ import DetailRoute from "./routes/detailRoute";
 import Messages from './pages/messages';
 import ChatBox from './components/ChatBox';
 import Payment from './pages/payment'; // Import component thanh toán
+import OrganizationRoute from "./routes/organizationRoute";
 function App() {
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
@@ -27,6 +28,7 @@ function App() {
                             <Route path="/chat" element={<ChatBox />} />
                             <Route path="/payment" element={<Payment />} /> // Dùng 'Payment' cho tên component
                             <Route path="/staff/*" element={<StaffRoute />} />
+                            <Route path="/organization/*" element={<OrganizationRoute />} />
                             {/* Thêm các route khác ở đây nếu có */}
                         </Routes>
                     </Router>

@@ -13,7 +13,6 @@ function DetailScholarship() {
     const { scholarshipId } = useParams();
 
     const [scholarship, setScholarship] = useState(location.state?.scholarship || null);
-    const [overviewData, setOverviewData] = useState(null);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
 
     const toggleRegisterForm = () => setShowRegisterForm(!showRegisterForm);
@@ -36,20 +35,11 @@ function DetailScholarship() {
     // Nếu không có scholarship trong state, lấy qua API bằng id
     useEffect(() => {
         if (!scholarship) {
-            axios.get(`/api/scholarship/${scholarshipId}`)
+            axios.get(`/api/scholarships/${scholarshipId}`)
                 .then(res => setScholarship(res.data))
                 .catch(err => console.error("Lỗi khi tải học bổng:", err));
         }
     }, [scholarship, scholarshipId]);
-
-    // Lấy dữ liệu overview nếu có scholarship.id
-    useEffect(() => {
-        if (scholarship?.id) {
-            axios.get(`/api/scholarship/${scholarship.id}/overview`)
-                .then(res => setOverviewData(res.data))
-                .catch(err => console.error("Lỗi khi tải overview:", err));
-        }
-    }, [scholarship]);
 
     return (
         <>
@@ -91,9 +81,9 @@ function DetailScholarship() {
 
                         {/* Grid Info */}
                         <Row className="mt-4 text-center border-top pt-3">
-                            <Col md={2}><strong>Vị trí</strong><div>{parseJson(scholarship?.countries) || 'Không rõ'}</div></Col>
-                            <Col md={2}><strong>Trình độ</strong><div>{parseJson(scholarship?.fieldsOfStudy) || 'Không rõ'}</div></Col>
-                            <Col md={2}><strong>Tài trợ</strong><div>{scholarship?.funding_type || 'Fee waiver/discount'}</div></Col>
+                            <Col md={2}><strong>Vị trí</strong><div>{parseJson(scholarship?.organization?.country) || 'Không rõ'}</div></Col>
+                            <Col md={2}><strong>Trình độ</strong><div>{parseJson(scholarship?.educationLevels) || 'Không rõ'}</div></Col>
+                            <Col md={2}><strong>Tài trợ</strong><div>{scholarship?.organizationName || 'Fee waiver/discount'}</div></Col>
                             <Col md={2}><strong>Hạn chót</strong><div>{formatDate(scholarship?.applicationDeadline)}</div></Col>
                             <Col md={4}><strong>Giá trị học bổng</strong><div>{scholarship?.amount ? `${scholarship.amount} ${scholarship.currency}` : 'Không rõ'}</div></Col>
                         </Row>
@@ -108,19 +98,40 @@ function DetailScholarship() {
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>Tổng quan</Accordion.Header>
                                 <Accordion.Body>
-                                    {overviewData ? (
+                                    {scholarship ? (
                                         <Row className="gy-3">
-                                            <Col md={6}><strong>Trường cung cấp học bổng:</strong><br />{overviewData.university}</Col>
-                                            <Col md={6}><strong>Số hồ sơ ứng tuyển trung bình mỗi năm:</strong><br />{overviewData.average_applications_per_year || 'Không được chỉ định'}</Col>
-                                            <Col md={6}><strong>Trình độ chuyên môn:</strong><br />{overviewData.level || 'Không được chỉ định'}</Col>
-                                            <Col md={6}><strong>Số lượng học bổng có sẵn:</strong><br />{overviewData.number_of_scholarships || 'Không được chỉ định'}</Col>
-                                            <Col md={6}><strong>Giá trị học bổng:</strong><br />{overviewData.value || 'Không được chỉ định'}</Col>
-                                            <Col md={6}><strong>Áp dụng cho kỳ nhập học:</strong><br />{overviewData.intake || 'Liên hệ với trường đại học'}</Col>
-                                            <Col md={12}><strong>Chi tiết học bổng:</strong><br />{overviewData.details}</Col>
-                                            <Col md={6}><strong>Hình thức học tập:</strong><br />{overviewData.study_mode || 'Không được chỉ định'}</Col>
-                                            <Col md={6}><strong>Hình thức tài trợ:</strong><br />{overviewData.funding_type || 'Không được chỉ định'}</Col>
-                                            <Col md={6}><strong>Hạn chót đăng ký khóa học/ưu đãi:</strong><br />{overviewData.deadline || 'Liên hệ với trường đại học'}</Col>
-                                            <Col md={6}><strong>Hình thức tài trợ:</strong><br />{overviewData.funding_form || 'Fee waiver/discount'}</Col>
+                                            <Col md={6}><strong>Trường cung cấp học bổng:</strong><br />{parseJson(scholarship?.countries)}</Col>
+                                            <Col md={6}><strong>Số hồ sơ ứng tuyển trung bình mỗi năm:</strong><br />{scholarship?.applicationsCount || 'Không được chỉ định'}</Col>
+                                            <Col md={6}><strong>Yêu cầu:</strong><br />
+                                                {(() => {
+                                                    try {
+                                                        const val = scholarship?.eligibilityCriteria;
+                                                        if (!val) return 'Không được chỉ định';
+                                                        const obj = JSON.parse(val);
+                                                        if (typeof obj === 'object' && obj !== null) {
+                                                            return (
+                                                                <ul style={{ paddingLeft: 18, marginBottom: 0 }}>
+                                                                    {Object.entries(obj).map(([k, v]) => (
+                                                                        <li key={k} style={{ listStyle: 'disc' }}>
+                                                                            <strong>{k.charAt(0).toUpperCase() + k.slice(1)}:</strong> {v}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            );
+                                                        }
+                                                        return val;
+                                                    } catch {
+                                                        return scholarship?.eligibilityCriteria || 'Không được chỉ định';
+                                                    }
+                                                })()}
+                                            </Col>
+                                            <Col md={6}><strong>Số lượng học bổng có sẵn:</strong><br />{scholarship?.viewsCount || 'Không được chỉ định'}</Col>
+                                            <Col md={6}><strong>Giá trị học bổng:</strong><br />{scholarship?.amount || 'Không được chỉ định'}</Col>
+                                            <Col md={6}><strong>Áp dụng cho kỳ nhập học:</strong><br />{parseJson(scholarship?.applicableIntake) || 'Liên hệ với trường đại học'}</Col>
+                                            <Col md={12}><strong>Chi tiết học bổng:</strong><br />{scholarship?.description}</Col>
+                                            <Col md={6}><strong>Hình thức học tập:</strong><br />{parseJson(scholarship?.fieldsOfStudy) || 'Không được chỉ định'}</Col>
+                                            <Col md={6}><strong>Hình thức tài trợ:</strong><br />{scholarship?.fundingType || 'Không được chỉ định'}</Col>
+                                            <Col md={6}><strong>Hạn chót đăng ký khóa học/ưu đãi:</strong><br />{formatDate(scholarship?.applicationDeadline) || 'Liên hệ với trường đại học'}</Col>
                                         </Row>
                                     ) : (
                                         <p>Đang tải dữ liệu...</p>
@@ -132,29 +143,34 @@ function DetailScholarship() {
                             <Accordion.Item eventKey="1">
                                 <Accordion.Header>Entry requirements</Accordion.Header>
                                 <Accordion.Body>
-                                    {scholarship?.requirements ? (
-                                        <Row className="gy-3">
-                                            <Col md={6}><strong>Phân bổ học bổng:</strong><br />{scholarship.requirements.distribution || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Các khía cạnh khác được cân nhắc:</strong><br />{scholarship.requirements.considerations || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Học bổng / Ưu đãi được sử dụng cho:</strong><br />{scholarship.requirements.usage || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Yêu cầu về giới tính:</strong><br />{scholarship.requirements.gender || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Yêu cầu về quốc tịch:</strong><br />{scholarship.requirements.nationality || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Môn học bạn đang đăng ký:</strong><br />{scholarship.requirements.subjects?.join(', ') || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Cơ sở lựa chọn:</strong><br />{scholarship.requirements.selectionBasis || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Tiêu chí lựa chọn:</strong><br />{scholarship.requirements.criteria || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Yêu cầu chi tiết cho từng hồ sơ:</strong><br />{scholarship.requirements.individualRequirements || 'Không rõ'}</Col>
-                                            <Col md={6}><strong>Cấp độ học bạn đang đăng ký:</strong><br />{scholarship.requirements.level || 'Không rõ'}</Col>
-                                            {scholarship.requirements.note && (
-                                                <Col xs={12}>
-                                                    <div className="mt-2 text-muted fst-italic">
-                                                        {scholarship.requirements.note}
-                                                    </div>
-                                                </Col>
-                                            )}
-                                        </Row>
-                                    ) : (
-                                        <div>Đang tải dữ liệu...</div>
-                                    )}
+                                    <Row className="gy-3">
+                                        <Col md={6}><strong>Trình độ chuyên môn:</strong><br />
+                                            {(() => {
+                                                try {
+                                                    const val = scholarship?.eligibilityCriteria;
+                                                    if (!val) return 'Không được chỉ định';
+                                                    const obj = JSON.parse(val);
+                                                    if (typeof obj === 'object' && obj !== null) {
+                                                        return (
+                                                            <ul style={{ paddingLeft: 18, marginBottom: 0 }}>
+                                                                {Object.entries(obj).map(([k, v]) => (
+                                                                    <li key={k} style={{ listStyle: 'disc' }}>
+                                                                        <strong>{k.charAt(0).toUpperCase() + k.slice(1)}:</strong> {v}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        );
+                                                    }
+                                                    return val;
+                                                } catch {
+                                                    return scholarship?.eligibilityCriteria || 'Không được chỉ định';
+                                                }
+                                            })()}
+                                        </Col>
+                                        <Col md={6}><strong>Yêu cầu ngôn ngữ:</strong><br />{parseJson(scholarship?.languageRequirements) || 'Không rõ'}</Col>
+                                        <Col md={6}><strong>Cấp độ học:</strong><br />{parseJson(scholarship?.educationLevels) || 'Không rõ'}</Col>
+                                        <Col md={6}><strong>Ngành học:</strong><br />{parseJson(scholarship?.fieldsOfStudy) || 'Không rõ'}</Col>
+                                    </Row>
                                 </Accordion.Body>
                             </Accordion.Item>
 

@@ -1165,6 +1165,43 @@ INSERT INTO faqs (question, answer, category, display_order, created_by) VALUES
 ('Is the service free?', 'Basic features are free. Premium counseling services may have associated fees.', 'Pricing', 3, 1),
 ('How do I contact a counselor?', 'Once registered, you can request counseling services and will be assigned a qualified staff member.', 'Counseling', 4, 1);
 
+
+SET SQL_SAFE_UPDATES = 0;
+
+ALTER TABLE scholarships
+ADD funding_type VARCHAR(50);
+
+-- Toàn phần: amount > 50000
+UPDATE scholarships
+SET funding_type = 'Full'
+WHERE amount > 50000;
+
+-- Bán phần: 25000 < amount <= 50000
+UPDATE scholarships
+SET funding_type = 'Partial'
+WHERE amount > 25000 AND amount <= 50000;
+
+-- Chỉ tài trợ học phí: 10000 < amount <= 25000
+UPDATE scholarships
+SET funding_type = 'Tuition Only'
+WHERE amount > 10000 AND amount <= 25000;
+
+-- Trợ cấp sinh hoạt: amount <= 10000
+UPDATE scholarships
+SET funding_type = 'Living Stipend'
+WHERE amount <= 10000;
+
+ALTER TABLE scholarships
+ADD applicable_intake VARCHAR(50);
+
+UPDATE scholarships
+SET applicable_intake = CASE
+    WHEN MONTH(application_deadline) BETWEEN 1 AND 4 THEN CONCAT('Summer ', YEAR(application_deadline))
+    WHEN MONTH(application_deadline) BETWEEN 5 AND 8 THEN CONCAT('Fall ', YEAR(application_deadline))
+    WHEN MONTH(application_deadline) BETWEEN 9 AND 12 THEN CONCAT('Spring ', YEAR(application_deadline) + 1)
+    ELSE 'Unknown'
+END;
+
 -- ===================================================================
 -- END OF DATABASE SCHEMA
 -- ===================================================================
