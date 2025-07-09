@@ -99,16 +99,17 @@ export default function Header() {
                                                 <li>
                                                     <Link className="dropdown-item" to="/staff/staff-dashboard">
                                                         Dashboard
-                                                    </a>
+                                                    </Link>
                                                 </li>
+                                                <li><Link className="dropdown-item" to="/staff/staff-profile">Profile</Link></li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
-                                        <li><a className="dropdown-item" href="/seeker/user-profile">Profile</a></li>
+                                        <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
                                         <li>
-                                            <a
+                                            <Link
                                                 className="dropdown-item text-danger"
-                                                href="/logout"
+                                                to="/logout"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     logout();
@@ -116,7 +117,7 @@ export default function Header() {
                                                 }}
                                             >
                                                 Đăng xuất
-                                            </a>
+                                            </Link>
                                         </li>
                                     </>
                                 )}
