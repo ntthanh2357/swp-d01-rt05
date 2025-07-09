@@ -42,6 +42,30 @@ public class OrganizationController {
         return ResponseEntity.ok(organizations);
     }
 
+    // [POST] /api/organizations/get-active - Get active organizations (public)
+    @PostMapping("/get-active")
+    public ResponseEntity<?> getActiveOrganizations() {
+        List<Organization> organizations = organizationService.getAllOrganizations();
+        List<OrganizationDTO> dtos = organizations.stream()
+                .map(OrganizationDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    // [POST] /api/organizations/search - Search organizations
+    @PostMapping("/search")
+    public ResponseEntity<?> searchOrganizations(@RequestBody Map<String, String> searchCriteria) {
+        String name = searchCriteria.get("name");
+        String country = searchCriteria.get("country");
+        String organizationType = searchCriteria.get("organizationType");
+
+        List<Organization> organizations = organizationService.searchOrganizations(name, country, organizationType);
+        List<OrganizationDTO> dtos = organizations.stream()
+                .map(OrganizationDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
     @GetMapping
     public ResponseEntity<?> getAllOrganizationsPublic() {
         List<Organization> organizations = organizationService.getAllOrganizations();

@@ -1,52 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { useLocation } from 'react-router-dom';
-
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ScholarshipCard from '../components/ScholarshipCard';
-import OrganizationCard from '../components/OrganizationCard';
-
 import { getAllScholarships } from '../services/scholarshipApi';
+import { getActiveOrganizations } from '../services/organizationApi';
 
-const SearchSchool = () => {
+const SearchScholarship = () => {
     const [scholarships, setScholarships] = useState([]);
     const [filteredScholarships, setFilteredScholarships] = useState([]);
-
     const [fields, setFields] = useState([]);
     const [cities, setCities] = useState([]);
     const [selectedFields, setSelectedFields] = useState([]);
     const [selectedCities, setSelectedCities] = useState([]);
-
-    const costOptions = [100000, 80000, 50000];
-    const toeflOptions = [100, 80, 60];
-    const ieltsOptions = [8.0, 7.0, 6.0];
-
-    const [selectedCost, setSelectedCost] = useState(null);
-    const [selectedToefl, setSelectedToefl] = useState(null);
-    const [selectedIelts, setSelectedIelts] = useState(null);
-
+    
+    // Bộ lọc thực tế hơn
+    const amountOptions = [
+        { value: 5000, label: 'Dưới 5,000 USD' },
+        { value: 10000, label: 'Dưới 10,000 USD' },
+        { value: 20000, label: 'Dưới 20,000 USD' },
+        { value: 50000, label: 'Dưới 50,000 USD' },
+        { value: 100000, label: 'Trên 50,000 USD' }
+    ];
+    
+    const [selectedAmount, setSelectedAmount] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
-
     const location = useLocation();
-
-    // Thêm state cho danh sách trường học
+    const navigate = useNavigate();
     const [organizations, setOrganizations] = useState([]);
     const [selectedOrganization, setSelectedOrganization] = useState(null);
+    const [initialOrgFilterApplied, setInitialOrgFilterApplied] = useState(false);
 
+    // Kiểm tra xem có filter nào đang được áp dụng không
+    const hasActiveFilters = () => {
+        return selectedFields.length > 0 || 
+               selectedCities.length > 0 || 
+               selectedAmount !== null || 
+               selectedOrganization !== null;
+    };
+
+    // Lấy dữ liệu học bổng
     useEffect(() => {
         const fetchScholarships = async () => {
             try {
                 const res = await getAllScholarships();
                 const data = res.data;
-
                 setScholarships(data);
                 setFilteredScholarships(data);
-
                 const fieldsSet = new Set();
                 const citiesSet = new Set();
-
                 data.forEach((sch) => {
                     try {
                         const fs = JSON.parse(sch.fieldsOfStudy);
@@ -55,7 +59,6 @@ const SearchSchool = () => {
                     } catch {
                         if (sch.fieldsOfStudy) fieldsSet.add(sch.fieldsOfStudy);
                     }
-
                     try {
                         const cs = JSON.parse(sch.countries);
                         if (Array.isArray(cs)) cs.forEach((c) => citiesSet.add(c));
@@ -64,38 +67,69 @@ const SearchSchool = () => {
                         if (sch.countries) citiesSet.add(sch.countries);
                     }
                 });
-
                 setFields(Array.from(fieldsSet).sort());
-                const sortedCities = Array.from(citiesSet).sort();
-                setCities(sortedCities);
-
-                // Đặt filter nếu có query ?country=... trong URL
-                const params = new URLSearchParams(location.search);
-                const countryFromUrl = params.get('country');
-                if (countryFromUrl) {
-                    // Lọc tất cả cities có chứa countryFromUrl (không phân biệt chữ hoa/thường)
-                    const matchingCities = sortedCities.filter(city =>
-                        city.toLowerCase().includes(countryFromUrl.toLowerCase())
-                    );
-                    setSelectedCities(matchingCities);
-                }
+                setCities(Array.from(citiesSet).sort());
             } catch (error) {
-                console.error('Lỗi khi tải học bổng:', error);
                 setScholarships([]);
                 setFilteredScholarships([]);
             }
         };
-
         fetchScholarships();
-    }, [location.search]);
-
-    useEffect(() => {
-        fetch('/api/organizations')
-            .then(res => res.json())
-            .then(data => setOrganizations(data))
-            .catch(() => setOrganizations([]));
     }, []);
 
+    // Lấy danh sách trường học và xử lý filter organizationName từ URL
+    useEffect(() => {
+        getActiveOrganizations()
+            .then(res => {
+                const orgs = res.data;
+                setOrganizations(orgs);
+                // Xử lý filter theo organizationName sau khi organizations đã load
+                const params = new URLSearchParams(location.search);
+                const organizationNameFromUrl = params.get('organizationName');
+                if (organizationNameFromUrl && !initialOrgFilterApplied) {
+                    const matchingOrg = orgs.find(org =>
+                        org.name && org.name.toLowerCase().includes(organizationNameFromUrl.toLowerCase())
+                    );
+                    if (matchingOrg) {
+                        setSelectedOrganization(matchingOrg.organizationId);
+                        setInitialOrgFilterApplied(true);
+                    }
+                }
+            })
+            .catch(() => setOrganizations([]));
+        // eslint-disable-next-line
+    }, [location.search]);
+
+    // Khi chọn trường học từ dropdown, cập nhật URL
+    useEffect(() => {
+        if (selectedOrganization) {
+            const org = organizations.find(o => o.organizationId === selectedOrganization);
+            if (org) {
+                const params = new URLSearchParams(location.search);
+                params.set('organizationName', org.name);
+                navigate(`/search-scholarships?${params.toString()}`, { replace: true });
+            }
+        } else {
+            // Nếu bỏ chọn trường, xóa organizationName khỏi URL
+            const params = new URLSearchParams(location.search);
+            if (params.has('organizationName')) {
+                params.delete('organizationName');
+                navigate(`/search-scholarships${params.toString() ? '?' + params.toString() : ''}`, { replace: true });
+            }
+        }
+        // eslint-disable-next-line
+    }, [selectedOrganization]);
+
+    // Tự động set filter quốc gia nếu có param countries trên URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const countryParam = params.get('countries');
+        if (countryParam && cities.includes(countryParam) && !selectedCities.includes(countryParam)) {
+            setSelectedCities([countryParam]);
+        }
+    }, [cities, location.search]);
+
+    // Filter logic
     const filterByFields = (scholarship) => {
         if (selectedFields.length === 0) return true;
         try {
@@ -106,7 +140,7 @@ const SearchSchool = () => {
             return selectedFields.includes(scholarship.fieldsOfStudy);
         }
     };
-
+    
     const filterByCities = (scholarship) => {
         if (selectedCities.length === 0) return true;
         let cs = [];
@@ -118,69 +152,72 @@ const SearchSchool = () => {
         }
         return cs.some(country => selectedCities.includes(country));
     };
-
-    const filterByCost = (scholarship) => {
-        if (!selectedCost) return true;
+    
+    const filterByAmount = (scholarship) => {
+        if (!selectedAmount) return true;
         const amount = Number(scholarship.amount);
-        return !isNaN(amount) && amount <= selectedCost;
+        if (isNaN(amount)) return false;
+        
+        if (selectedAmount.value === 100000) {
+            return amount >= 50000; // Trên 50,000 USD
+        } else {
+            return amount <= selectedAmount.value;
+        }
     };
-
-    const filterByLanguageRequirements = (scholarship) => {
-        try {
-            const lang = JSON.parse(scholarship.languageRequirements);
-            if (selectedToefl && lang.toefl && lang.toefl > selectedToefl) return false;
-            if (selectedIelts && lang.ielts && lang.ielts > selectedIelts) return false;
-        } catch { }
-        return true;
-    };
-
+    
     const filterByOrganization = (scholarship) => {
         if (!selectedOrganization) return true;
-        // Nếu dùng OrganizationDTO trong scholarship
         if (scholarship.organization && scholarship.organization.organizationId) {
             return scholarship.organization.organizationId === selectedOrganization;
         }
-        // Nếu vẫn còn trường organizationId cũ
+        if (scholarship.organizationName) {
+            const selectedOrg = organizations.find(org => org.organizationId === selectedOrganization);
+            if (selectedOrg) {
+                return scholarship.organizationName.toLowerCase().includes(selectedOrg.name.toLowerCase()) ||
+                    selectedOrg.name.toLowerCase().includes(scholarship.organizationName.toLowerCase());
+            }
+        }
         return scholarship.organizationId === selectedOrganization;
     };
-
+    
     const applyFilter = () => {
         const filtered = scholarships.filter(
             (s) =>
                 filterByFields(s) &&
                 filterByCities(s) &&
-                filterByCost(s) &&
-                filterByLanguageRequirements(s) &&
+                filterByAmount(s) &&
                 filterByOrganization(s)
         );
         setFilteredScholarships(filtered);
         setCurrentPage(1);
     };
-
+    
     const clearFilters = () => {
         setSelectedFields([]);
         setSelectedCities([]);
-        setSelectedCost(null);
-        setSelectedToefl(null);
-        setSelectedIelts(null);
+        setSelectedAmount(null);
         setSelectedOrganization(null);
         setFilteredScholarships(scholarships);
+        setInitialOrgFilterApplied(false);
+        // Xóa organizationName khỏi URL
+        navigate('/search-scholarships', { replace: true });
     };
-
+    
     useEffect(() => {
         applyFilter();
-    }, [selectedFields, selectedCities, selectedCost, selectedToefl, selectedIelts, selectedOrganization]);
-
+        // eslint-disable-next-line
+    }, [selectedFields, selectedCities, selectedAmount, selectedOrganization]);
+    
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentScholarships = filteredScholarships.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredScholarships.length / itemsPerPage);
-
+    
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
+    
     return (
         <>
             <Header />
@@ -188,14 +225,13 @@ const SearchSchool = () => {
                 <p className="breadcrumb">Heatwave / Tìm học bổng cho bạn ngay nào</p>
                 <h2 className="fw-bold mb-2">Học bổng cho bạn</h2>
                 <p className="text-muted">
-                    Khám phá các học bổng từ các trường đại học hàng đầu bên dưới. Sử dụng bộ lọc để tìm kiếm theo lĩnh vực, ngôn ngữ, thành phố và chi phí
+                    Khám phá các học bổng từ các trường đại học hàng đầu bên dưới. Sử dụng bộ lọc để tìm kiếm theo lĩnh vực, quốc gia, trường học và mức học bổng
                 </p>
-
                 <div className="filter-panel shadow-sm p-4 mb-4 rounded" style={{ backgroundColor: '#f8f9fa' }}>
                     <h5 className="mb-3 fw-bold">Lọc học bổng</h5>
                     <div className="row">
                         <div className="col-md-3 mb-3">
-                            <label className="fw-semibold mb-1">Lĩnh vực giảng dạy</label>
+                            <label className="fw-semibold mb-1">Lĩnh vực học tập</label>
                             <Select
                                 options={fields.map(f => ({ value: f, label: f }))}
                                 isMulti
@@ -204,7 +240,6 @@ const SearchSchool = () => {
                                 placeholder="Chọn lĩnh vực"
                             />
                         </div>
-
                         <div className="col-md-3 mb-3">
                             <label className="fw-semibold mb-1">Quốc gia du học</label>
                             <Select
@@ -215,7 +250,6 @@ const SearchSchool = () => {
                                 placeholder="Chọn quốc gia"
                             />
                         </div>
-
                         <div className="col-md-3 mb-3">
                             <label className="fw-semibold mb-1">Trường học</label>
                             <Select
@@ -226,46 +260,24 @@ const SearchSchool = () => {
                                 isClearable
                             />
                         </div>
-
-                        <div className="col-md-2 mb-3">
-                            <label className="fw-semibold mb-1">Chi phí tối đa</label>
+                        <div className="col-md-3 mb-3">
+                            <label className="fw-semibold mb-1">Mức học bổng</label>
                             <Select
-                                options={costOptions.map(c => ({ value: c, label: `${c.toLocaleString('vi-VN')} GBP` }))}
-                                value={selectedCost ? { value: selectedCost, label: `${selectedCost.toLocaleString('vi-VN')} GBP` } : null}
-                                onChange={(selected) => setSelectedCost(selected?.value || null)}
-                                placeholder="Chọn chi phí"
-                                isClearable
-                            />
-                        </div>
-
-                        <div className="col-md-2 mb-3">
-                            <label className="fw-semibold mb-1">TOEFL tối đa</label>
-                            <Select
-                                options={toeflOptions.map(score => ({ value: score, label: `${score} điểm` }))}
-                                value={selectedToefl ? { value: selectedToefl, label: `${selectedToefl} điểm` } : null}
-                                onChange={(selected) => setSelectedToefl(selected?.value || null)}
-                                placeholder="Chọn TOEFL"
-                                isClearable
-                            />
-                        </div>
-
-                        <div className="col-md-2 mb-3">
-                            <label className="fw-semibold mb-1">IELTS tối đa</label>
-                            <Select
-                                options={ieltsOptions.map(score => ({ value: score, label: `${score} điểm` }))}
-                                value={selectedIelts ? { value: selectedIelts, label: `${selectedIelts} điểm` } : null}
-                                onChange={(selected) => setSelectedIelts(selected?.value || null)}
-                                placeholder="Chọn IELTS"
+                                options={amountOptions}
+                                value={selectedAmount}
+                                onChange={(selected) => setSelectedAmount(selected)}
+                                placeholder="Chọn mức học bổng"
                                 isClearable
                             />
                         </div>
                     </div>
-
-                    <div className="mt-3 d-flex justify-content-end">
-                        <button className="btn btn-danger" onClick={clearFilters}>Hủy bỏ</button>
-                    </div>
+                    {/* Chỉ hiện nút "Hủy bỏ" khi có filter đang được áp dụng */}
+                    {hasActiveFilters() && (
+                        <div className="mt-3 d-flex justify-content-end">
+                            <button className="btn btn-danger" onClick={clearFilters}>Hủy bỏ</button>
+                        </div>
+                    )}
                 </div>
-
                 <div className="row">
                     {currentScholarships.length === 0 ? (
                         <div className="text-center my-5" style={{ fontWeight: 'bold', color: '#c2185b' }}>
@@ -279,23 +291,23 @@ const SearchSchool = () => {
                         ))
                     )}
                 </div>
-
+                {/* Pagination */}
                 {filteredScholarships.length > itemsPerPage && (
                     <nav className="mt-4">
                         <ul className="pagination justify-content-center">
-                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                                     &laquo;
                                 </button>
                             </li>
                             {Array.from({ length: totalPages }, (_, i) => (
-                                <li key={i + 1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                                <li key={i + 1} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
                                     <button className="page-link" onClick={() => handlePageChange(i + 1)}>
                                         {i + 1}
                                     </button>
                                 </li>
                             ))}
-                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
                                     &raquo;
                                 </button>
@@ -303,22 +315,10 @@ const SearchSchool = () => {
                         </ul>
                     </nav>
                 )}
-
-                {/* Danh sách trường học */}
-                <section className="my-4">
-                    <h4 className="fw-bold mb-3">Tìm kiếm theo trường học</h4>
-                    <div className="row g-4">
-                        {organizations.map(org => (
-                            <div className="col-md-3" key={org.organizationId}>
-                                <OrganizationCard organization={org} />
-                            </div>
-                        ))}
-                    </div>
-                </section>
             </div>
             <Footer />
         </>
     );
 };
 
-export default SearchSchool;
+export default SearchScholarship;

@@ -37,6 +37,51 @@ public class OrganizationDTO {
         this.worldRank = org.getWorldRank();
     }
 
+    // Helper methods for frontend
+    public String getFormattedCountry() {
+        return country != null ? country : "Không rõ";
+    }
+
+    public String getFormattedWorldRank() {
+        return worldRank != null ? worldRank.toString() : "Không rõ";
+    }
+
+    public String getFormattedNumberStudent() {
+        return numberStudent != null ? numberStudent.toString() : "Không rõ";
+    }
+
+    public String getFormattedAvgCostLiving() {
+        return avgCostLiving != null ? avgCostLiving + " USD/năm" : "Không rõ";
+    }
+
+    public String getFormattedOrganizationType() {
+        return organizationType != null ? organizationType : "Không rõ";
+    }
+
+    public String getFormattedIsVerified() {
+        return isVerified != null && isVerified ? "Đã xác thực" : "Chưa xác thực";
+    }
+
+    public String getFormattedCreatedAt() {
+        return createdAt != null ? createdAt.toString() : "Không rõ";
+    }
+
+    public String getFormattedUpdatedAt() {
+        return updatedAt != null ? updatedAt.toString() : "Không rõ";
+    }
+
+    public String getFormattedDescription() {
+        return description != null ? description : "Không có mô tả";
+    }
+
+    public String getFormattedLogoUrl() {
+        return logoUrl != null ? logoUrl : "/images/logo.png";
+    }
+
+    public String getFormattedWebsiteUrl() {
+        return websiteUrl != null ? websiteUrl : "Không rõ";
+    }
+
     // Getters and setters
     public String getOrganizationId() {
         return organizationId;

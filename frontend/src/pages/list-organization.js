@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import OrganizationCard from '../components/OrganizationCard';
-import { getAllOrganizations } from '../services/organizationApi';
+import { getActiveOrganizations } from '../services/organizationApi';
 
 function ListOrganization() {
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getAllOrganizations()
+        getActiveOrganizations()
             .then(res => setOrganizations(res.data))
             .catch(() => setOrganizations([]))
             .finally(() => setLoading(false));
