@@ -32,7 +32,7 @@ export default function Header() {
                                 <Link className="nav-link text-dark" to="/about">ABOUT</Link>
                             </li>
                             <li className="nav-item custom-dropdown mx-3">
-                                <a className="nav-link text-dark">FIND SCHOLARSHIP</a>
+                                <a className="nav-link text-dark">FIND SCHOLARSHIPS</a>
                                 <ul className="dropdown-content">
                                     <li><Link to="/search-scholarships">Find Scholarships</Link></li>
                                     <li><Link to="/search-university">Find a University</Link></li>
