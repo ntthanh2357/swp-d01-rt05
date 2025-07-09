@@ -95,11 +95,17 @@ export default function Header() {
                                                     <a className="dropdown-item" href="/staff/staff-dashboard">
                                                         Dashboard
                                                     </a>
+                                                <li><a className="dropdown-item" href="/staff/staff-profile">Profile</a></li>
                                                 </li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
-                                        <li><a className="dropdown-item" href="/seeker/user-profile">Profile</a></li>
+                                        {user.role === 'seeker' && (
+                                            <>
+                                                <li><a className="dropdown-item" href="/seeker/user-profile">Profile</a></li>
+                                                <li><hr className="dropdown-divider" /></li>
+                                            </>
+                                        )}
                                         <li>
                                             <a
                                                 className="dropdown-item text-danger"

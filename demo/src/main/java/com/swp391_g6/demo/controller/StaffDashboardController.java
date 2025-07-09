@@ -71,10 +71,22 @@ public class StaffDashboardController {
 
         try {
             String staffId = user.getUserId();
-            List<StaffReview> feedback = dashboardService.getFeedback(staffId);
+            // Sử dụng method mới trả về cả tên seeker
+            var feedback = dashboardService.getFeedbackWithSeekerName(staffId);
             return ResponseEntity.ok(feedback);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching feedback");
         }
+    }
+
+    @PostMapping("/active-seekers")
+    public ResponseEntity<?> getActiveSeekers(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        User user = jwtUtil.extractUserFromToken(token);
+        if (user == null || user.getRole() == null || !user.getRole().equals("staff")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        List<User> seekers = dashboardService.getActiveSeekersForStaff(user.getUserId());
+        return ResponseEntity.ok(seekers);
     }
 }
