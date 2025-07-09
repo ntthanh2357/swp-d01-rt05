@@ -1239,3 +1239,116 @@ END;
 -- ===================================================================
 -- END OF DATABASE SCHEMA
 -- ===================================================================
+
+--Nam LEE PRO DATABASE NHE CAC TINH IU
+--Bang staff_review
+INSERT INTO staff_review (created_at, is_anonymous, rating, review_content, seeker_id, staff_id)
+VALUES
+(NOW() - INTERVAL 2 DAY, 0, 2, 'nhu l!', 'USER0000000008', 'USER0000000001');
+-- Đánh giá 1: Seeker3 đánh giá Staff1
+(NOW() - INTERVAL 5 DAY, 0, 5, 'Nhân viên rất nhiệt tình và chuyên nghiệp. Tôi rất hài lòng với dịch vụ!', 'USER0000000003', 'USER0000000001'),
+
+-- Đánh giá 2: Seeker4 đánh giá Staff1 (ẩn danh)
+(NOW() - INTERVAL 4 DAY, 1, 4, 'Dịch vụ tốt nhưng cần cải thiện thời gian phản hồi', 'USER0000000004', 'USER0000000001'),
+
+-- Đánh giá 3: Seeker5 đánh giá Staff2
+(NOW() - INTERVAL 3 DAY, 0, 5, 'Tuyệt vời! Tôi sẽ giới thiệu cho bạn bè', 'USER0000000005', 'USER0000000002'),
+
+-- Đánh giá 4: Seeker6 đánh giá Staff2 (ẩn danh)
+(NOW() - INTERVAL 2 DAY, 1, 3, 'Có một số vấn đề nhỏ nhưng nhân viên đã giải quyết tốt', 'USER0000000006', 'USER0000000002'),
+
+-- Đánh giá 5: Seeker7 đánh giá Staff1
+(NOW() - INTERVAL 1 DAY, 0, 4, 'Trải nghiệm tốt, nhân viên thân thiện', 'USER0000000007', 'USER0000000001');
+
+--Bang staff_profile
+ALTER TABLE staff_profiles
+ADD CONSTRAINT fk_staff_user
+FOREIGN KEY (staff_id) REFERENCES users(user_id)
+ON DELETE CASCADE;
+iNSERT INTO staff_profiles (
+  staff_id,
+  education_level,
+  experience_years,
+  specialization,
+  total_reviews,
+  rating,
+  created_by,
+  current_seeker_count
+)
+VALUES (
+  'USER0000000001',        
+  'Thạc sĩ',
+  5,
+  'Du học Mỹ',
+  0,
+  0.0,
+  'ADMIN0001',             
+  0
+);
+SELECT * FROM staff_profiles WHERE staff_id = 'USER0000000001';
+
+-- bang users
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Xóa dữ liệu cũ nếu cần
+-- TRUNCATE TABLE users;
+
+-- Bật lại kiểm tra khóa ngoại
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Insert random seekers
+DELETE FROM users WHERE user_id LIKE 'SEEKER%';
+INSERT INTO users (user_id, name, email, phone, password_hash, role, gender, date_of_birth, created_at, updated_at)
+VALUES
+-- User 3-7
+('USER0000000003', 'Nguyễn Văn A', 'seeker1@example.com', '0912345678', '$2a$10$ABC123', 'seeker', 'male', '1990-05-15', NOW(), NOW()),
+('USER0000000004', 'Trần Thị B', 'seeker2@example.com', '0912345679', '$2a$10$ABC124', 'seeker', 'female', '1992-08-20', NOW(), NOW()),
+('USER0000000005', 'Lê Văn C', 'seeker3@example.com', '0912345680', '$2a$10$ABC125', 'seeker', 'male', '1988-03-10', NOW(), NOW()),
+('USER0000000006', 'Phạm Thị D', 'seeker4@example.com', '0912345681', '$2a$10$ABC126', 'seeker', 'female', '1995-11-25', NOW(), NOW()),
+('USER0000000007', 'Hoàng Văn E', 'seeker5@example.com', '0912345682', '$2a$10$ABC127', 'seeker', 'male', '1993-07-30', NOW(), NOW()),
+
+-- User 8-12
+('USER0000000008', 'Vũ Thị F', 'seeker6@example.com', '0912345683', '$2a$10$ABC128', 'seeker', 'female', '1991-09-12', NOW(), NOW()),
+('USER0000000009', 'Đặng Văn G', 'seeker7@example.com', '0912345684', '$2a$10$ABC129', 'seeker', 'male', '1989-04-05', NOW(), NOW()),
+('USER0000000010', 'Bùi Thị H', 'seeker8@example.com', '0912345685', '$2a$10$ABC130', 'seeker', 'female', '1994-12-18', NOW(), NOW()),
+('USER0000000011', 'Mai Văn I', 'seeker9@example.com', '0912345686', '$2a$10$ABC131', 'seeker', 'male', '1996-02-22', NOW(), NOW()),
+('USER0000000012', 'Lý Thị K', 'seeker10@example.com', '0912345687', '$2a$10$ABC132', 'seeker', 'female', '1997-06-08', NOW(), NOW()),
+
+-- User 13-17
+('USER0000000013', 'Trương Văn L', 'seeker11@example.com', '0912345688', '$2a$10$ABC133', 'seeker', 'male', '1990-10-15', NOW(), NOW()),
+('USER0000000014', 'Chu Thị M', 'seeker12@example.com', '0912345689', '$2a$10$ABC134', 'seeker', 'female', '1992-01-20', NOW(), NOW()),
+('USER0000000015', 'Hồ Văn N', 'seeker13@example.com', '0912345690', '$2a$10$ABC135', 'seeker', 'male', '1985-07-30', NOW(), NOW()),
+('USER0000000016', 'Phan Thị O', 'seeker14@example.com', '0912345691', '$2a$10$ABC136', 'seeker', 'female', '1998-04-12', NOW(), NOW()),
+('USER0000000017', 'Đỗ Văn P', 'seeker15@example.com', '0912345692', '$2a$10$ABC137', 'seeker', 'male', '1993-11-05', NOW(), NOW());
+
+-- Cập nhật thời gian last online ngẫu nhiên
+UPDATE users SET last_online_at = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 30) DAY) 
+WHERE user_id LIKE 'USER00000000%';
+
+-- Cập nhật trạng thái online ngẫu nhiên
+UPDATE users SET status_online = FLOOR(RAND() * 2) 
+WHERE user_id LIKE 'USER00000000%';
+
+-- bang seeker_staff_mapping
+ALTER TABLE seeker_staff_mapping 
+ADD CONSTRAINT fk_seeker FOREIGN KEY (seeker_id) REFERENCES users(user_id),
+ADD CONSTRAINT fk_staff FOREIGN KEY (staff_id) REFERENCES users(user_id);
+
+-- Insert 5 mapping mẫu
+INSERT INTO seeker_staff_mapping (seeker_id, staff_id, assigned_at, status)
+VALUES
+('USER0000000008', 'USER0000000001', NOW() - INTERVAL 2 DAY, 'active'),
+-- Seeker3 -> Staff1 (active)
+('USER0000000003', 'USER0000000001', NOW() - INTERVAL 10 DAY, 'active'),
+
+-- Seeker4 -> Staff1 (active)
+('USER0000000004', 'USER0000000001', NOW() - INTERVAL 8 DAY, 'active'),
+
+-- Seeker5 -> Staff2 (active)
+('USER0000000005', 'USER0000000002', NOW() - INTERVAL 7 DAY, 'active'),
+
+-- Seeker6 -> Staff2 (inactive - đã chuyển đi)
+('USER0000000006', 'USER0000000002', NOW() - INTERVAL 15 DAY, 'inactive'),
+
+-- Seeker7 -> Staff1 (active)
+('USER0000000007', 'USER0000000001', NOW() - INTERVAL 3 DAY, 'active');

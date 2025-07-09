@@ -99,12 +99,12 @@ export default function Header() {
                                                 <li>
                                                     <Link className="dropdown-item" to="/staff/staff-dashboard">
                                                         Dashboard
-                                                    </Link>
+                                                    </a>
                                                 </li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
-                                        <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
+                                        <li><a className="dropdown-item" href="/seeker/user-profile">Profile</a></li>
                                         <li>
                                             <a
                                                 className="dropdown-item text-danger"

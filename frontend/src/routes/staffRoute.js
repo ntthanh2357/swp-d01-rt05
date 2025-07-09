@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import StaffDashboard from "../pages/staff-dashboard";
+import StaffProfile from "../pages/staff-profile";
 import { jwtDecode } from "jwt-decode";
 
 function StaffRoute() {
@@ -18,6 +19,7 @@ function StaffRoute() {
     return (
         <Routes>
             <Route path="/staff-dashboard" element={<StaffDashboard staffId={staffId} />} />
+            <Route path="/staff-profile" element={<StaffProfile staffId={staffId} />} />
         </Routes>
     );
 }

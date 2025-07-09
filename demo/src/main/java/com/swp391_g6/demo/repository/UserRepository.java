@@ -18,4 +18,5 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query(value = "SELECT DATE(created_at) as date, COUNT(*) as count FROM users GROUP BY DATE(created_at) ORDER BY date ASC", nativeQuery = true)
     List<Object[]> countUserByCreatedDate();
 
+    List<User> findByUserIdIn(List<String> userIds);
 }
