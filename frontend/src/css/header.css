@@ -1,0 +1,79 @@
+.custom-dropdown {
+  position: relative;
+}
+
+.nav-link {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 10px 15px;
+}
+
+/* Ẩn mũi tên nếu dùng dropdown-toggle của Bootstrap */
+.nav-link::after {
+  display: none !important;
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 10px 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  min-width: 240px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 999;
+}
+
+.custom-dropdown:hover .dropdown-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-content li {
+  list-style: none;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 12px 20px;
+  text-decoration: none;
+  color: #333;
+  font-size: 15px;
+}
+
+.dropdown-content a:hover {
+  background-color: #f9f9f9;
+  color: #007bff;
+}
+
+/* Sticky Header */
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 1000;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: box-shadow 0.2s;
+}
+
+body {
+  padding-top: 70px;
+}
+
+@media (max-width: 768px) {
+  .sticky-header {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  body {
+    padding-top: 56px;
+  }
+}

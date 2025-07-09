@@ -10,10 +10,7 @@ import com.swp391_g6.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.util.List;
@@ -167,6 +164,16 @@ public class ScholarshipController {
     public ResponseEntity<?> countNewScholarships() {
         int count = scholarshipService.countNewScholarships();
         return ResponseEntity.ok(count);
+    }
+
+    // [GET] /api/scholarships/{id} - Get scholarship by id
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getScholarshipById(@PathVariable String id) {
+        Scholarship scholarship = scholarshipService.getScholarshipById(id);
+        if (scholarship == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scholarship not found");
+        }
+        return ResponseEntity.ok(new ScholarshipDTO(scholarship));
     }
 
 }

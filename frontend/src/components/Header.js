@@ -2,17 +2,18 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { ChatContext } from "../contexts/ChatContext";
 import { UserContext } from "../contexts/UserContext";
+import '../css/header.css';
 
 export default function Header() {
     const { user, logout } = useContext(UserContext);
     const { unreadCount } = useContext(ChatContext);
 
     return (
-        <header className="bg-white text-dark shadow-sm py-2">
+        <header className="sticky-header">
             <nav className="navbar navbar-expand-lg bg-white py-0">
                 <div className="container">
                     {/* Logo  */}
-                    <a className="navbar-brand" href="/">
+                    <Link className="navbar-brand" to="/">
                         <img
                             src="/images/logo.png"
                             alt="Heatwave Scholarship"
@@ -22,19 +23,23 @@ export default function Header() {
                                 e.target.src = "/images/placeholder-logo.png";
                             }}
                         />
-                    </a>
+                    </Link>
 
                     {/* Menu chính giữa */}
                     <div className="mx-auto">
                         <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
                             <li className="nav-item mx-3">
-                                <a className="nav-link text-dark" href="/about">ABOUT</a>
+                                <Link className="nav-link text-dark" to="/about">ABOUT</Link>
+                            </li>
+                            <li className="nav-item custom-dropdown mx-3">
+                                <a className="nav-link text-dark">FIND SCHOLARSHIP</a>
+                                <ul className="dropdown-content">
+                                    <li><Link to="/search-scholarships">Find Scholarships</Link></li>
+                                    <li><Link to="/search-university">Find a University</Link></li>
+                                </ul>
                             </li>
                             <li className="nav-item mx-3">
-                                <a className="nav-link text-dark" href="/search">FIND SCHOLARSHIPS</a>
-                            </li>
-                            <li className="nav-item mx-3">
-                                <a className="nav-link text-dark" href="/services">SERVICES</a>
+                                <Link className="nav-link text-dark" to="/services">SERVICES</Link>
                             </li>
 
                             {user.isLoggedIn && (
@@ -76,36 +81,30 @@ export default function Header() {
                             <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                 {!user.isLoggedIn ? (
                                     <>
-                                        <li><a className="dropdown-item" href="/auth/login">Login</a></li>
-                                        <li><a className="dropdown-item" href="/auth/user-register">Register</a></li>
+                                        <li><Link className="dropdown-item" to="/auth/login">Login</Link></li>
+                                        <li><Link className="dropdown-item" to="/auth/user-register">Register</Link></li>
                                     </>
                                 ) : (
                                     <>
                                         {user.role === 'admin' && (
                                             <>
-                                                <li><a className="dropdown-item" href="/admin/manage-users">Manage Users</a></li>
-                                                <li><a className="dropdown-item" href="/manage-scholarships">Manage Scholarships</a></li>
-                                                <li><a className="dropdown-item" href="/admin/dashboard">Admin Dashboard</a></li>
+                                                <li><Link className="dropdown-item" to="/admin/manage-users">Manage Users</Link></li>
+                                                <li><Link className="dropdown-item" to="/manage-scholarships">Manage Scholarships</Link></li>
+                                                <li><Link className="dropdown-item" to="/admin/dashboard">Admin Dashboard</Link></li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
                                         {user.role === 'staff' && (
                                             <>
                                                 <li>
-                                                    <a className="dropdown-item" href="/staff/staff-dashboard">
+                                                    <Link className="dropdown-item" to="/staff/staff-dashboard">
                                                         Dashboard
                                                     </a>
-                                                <li><a className="dropdown-item" href="/staff/staff-profile">Profile</a></li>
                                                 </li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
-                                        {user.role === 'seeker' && (
-                                            <>
-                                                <li><a className="dropdown-item" href="/seeker/user-profile">Profile</a></li>
-                                                <li><hr className="dropdown-divider" /></li>
-                                            </>
-                                        )}
+                                        <li><a className="dropdown-item" href="/seeker/user-profile">Profile</a></li>
                                         <li>
                                             <a
                                                 className="dropdown-item text-danger"
