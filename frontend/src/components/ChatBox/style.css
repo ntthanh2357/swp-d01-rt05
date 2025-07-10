@@ -229,3 +229,146 @@
     background-color: #cccccc;
     cursor: not-allowed;
 }
+
+/* File upload button */
+.file-upload-button {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 16px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.file-upload-button:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
+
+.file-upload-button:disabled {
+    color: #ced4da;
+    cursor: not-allowed;
+}
+
+/* Message images */
+.message-image {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+    transform: scale(1.05);
+}
+
+/* Document message styling */
+.document-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+
+.document-message i.fa-file-alt {
+    color: #007bff;
+    font-size: 20px;
+}
+
+.document-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+.document-size {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.download-btn {
+    color: #007bff;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.download-btn:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #0056b3;
+}
+
+/* Update chat-box-footer to accommodate file button */
+.chat-box-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid #e9ecef;
+    background: white;
+}
+
+.chat-input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 12px;
+    outline: none;
+}
+
+.chat-input:focus {
+    border-color: #007bff;
+}
+
+.send-button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.send-button:hover:not(:disabled) {
+    background: #0056b3;
+}
+
+.send-button:disabled {
+    background: #ced4da;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .message-image {
+        max-width: 150px !important;
+        max-height: 100px !important;
+    }
+    
+    .document-message {
+        padding: 6px;
+        gap: 8px;
+    }
+    
+    .document-name {
+        font-size: 13px;
+    }
+    
+    .document-size {
+        font-size: 11px;
+    }
+}

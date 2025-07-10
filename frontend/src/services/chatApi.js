@@ -31,3 +31,22 @@ export const markAsRead = (token, otherUserId) => {
 export const getPrompts = () => {
     return axios.get(`${API_URL}/chat/prompts`);
 };
+
+// New function for file upload
+export const uploadFile = (file, token) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('token', token);
+    
+    return axios.post(`${API_URL}/chat/upload`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }).then(response => {
+        console.log('Upload response:', response.data);
+        return response;
+    }).catch(error => {
+        console.error('Upload error:', error);
+        throw error;
+    });
+};

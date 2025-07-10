@@ -32,6 +32,27 @@ public class ChatService {
         return chatRepository.save(chat);
     }
     
+    // Updated method for file messages with null check
+    public Chat saveFileMessage(String senderId, String receiverId, String message, 
+                               String messageType, String fileUrl, String fileName, 
+                               String fileType, Long fileSize) {
+        User sender = userRepository.findById(senderId).orElse(null);
+        User receiver = userRepository.findById(receiverId).orElse(null);
+        
+        if (sender == null || receiver == null) {
+            throw new RuntimeException("Sender or receiver not found");
+        }
+        
+        // Đảm bảo message không null
+        String finalMessage = (message != null && !message.trim().isEmpty()) ? message : fileName;
+        if (finalMessage == null || finalMessage.trim().isEmpty()) {
+            finalMessage = "File attachment"; // Default message
+        }
+        
+        Chat chat = new Chat(sender, receiver, finalMessage, messageType, fileUrl, fileName, fileType, fileSize);
+        return chatRepository.save(chat);
+    }
+    
     public List<ChatDTO> getConversation(String userId1, String userId2) {
         User user1 = userRepository.findById(userId1).orElse(null);
         User user2 = userRepository.findById(userId2).orElse(null);
@@ -84,7 +105,17 @@ public class ChatService {
             Chat lastMessage = conversation.isEmpty() ? null : conversation.get(conversation.size() - 1);
             
             if (lastMessage != null) {
-                contactInfo.put("lastMessage", lastMessage.getMessage());
+                // Show appropriate last message text based on type
+                String lastMessageText;
+                if ("image".equals(lastMessage.getMessageType())) {
+                    lastMessageText = "📷 Đã gửi một hình ảnh";
+                } else if ("document".equals(lastMessage.getMessageType())) {
+                    lastMessageText = "📄 Đã gửi tài liệu: " + lastMessage.getFileName();
+                } else {
+                    lastMessageText = lastMessage.getMessage() != null ? lastMessage.getMessage() : "File attachment";
+                }
+                
+                contactInfo.put("lastMessage", lastMessageText);
                 contactInfo.put("lastMessageTime", lastMessage.getCreatedAt());
                 
                 // Count unread messages from this contact
@@ -111,7 +142,12 @@ public class ChatService {
         dto.setReceiverId(chat.getReceiver().getUserId());
         dto.setReceiverName(chat.getReceiver().getName());
         dto.setReceiverRole(chat.getReceiver().getRole());
-        dto.setMessage(chat.getMessage());
+        dto.setMessage(chat.getMessage() != null ? chat.getMessage() : "File attachment");
+        dto.setMessageType(chat.getMessageType());
+        dto.setFileUrl(chat.getFileUrl());
+        dto.setFileName(chat.getFileName());
+        dto.setFileType(chat.getFileType());
+        dto.setFileSize(chat.getFileSize());
         dto.setRead(chat.isRead());
         dto.setCreatedAt(chat.getCreatedAt());
         return dto;

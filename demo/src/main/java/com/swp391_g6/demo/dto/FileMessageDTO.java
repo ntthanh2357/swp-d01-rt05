@@ -1,37 +1,37 @@
 package com.swp391_g6.demo.dto;
 
-import java.sql.Timestamp;
-
-public class ChatDTO {
-    private Long chatId;
+public class FileMessageDTO {
     private String senderId;
     private String senderName;
     private String senderRole;
     private String receiverId;
-    private String receiverName;
-    private String receiverRole;
     private String message;
-    private String messageType = "text"; // text, image, document
+    private String messageType; // "image" or "document"
     private String fileUrl;
     private String fileName;
     private String fileType;
     private Long fileSize;
-    private boolean isRead;
-    private Timestamp createdAt;
 
     // Constructors
-    public ChatDTO() {
+    public FileMessageDTO() {
+    }
+
+    public FileMessageDTO(String senderId, String senderName, String senderRole, 
+                         String receiverId, String message, String messageType,
+                         String fileUrl, String fileName, String fileType, Long fileSize) {
+        this.senderId = senderId;
+        this.senderName = senderName;
+        this.senderRole = senderRole;
+        this.receiverId = receiverId;
+        this.message = message;
+        this.messageType = messageType;
+        this.fileUrl = fileUrl;
+        this.fileName = fileName;
+        this.fileType = fileType;
+        this.fileSize = fileSize;
     }
 
     // Getters and Setters
-    public Long getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
-    }
-
     public String getSenderId() {
         return senderId;
     }
@@ -62,22 +62,6 @@ public class ChatDTO {
 
     public void setReceiverId(String receiverId) {
         this.receiverId = receiverId;
-    }
-
-    public String getReceiverName() {
-        return receiverName;
-    }
-
-    public void setReceiverName(String receiverName) {
-        this.receiverName = receiverName;
-    }
-
-    public String getReceiverRole() {
-        return receiverRole;
-    }
-
-    public void setReceiverRole(String receiverRole) {
-        this.receiverRole = receiverRole;
     }
 
     public String getMessage() {
@@ -128,19 +112,19 @@ public class ChatDTO {
         this.fileSize = fileSize;
     }
 
-    public boolean isRead() {
-        return isRead;
-    }
-
-    public void setRead(boolean read) {
-        isRead = read;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    @Override
+    public String toString() {
+        return "FileMessageDTO{" +
+                "senderId='" + senderId + '\'' +
+                ", senderName='" + senderName + '\'' +
+                ", senderRole='" + senderRole + '\'' +
+                ", receiverId='" + receiverId + '\'' +
+                ", message='" + message + '\'' +
+                ", messageType='" + messageType + '\'' +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", fileType='" + fileType + '\'' +
+                ", fileSize=" + fileSize +
+                '}';
     }
 }
