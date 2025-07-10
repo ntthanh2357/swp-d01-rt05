@@ -1,20 +1,52 @@
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { UserContext } from '../contexts/UserContext';
+import { addFavoriteScholarship, removeFavoriteScholarship } from '../services/seekerApi';
 import "react-toastify/dist/ReactToastify.css";
 import '../css/scholarshipCard.css';
 
 /**
  * ScholarshipCard component
  * Props:
- *  - scholarship: {
- *      scholarshipId, title, organizationName, organizationWorldRank, featured,
- *      fieldsOfStudy, countries, applicationDeadline, languageRequirements,
- *      amount, currency, ...
- *    }
+ *  - scholarship: { ... }
+ *  - liked: boolean (optional)
+ *  - onLikeChange: function (optional)
  */
-function ScholarshipCard({ scholarship }) {
-    const [liked, setLiked] = useState(false);
+function ScholarshipCard({ scholarship, liked: likedProp, onLikeChange }) {
+    const { user } = useContext(UserContext);
+    const [liked, setLiked] = useState(!!likedProp);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setLiked(!!likedProp);
+    }, [likedProp]);
+
+    const handleLike = async () => {
+        if (!user || !user.isLoggedIn) {
+            toast.info('Bạn cần đăng nhập để sử dụng chức năng này!');
+            return;
+        }
+        if (loading) return;
+        setLoading(true);
+        try {
+            if (!liked) {
+                await addFavoriteScholarship(user.accessToken, scholarship.scholarshipId);
+                setLiked(true);
+                toast.success('Đã thêm vào mục yêu thích!');
+                if (onLikeChange) onLikeChange(true);
+            } else {
+                await removeFavoriteScholarship(user.accessToken, scholarship.scholarshipId);
+                setLiked(false);
+                toast.info('Đã bỏ khỏi mục yêu thích!');
+                if (onLikeChange) onLikeChange(false);
+            }
+        } catch (err) {
+            toast.error('Có lỗi xảy ra, vui lòng thử lại!');
+        }
+        setLoading(false);
+    };
 
     const formatDate = (dateStr) => {
         if (!dateStr) return 'Không rõ';
@@ -68,8 +100,8 @@ function ScholarshipCard({ scholarship }) {
                 </div>
                 <i
                     className={`fa${liked ? 's' : 'r'} fa-heart fa-lg flex-shrink-0`}
-                    style={{ color: liked ? 'hotpink' : 'gray', cursor: 'pointer', marginTop: '2px' }}
-                    onClick={() => setLiked(!liked)}
+                    style={{ color: liked ? 'hotpink' : 'gray', cursor: loading ? 'wait' : 'pointer', marginTop: '2px' }}
+                    onClick={handleLike}
                     title={liked ? "Bỏ yêu thích" : "Yêu thích"}
                 ></i>
             </div>

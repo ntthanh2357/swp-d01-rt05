@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,14 +12,17 @@ import org.springframework.stereotype.Service;
 import com.swp391_g6.demo.entity.Seeker;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.entity.VerificationToken;
+import com.swp391_g6.demo.entity.FavoriteScholarship;
 import com.swp391_g6.demo.repository.SeekerRepository;
 import com.swp391_g6.demo.repository.VerificationTokenRepository;
+import com.swp391_g6.demo.repository.FavoriteScholarshipRepository;
 import com.swp391_g6.demo.util.EmailUtil;
+import com.swp391_g6.demo.entity.Scholarship;
 
 @Service
 public class SeekerService {
 
-    @Autowired 
+    @Autowired
     private SeekerRepository seekerRepository;
 
     @Autowired
@@ -26,6 +30,9 @@ public class SeekerService {
 
     @Autowired
     private EmailUtil emailUtil;
+
+    @Autowired
+    private FavoriteScholarshipRepository favoriteScholarshipRepository;
 
     public void createSeekerProfile(User user) {
         if (seekerRepository.findByUser(user) == null) {
@@ -67,7 +74,8 @@ public class SeekerService {
     }
 
     public boolean verifyUpdateSeekerProfileOtp(String email, String otp) {
-        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByEmailAndTask(email, "update-seeker-profile");
+        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByEmailAndTask(email,
+                "update-seeker-profile");
         if (optionalToken.isEmpty()) {
             return false;
         }
@@ -80,4 +88,25 @@ public class SeekerService {
         return token.getOtp_code().equals(otp);
     }
 
+    public List<FavoriteScholarship> findFavoriteScholarshipsBySeekerId(String seekerId) {
+        return favoriteScholarshipRepository.findBySeekerId(seekerId);
+    }
+
+    public FavoriteScholarship addFavoriteScholarship(Seeker seeker, Scholarship scholarship, String notes) {
+        FavoriteScholarship existing = favoriteScholarshipRepository
+                .findBySeekerIdAndScholarshipId(seeker.getSeekerId(), scholarship.getScholarshipId());
+        if (existing != null)
+            return existing;
+        FavoriteScholarship favorite = new FavoriteScholarship();
+        favorite.setSeeker(seeker);
+        favorite.setScholarship(scholarship);
+        favorite.setNotes(notes);
+        favorite.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        return favoriteScholarshipRepository.save(favorite);
+    }
+
+    public void removeFavoriteScholarship(Seeker seeker, Scholarship scholarship) {
+        favoriteScholarshipRepository.deleteBySeeker_SeekerIdAndScholarship_ScholarshipId(seeker.getSeekerId(),
+                scholarship.getScholarshipId());
+    }
 }

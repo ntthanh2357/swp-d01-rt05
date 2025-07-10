@@ -17,16 +17,16 @@ export default function Footer() {
               />
               <span className="brand-name">HEATWAVE</span>
             </div>
-            <p className="footer-slogan">Take you to the future</p>
-            <Link to="/about" className="footer-about-link">About Heatwave</Link>
+            <p className="footer-slogan">Empowering Your Future</p>
+            <Link to="/about" className="footer-about-link">About Us</Link>
           </div>
          
           <div className="col-md-4 mb-4">
-            <h5 className="footer-heading">LINK HỮU ÍCH</h5>
+            <h5 className="footer-heading">USEFUL LINKS</h5>
             <ul className="footer-links">
-              <li><Link to="/search">Find Scholarship</Link></li>
               <li><Link to="/">Home</Link></li>
-              <li><Link to="https://www.idp.com/vietnam/study-in-australia/top-universities-in-australia/">News & Events</Link></li>            
+              <li><a href="https://www.idp.com/vietnam/study-in-australia/top-universities-in-australia/" target="_blank" rel="noopener noreferrer">News & Events</a></li>
+              <li><Link to="/contact">Contact</Link></li>
             </ul>
           </div>
 
@@ -38,10 +38,10 @@ export default function Footer() {
               <li><i className="bi bi-geo-alt"></i> FPT University, DaNang</li>
             </ul>
             <div className="footer-social">
-              <a href="#"><i className="bi bi-facebook"></i></a>
-              <a href="#"><i className="bi bi-twitter"></i></a>
-              <a href="#"><i className="bi bi-linkedin"></i></a>
-              <a href="#"><i className="bi bi-instagram"></i></a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-facebook"></i></a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-twitter"></i></a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-linkedin"></i></a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"><i className="bi bi-instagram"></i></a>
             </div>
           </div>
         </div>

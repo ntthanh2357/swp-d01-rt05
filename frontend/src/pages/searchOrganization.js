@@ -4,8 +4,12 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import OrganizationCard from '../components/OrganizationCard';
 import { getActiveOrganizations, searchOrganizations } from '../services/organizationApi';
+import { useLocation } from 'react-router-dom';
+import { useRef } from 'react';
 
 function SearchOrganization() {
+    const location = useLocation();
+    const filterSetFromUrl = useRef(false);
     const [organizations, setOrganizations] = useState([]);
     const [filteredOrganizations, setFilteredOrganizations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -58,6 +62,18 @@ function SearchOrganization() {
 
         fetchOrganizations();
     }, []);
+
+    useEffect(() => {
+        // Parse query params for pre-selecting country, only after organizations are loaded
+        if (organizations.length > 0 && !filterSetFromUrl.current) {
+            const params = new URLSearchParams(location.search);
+            const countryParam = params.get('countries');
+            if (countryParam) {
+                setSelectedCountries([countryParam]);
+                filterSetFromUrl.current = true;
+            }
+        }
+    }, [organizations, location.search]);
 
     const applyFilters = () => {
         let filtered = organizations;

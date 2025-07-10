@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../css/register-book.css";
 
-const cityOptionsByCountry = {
+const defaultCityOptionsByCountry = {
   Úc: ["Melbourne, Australia", "Canberra, Australia"],
   Mỹ: ["Cambridge, United States", "Stanford, United States", "United States"],
   Canada: ["Toronto, Canada", "Vancouver, Canada", "Canada"],
@@ -14,7 +14,7 @@ const cityOptionsByCountry = {
   Global: ["Global", "Europe"],
 };
 
-const RegisterForm = () => {
+const RegisterForm = ({ countryList }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -24,6 +24,9 @@ const RegisterForm = () => {
     city: "",
     educationLevel: "",
     adviceType: "",
+    scholarshipGoal: "",
+    major: "",
+    note: "",
     agree: false,
   });
 
@@ -31,7 +34,6 @@ const RegisterForm = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     if (name === "country") {
       setFormData({
         ...formData,
@@ -56,6 +58,8 @@ const RegisterForm = () => {
     if (!formData.city) newErrors.city = "Chọn ít nhất một thành phố";
     if (!formData.educationLevel) newErrors.educationLevel = "Chọn bậc học";
     if (!formData.adviceType) newErrors.adviceType = "Chọn hình thức tư vấn";
+    if (!formData.scholarshipGoal.trim()) newErrors.scholarshipGoal = "Nhập mục tiêu học bổng";
+    if (!formData.major.trim()) newErrors.major = "Nhập ngành học quan tâm";
     if (!formData.agree) newErrors.agree = "Bạn phải đồng ý với điều khoản";
     return newErrors;
   };
@@ -70,6 +74,9 @@ const RegisterForm = () => {
     }
   };
 
+  // Ưu tiên countryList prop, fallback về keys của defaultCityOptionsByCountry
+  const countryOptions = countryList && countryList.length > 0 ? countryList : Object.keys(defaultCityOptionsByCountry);
+  const cityOptionsByCountry = defaultCityOptionsByCountry;
   const filteredCities = cityOptionsByCountry[formData.country] || [];
 
   return (
@@ -122,7 +129,7 @@ const RegisterForm = () => {
           <div className="form-group">
             <select name="country" value={formData.country} onChange={handleChange}>
               <option value="">Quốc gia bạn muốn du học*</option>
-              {Object.keys(cityOptionsByCountry).map((country) => (
+              {countryOptions.map((country) => (
                 <option key={country} value={country}>
                   {country}
                 </option>
@@ -183,6 +190,38 @@ const RegisterForm = () => {
           </div>
         </div>
 
+        <div className="form-group">
+          <input
+            type="text"
+            name="scholarshipGoal"
+            placeholder="Mục tiêu học bổng (ví dụ: học bổng toàn phần, bán phần, v.v.)*"
+            value={formData.scholarshipGoal}
+            onChange={handleChange}
+          />
+          {errors.scholarshipGoal && <span className="error-msg">{errors.scholarshipGoal}</span>}
+        </div>
+
+        <div className="form-group">
+          <input
+            type="text"
+            name="major"
+            placeholder="Ngành học quan tâm*"
+            value={formData.major}
+            onChange={handleChange}
+          />
+          {errors.major && <span className="error-msg">{errors.major}</span>}
+        </div>
+
+        <div className="form-group">
+          <textarea
+            name="note"
+            placeholder="Ghi chú thêm cho tư vấn viên (không bắt buộc)"
+            value={formData.note}
+            onChange={handleChange}
+            rows={3}
+          />
+        </div>
+
         <div className="checkboxes">
           <label>
             <input
@@ -191,8 +230,8 @@ const RegisterForm = () => {
               checked={formData.agree}
               onChange={handleChange}
             />{" "}
-            Tôi đồng ý với <a href="#">Điều khoản</a> và{" "}
-            <a href="#">chính sách bảo mật</a>
+            Tôi đồng ý với <a href="/terms" target="_blank" rel="noopener noreferrer">Điều khoản</a> và{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">chính sách bảo mật</a>
             {errors.agree && <span className="error-msg">{errors.agree}</span>}
           </label>
           <label>

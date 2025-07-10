@@ -57,6 +57,11 @@ export default function Header() {
                                             )}
                                         </Link>
                                     </li>
+                                    {user.role === 'seeker' && (
+                                        <li className="nav-item mx-3">
+                                            <Link to="/library" className="nav-link text-dark">LIBRARY</Link>
+                                        </li>
+                                    )}
                                 </>
                             )}
                         </ul>

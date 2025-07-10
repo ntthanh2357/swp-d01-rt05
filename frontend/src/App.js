@@ -13,6 +13,10 @@ import ChatBox from './components/ChatBox';
 import Payment from './pages/payment'; // Import component thanh toán
 import OrganizationRoute from "./routes/organizationRoute";
 import SearchOrganization from './pages/searchOrganization';
+import PrivacyPolicy from './pages/privacy';
+import TermsOfUse from './pages/terms';
+import Disclaimer from './pages/disclaimer';
+import Library from "./pages/library";
 
 function App() {
     return (
@@ -31,6 +35,10 @@ function App() {
                             <Route path="/chat" element={<ChatBox />} />
                             <Route path="/payment" element={<Payment />} />
                             <Route path="/search-university" element={<SearchOrganization />} />
+                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                            <Route path="/terms" element={<TermsOfUse />} />
+                            <Route path="/disclaimer" element={<Disclaimer />} />
+                            <Route path="/library" element={<Library />} />
                             <Route path="/*" element={<ScholarshipRoute />} />
                         </Routes>
                     </Router>
