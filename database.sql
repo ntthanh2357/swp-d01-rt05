@@ -2,7 +2,6 @@
 -- SCHOLARSHIP CONNECTION PLATFORM - DATABASE SCHEMA
 -- MySQL Database Design
 -- ===================================================================
-
 -- Create Database
 CREATE DATABASE swp391_gr6;
 USE swp391_gr6;
