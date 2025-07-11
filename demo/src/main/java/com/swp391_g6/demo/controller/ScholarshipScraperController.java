@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,31 @@ public class ScholarshipScraperController {
             scholarship.setCreatedBy(user.getUserId());
             // Set other fields as needed, or let admin edit after scraping
 
-            Scholarship saved = scholarshipService.addScholarship(scholarship);
+            Scholarship saved = scholarshipService.addScholarship(
+                null, // scholarshipId sẽ được tự động tạo trong database
+                scholarship.getTitle(),
+                scholarship.getDescription(),
+                scholarship.getOrganization(),
+                scholarship.getCategoryId(),
+                scholarship.getAmount(),
+                scholarship.getCurrency(),
+                scholarship.getDuration(),
+                scholarship.getApplicationDeadline(),
+                scholarship.getEligibilityCriteria(),
+                scholarship.getCountries(),
+                scholarship.getEducationLevels(),
+                scholarship.getFieldsOfStudy(),
+                scholarship.getLanguageRequirements(),
+                scholarship.getStatus(),
+                scholarship.getViewsCount(),
+                scholarship.getApplicationsCount(),
+                scholarship.getFeatured(),
+                scholarship.getCreatedBy(),
+                scholarship.getApprovedBy(),
+                scholarship.getApprovedAt(),
+                new Timestamp(System.currentTimeMillis()), // createdAt
+                new Timestamp(System.currentTimeMillis())  // updatedAt
+            );
             result.put("scholarship", saved);
         } catch (IOException e) {
             result.put("error", "Failed to fetch or parse the page.");
