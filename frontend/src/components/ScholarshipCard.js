@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { UserContext } from '../contexts/UserContext';
+import { useFavorites } from '../contexts/FavoriteContext';
 import { addFavoriteScholarship, removeFavoriteScholarship } from '../services/seekerApi';
 import "react-toastify/dist/ReactToastify.css";
 import '../css/scholarshipCard.css';
@@ -15,13 +16,12 @@ import '../css/scholarshipCard.css';
  */
 function ScholarshipCard({ scholarship, liked: likedProp, onLikeChange }) {
     const { user } = useContext(UserContext);
-    const [liked, setLiked] = useState(!!likedProp);
+    const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        setLiked(!!likedProp);
-    }, [likedProp]);
+    // Sử dụng context hoặc prop, ưu tiên context
+    const liked = likedProp !== undefined ? likedProp : isFavorite(scholarship?.scholarshipId);
 
     const handleLike = async () => {
         if (!user || !user.isLoggedIn) {
@@ -32,17 +32,22 @@ function ScholarshipCard({ scholarship, liked: likedProp, onLikeChange }) {
         setLoading(true);
         try {
             if (!liked) {
+                console.log('Adding to favorites:', scholarship.scholarshipId);
                 await addFavoriteScholarship(user.accessToken, scholarship.scholarshipId);
-                setLiked(true);
+                addToFavorites(scholarship.scholarshipId);
                 toast.success('Đã thêm vào mục yêu thích!');
                 if (onLikeChange) onLikeChange(true);
             } else {
-                await removeFavoriteScholarship(user.accessToken, scholarship.scholarshipId);
-                setLiked(false);
+                console.log('Removing from favorites:', scholarship.scholarshipId);
+                const response = await removeFavoriteScholarship(user.accessToken, scholarship.scholarshipId);
+                console.log('Remove response:', response);
+                removeFromFavorites(scholarship.scholarshipId);
                 toast.info('Đã bỏ khỏi mục yêu thích!');
                 if (onLikeChange) onLikeChange(false);
             }
         } catch (err) {
+            console.error('Error handling like:', err);
+            console.error('Error response:', err.response?.data);
             toast.error('Có lỗi xảy ra, vui lòng thử lại!');
         }
         setLoading(false);

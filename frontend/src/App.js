@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { UserProvider } from "./contexts/UserContext";
 import { ChatProvider } from './contexts/ChatContext';
+import { FavoriteProvider } from './contexts/FavoriteContext';
 import AuthRoute from "./routes/authRoute";
 import UserRoute from "./routes/userRoute";
 import SeekerRoute from "./routes/seekerRoute";
@@ -23,7 +24,8 @@ function App() {
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
             <UserProvider>
                 <ChatProvider>
-                    <Router>
+                    <FavoriteProvider>
+                        <Router>
                         <Routes>
                             <Route path="/auth/*" element={<AuthRoute />} />
                             <Route path="/admin/*" element={<UserRoute />} />
@@ -42,6 +44,7 @@ function App() {
                             <Route path="/*" element={<ScholarshipRoute />} />
                         </Routes>
                     </Router>
+                    </FavoriteProvider>
                 </ChatProvider>
             </UserProvider>
         </GoogleOAuthProvider>

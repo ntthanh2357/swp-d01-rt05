@@ -37,11 +37,14 @@ export const addFavoriteScholarship = async (token, scholarshipId) => {
 };
 
 export const removeFavoriteScholarship = async (token, scholarshipId) => {
-    return await axiosInstance.delete(
+    console.log('Removing favorite:', scholarshipId);
+    const response = await axiosInstance.delete(
         "/seeker/favorite",
         {
             data: { scholarshipId },
             headers: { Authorization: `Bearer ${token}` }
         }
     );
+    console.log('Remove favorite response:', response);
+    return response;
 };

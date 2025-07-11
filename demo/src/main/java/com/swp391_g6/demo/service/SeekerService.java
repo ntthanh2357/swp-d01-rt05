@@ -88,25 +88,46 @@ public class SeekerService {
         return token.getOtp_code().equals(otp);
     }
 
-    public List<FavoriteScholarship> findFavoriteScholarshipsBySeekerId(String seekerId) {
-        return favoriteScholarshipRepository.findBySeekerId(seekerId);
+    public List<FavoriteScholarship> findFavoriteScholarshipsByUserId(String userId) {
+        return favoriteScholarshipRepository.findByUserId(userId);
     }
 
-    public FavoriteScholarship addFavoriteScholarship(Seeker seeker, Scholarship scholarship, String notes) {
+    public FavoriteScholarship addFavoriteScholarship(User user, Scholarship scholarship, String notes) {
         FavoriteScholarship existing = favoriteScholarshipRepository
-                .findBySeekerIdAndScholarshipId(seeker.getSeekerId(), scholarship.getScholarshipId());
+                .findByUserIdAndScholarshipId(user.getUserId(), scholarship.getScholarshipId());
         if (existing != null)
             return existing;
         FavoriteScholarship favorite = new FavoriteScholarship();
-        favorite.setSeeker(seeker);
+        favorite.setUser(user);
         favorite.setScholarship(scholarship);
         favorite.setNotes(notes);
         favorite.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         return favoriteScholarshipRepository.save(favorite);
     }
 
-    public void removeFavoriteScholarship(Seeker seeker, Scholarship scholarship) {
-        favoriteScholarshipRepository.deleteBySeeker_SeekerIdAndScholarship_ScholarshipId(seeker.getSeekerId(),
-                scholarship.getScholarshipId());
+    public void removeFavoriteScholarship(User user, Scholarship scholarship) {
+        System.out.println(
+                "Removing favorite for user: " + user.getUserId() + ", scholarship: " + scholarship.getScholarshipId());
+        try {
+            // Tìm favorite record trước
+            FavoriteScholarship favorite = favoriteScholarshipRepository.findByUserIdAndScholarshipId(
+                    user.getUserId(), scholarship.getScholarshipId());
+
+            if (favorite == null) {
+                System.out.println("No favorite found to delete");
+                return;
+            }
+
+            System.out.println("Found favorite to delete: " + favorite.getFavoriteId());
+
+            // Xóa record
+            favoriteScholarshipRepository.delete(favorite);
+            System.out.println("Successfully deleted favorite");
+
+        } catch (Exception e) {
+            System.out.println("Error deleting favorite: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

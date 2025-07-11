@@ -1,22 +1,61 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Accordion, Button } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import '../css/register.css';
 import "../css/DetailScholarship.css";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RegisterForm from "./Register-book";
+import { UserContext } from '../contexts/UserContext';
+import { useFavorites } from '../contexts/FavoriteContext';
+import { addFavoriteScholarship, removeFavoriteScholarship } from '../services/seekerApi';
 import axios from 'axios';
 
 function DetailScholarship() {
     const location = useLocation();
     const { scholarshipId } = useParams();
     const navigate = useNavigate();
+    const { user } = useContext(UserContext);
+    const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
 
     const [scholarship, setScholarship] = useState(location.state?.scholarship || null);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
+    const [likeLoading, setLikeLoading] = useState(false);
 
     const toggleRegisterForm = () => setShowRegisterForm(!showRegisterForm);
+
+    const handleLike = async () => {
+        if (!user || !user.isLoggedIn) {
+            toast.info('Bạn cần đăng nhập để sử dụng chức năng này!');
+            return;
+        }
+        if (likeLoading) return;
+        setLikeLoading(true);
+        
+        try {
+            const currentScholarshipId = scholarship?.scholarshipId || scholarshipId;
+            const isCurrentlyFavorite = isFavorite(currentScholarshipId);
+            
+            if (!isCurrentlyFavorite) {
+                console.log('Adding to favorites:', currentScholarshipId);
+                await addFavoriteScholarship(user.accessToken, currentScholarshipId);
+                addToFavorites(currentScholarshipId);
+                toast.success('Đã thêm vào mục yêu thích!');
+            } else {
+                console.log('Removing from favorites:', currentScholarshipId);
+                const response = await removeFavoriteScholarship(user.accessToken, currentScholarshipId);
+                console.log('Remove response:', response);
+                removeFromFavorites(currentScholarshipId);
+                toast.info('Đã bỏ khỏi mục yêu thích!');
+            }
+        } catch (err) {
+            console.error('Error handling like:', err);
+            console.error('Error response:', err.response?.data);
+            toast.error('Có lỗi xảy ra, vui lòng thử lại!');
+        }
+        setLikeLoading(false);
+    };
 
     const formatDate = (dateStr) => {
         if (!dateStr) return 'Không rõ';
@@ -114,8 +153,15 @@ function DetailScholarship() {
                                     <Button variant="outline-light" className="rounded-pill action-btn">
                                         <i className="fas fa-share-alt"></i>
                                     </Button>
-                                    <Button variant="outline-light" className="rounded-pill action-btn">
-                                        <i className="fas fa-heart"></i>
+                                    <Button 
+                                        variant="outline-light" 
+                                        className="rounded-pill action-btn"
+                                        onClick={handleLike}
+                                        disabled={likeLoading}
+                                    >
+                                        <i className={`fa${isFavorite(scholarship?.scholarshipId || scholarshipId) ? 's' : 'r'} fa-heart`} 
+                                           style={{ color: isFavorite(scholarship?.scholarshipId || scholarshipId) ? 'hotpink' : 'white' }}
+                                        ></i>
                                     </Button>
                                 </div>
                             </Container>

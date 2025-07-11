@@ -1,5 +1,6 @@
 package com.swp391_g6.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 
@@ -14,11 +15,13 @@ public class FavoriteScholarship {
     private Integer favoriteId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seeker_id", referencedColumnName = "seeker_id", nullable = false)
-    private Seeker seeker;
+    @JoinColumn(name = "seeker_id", referencedColumnName = "user_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "scholarship_id", referencedColumnName = "scholarship_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Scholarship scholarship;
 
     @Column(name = "notes", columnDefinition = "text")
@@ -36,12 +39,12 @@ public class FavoriteScholarship {
         this.favoriteId = favoriteId;
     }
 
-    public Seeker getSeeker() {
-        return seeker;
+    public User getUser() {
+        return user;
     }
 
-    public void setSeeker(Seeker seeker) {
-        this.seeker = seeker;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Scholarship getScholarship() {
