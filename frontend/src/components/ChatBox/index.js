@@ -6,10 +6,11 @@ import { getPrompts } from '../../services/chatApi';
 import moment from 'moment';
 import ScrollableFeed from 'react-scrollable-feed';
 import './style.css';
+import '../../css/ContactWidget.css';
 
 const CHAT_STATE_KEY = 'chatbox_state';
 
-const ChatBox = () => {
+const ChatBox = ({ setContactButtonOpen }) => {
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
     const { 
@@ -184,14 +185,25 @@ const ChatBox = () => {
         };
     }, []);
 
+    // Khi contactButtonOpen bật thì tắt chatbox
+    useEffect(() => {
+        if (isOpen) {
+            setContactButtonOpen(false);
+        }
+    }, [isOpen, setContactButtonOpen]);
+
+    // Khi chatbox mở, setChatBoxOpen(true), khi tắt thì setChatBoxOpen(false)
+    // useEffect(() => {
+    //     setChatBoxOpen(isOpen);
+    // }, [isOpen]);
+
     const handleChatButtonClick = () => {
         if (!user || !user.isLoggedIn) {
-            // Redirect to login if not logged in
             navigate('/auth/login');
             return;
         }
-
-        setIsOpen(!isOpen);
+        setContactButtonOpen(false); // Luôn tắt popup liên hệ trước
+        setIsOpen((prev) => !prev);
     };
 
     const handleSendMessage = () => {
@@ -229,16 +241,14 @@ const ChatBox = () => {
 
     return (
         <>
-            {/* Chat button with notification badge */}
-            <div className="chat-button-container">
-                <button
-                    className="chat-button"
-                    onClick={handleChatButtonClick}
-                >
-                    <i className="fas fa-comments"></i>
-                    {user?.isLoggedIn && unreadCount > 0 && <span className="chat-badge">{unreadCount}</span>}
-                </button>
-            </div>
+            {/* Nút nổi mở chat */}
+            <button
+                className="contact-widget-btn"
+                onClick={handleChatButtonClick}
+                aria-label="Chat"
+            >
+                💬
+            </button>
 
             {/* Chat box - only show if logged in */}
             {user?.isLoggedIn && isOpen && (

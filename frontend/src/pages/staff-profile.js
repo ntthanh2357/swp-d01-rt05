@@ -5,8 +5,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { UserContext } from "../contexts/UserContext";
-import { seekerProfile, sendUpdateSeekerProfileOtp, verifyUpdateSeekerProfileOtp, seekerProfileUpdate } from "../services/seekerApi";
-import { sendUpdateUserProfileOtp, verifyUpdateUserProfileOtp, userProfileUpdate } from "../services/userApi";
+import {
+    getStaffProfile,
+    updateStaffProfile,
+    sendUpdateStaffProfileOtp,
+    verifyUpdateStaffProfileOtp
+} from "../services/staffApi";
 import { changePassword } from "../services/authApi";
 
 import Header from "../components/Header";
@@ -22,23 +26,23 @@ const profileSchema = yup.object().shape({
         .string()
         .required("Vui lòng nhập số điện thoại")
         .matches(/^[0-9]{9,15}$/, "Số điện thoại không hợp lệ"),
-    date_of_birth: yup
-        .string()
-        .required("Vui lòng chọn ngày sinh"),
-    gender: yup
-        .string()
-        .oneOf(["male", "female", ""], "Giới tính không hợp lệ"),
-    email: yup
-        .string()
-        .email("Email không hợp lệ")
-        .required("Vui lòng nhập email"),
+    date_of_birth: yup.string().required("Vui lòng chọn ngày sinh"),
+    gender: yup.string().oneOf(["male", "female", ""], "Giới tính không hợp lệ"),
+    email: yup.string().email("Email không hợp lệ").required("Vui lòng nhập email"),
 });
 
-function UserProfile() {
+const professionalSchema = yup.object().shape({
+    education_level: yup.string().required("Vui lòng chọn trình độ học vấn"),
+    experience_years: yup.number().min(0, "Số năm kinh nghiệm không hợp lệ").required("Vui lòng nhập số năm kinh nghiệm"),
+    specialization: yup.string().required("Vui lòng nhập chuyên môn"),
+});
+
+function StaffProfile() {
     const { user } = useContext(UserContext);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editPersonal, setEditPersonal] = useState(false);
+    const [editProfessional, setEditProfessional] = useState(false);
     const [showOtpModal, setShowOtpModal] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpError, setOtpError] = useState("");
@@ -60,6 +64,18 @@ function UserProfile() {
         defaultValues: {}
     });
 
+    const {
+        register: registerProfessional,
+        handleSubmit: handleSubmitProfessional,
+        setValue: setValueProfessional,
+        reset: resetProfessional,
+        getValues: getValuesProfessional,
+        formState: { errors: errorsProfessional }
+    } = useForm({
+        resolver: yupResolver(professionalSchema),
+        defaultValues: {}
+    });
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -67,14 +83,25 @@ function UserProfile() {
                     setLoading(false);
                     return;
                 }
-                const response = await seekerProfile({
-                    token: user.accessToken
-                });
+                const response = await getStaffProfile({ token: user.accessToken });
                 if (response.status !== 200) {
                     throw new Error("Failed to fetch profile");
                 }
                 setProfile(response.data);
-                reset(response.data);
+                // Map dateOfBirthString to date_of_birth for form
+                const formData = {
+                    ...response.data,
+                    date_of_birth: response.data.dateOfBirthString
+                };
+                reset(formData);
+                
+                // Reset professional form
+                const professionalFormData = {
+                    education_level: response.data.educationLevel,
+                    experience_years: response.data.experienceYears,
+                    specialization: response.data.specialization
+                };
+                resetProfessional(professionalFormData);
             } catch (error) {
                 console.error("Error fetching profile:", error);
             } finally {
@@ -117,15 +144,11 @@ function UserProfile() {
         setValue(e.target.name, e.target.value);
     };
 
-    const onSendOtp = async (data, type) => {
+    const onSendOtp = async (data, type = "personal") => {
         setOtpError("");
         setOtpLoading(true);
         try {
-            if (type === "personal") {
-                await sendUpdateUserProfileOtp({ email: data.email });
-            } else {
-                await sendUpdateSeekerProfileOtp({ email: profile.email });
-            }
+            await sendUpdateStaffProfileOtp({ email: data.email || profile.email });
             setShowOtpModal(true);
             setPendingUpdateType(type);
             setFormData(data);
@@ -136,27 +159,27 @@ function UserProfile() {
     };
 
     const handleSubmitForm = (data) => {
-        onSendOtp(data, "personal");
+        onSendOtp(data);
+    };
+
+    const handleSubmitProfessionalForm = (data) => {
+        onSendOtp(data, "professional");
     };
 
     const handleSubmitOtp = async (otp) => {
         setOtpLoading(true);
         setOtpError("");
         try {
-            let verified = false;
             const data = formData || getValues();
+            const res = await verifyUpdateStaffProfileOtp({ email: data.email || profile.email, otp });
+
+            if (res.status !== 200) throw new Error();
 
             if (pendingUpdateType === "personal") {
-                const res = await verifyUpdateUserProfileOtp({ email: data.email, otp });
-                verified = res.status === 200;
-            } else {
-                const res = await verifyUpdateSeekerProfileOtp({ email: profile.email, otp });
-                verified = res.status === 200;
-            }
-            if (!verified) throw new Error();
-
-            if (pendingUpdateType === "personal") {
-                await userProfileUpdate({
+                await updateStaffProfile({
+                    education_level: profile.educationLevel,
+                    experience_years: profile.experienceYears,
+                    specialization: profile.specialization,
                     name: data.name,
                     phone: data.phone,
                     date_of_birth: data.date_of_birth,
@@ -164,15 +187,43 @@ function UserProfile() {
                     email: data.email,
                     token: user.accessToken
                 });
-                toast.success("Cập nhật thông tin thành công!");
+            } else if (pendingUpdateType === "professional") {
+                await updateStaffProfile({
+                    education_level: data.education_level,
+                    experience_years: data.experience_years,
+                    specialization: data.specialization,
+                    name: profile.name,
+                    phone: profile.phone,
+                    date_of_birth: profile.dateOfBirthString,
+                    gender: profile.gender,
+                    email: profile.email,
+                    token: user.accessToken
+                });
             }
+
+            toast.success("Cập nhật thông tin thành công!");
 
             setShowOtpModal(false);
             setEditPersonal(false);
+            setEditProfessional(false);
             setFormData(null);
-            const response = await seekerProfile({ token: user.accessToken });
+
+            const response = await getStaffProfile({ token: user.accessToken });
             setProfile(response.data);
-            reset(response.data);
+            // Map dateOfBirthString to date_of_birth for form
+            const formData = {
+                ...response.data,
+                date_of_birth: response.data.dateOfBirthString
+            };
+            reset(formData);
+            
+            // Reset professional form
+            const professionalFormData = {
+                education_level: response.data.educationLevel,
+                experience_years: response.data.experienceYears,
+                specialization: response.data.specialization
+            };
+            resetProfessional(professionalFormData);
         } catch (err) {
             setOtpError("OTP không đúng hoặc đã hết hạn.");
         }
@@ -203,26 +254,11 @@ function UserProfile() {
         <div>
             <Header />
             <div className="container user-profile-container">
-                <h2 className="page-title">Thông tin cá nhân</h2>
-
-                {/* Avatar section */}
-                <div className="profile-avatar">
-                    {profile.avatar ? (
-                        <img
-                            src={profile.avatar}
-                            alt="avatar"
-                            className="profile-avatar-img"
-                        />
-                    ) : (
-                        <div className="profile-avatar-placeholder">
-                            {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
-                        </div>
-                    )}
-                </div>
+                <h2 className="page-title">Thông tin nhân viên</h2>
 
                 <div className="user-id-display">
-                    <span className="label">ID người dùng:</span>
-                    <span className="value">{profile.user_id || "Chưa cập nhật"}</span>
+                    <span className="label">ID nhân viên:</span>
+                    <span className="value">{profile.staffId || "Chưa cập nhật"}</span>
                 </div>
 
                 <div className="profile-section">
@@ -243,7 +279,12 @@ function UserProfile() {
                                         type="button"
                                         onClick={() => {
                                             setEditPersonal(false);
-                                            reset(profile);
+                                            // Map dateOfBirthString to date_of_birth for form
+                                            const formData = {
+                                                ...profile,
+                                                date_of_birth: profile.dateOfBirthString
+                                            };
+                                            reset(formData);
                                         }}
                                     >
                                         Hủy
@@ -275,9 +316,7 @@ function UserProfile() {
                                                     onChange={handleChange}
                                                     placeholder="Nhập họ và tên"
                                                 />
-                                                {errors.name && (
-                                                    <span className="text-danger">{errors.name.message}</span>
-                                                )}
+                                                {errors.name && <span className="text-danger">{errors.name.message}</span>}
                                             </td>
                                         </tr>
                                         <tr>
@@ -287,11 +326,9 @@ function UserProfile() {
                                                     className="form-control"
                                                     {...register("email")}
                                                     disabled
-                                                    style={{ backgroundColor: '#f8f9fa' }}
+                                                    style={{ backgroundColor: "#f8f9fa" }}
                                                 />
-                                                {errors.email && (
-                                                    <span className="text-danger">{errors.email.message}</span>
-                                                )}
+                                                {errors.email && <span className="text-danger">{errors.email.message}</span>}
                                             </td>
                                         </tr>
                                         <tr>
@@ -303,9 +340,7 @@ function UserProfile() {
                                                     onChange={handleChange}
                                                     placeholder="Nhập số điện thoại"
                                                 />
-                                                {errors.phone && (
-                                                    <span className="text-danger">{errors.phone.message}</span>
-                                                )}
+                                                {errors.phone && <span className="text-danger">{errors.phone.message}</span>}
                                             </td>
                                         </tr>
                                         <tr>
@@ -334,9 +369,7 @@ function UserProfile() {
                                                     <option value="male">Nam</option>
                                                     <option value="female">Nữ</option>
                                                 </select>
-                                                {errors.gender && (
-                                                    <span className="text-danger">{errors.gender.message}</span>
-                                                )}
+                                                {errors.gender && <span className="text-danger">{errors.gender.message}</span>}
                                             </td>
                                         </tr>
                                         <tr>
@@ -371,7 +404,7 @@ function UserProfile() {
                                     </tr>
                                     <tr>
                                         <td>Ngày sinh</td>
-                                        <td>{profile.date_of_birth || "Chưa cập nhật"}</td>
+                                        <td>{profile.dateOfBirthString || "Chưa cập nhật"}</td>
                                     </tr>
                                     <tr>
                                         <td>Giới tính</td>
@@ -400,6 +433,159 @@ function UserProfile() {
                         )}
                     </div>
                 </div>
+
+                <div className="profile-section">
+                    <div className="profile-header">
+                        <h5>Thông tin chuyên môn</h5>
+                        <div>
+                            {editProfessional ? (
+                                <>
+                                    <button
+                                        className="btn btn-success me-2"
+                                        onClick={handleSubmitProfessional(handleSubmitProfessionalForm)}
+                                        disabled={otpLoading}
+                                    >
+                                        {otpLoading ? "Đang xử lý..." : "Lưu thay đổi"}
+                                    </button>
+                                    <button
+                                        className="btn btn-outline-secondary"
+                                        type="button"
+                                        onClick={() => {
+                                            setEditProfessional(false);
+                                            const professionalFormData = {
+                                                education_level: profile.educationLevel,
+                                                experience_years: profile.experienceYears,
+                                                specialization: profile.specialization
+                                            };
+                                            resetProfessional(professionalFormData);
+                                        }}
+                                    >
+                                        Hủy
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    className="btn btn-primary"
+                                    type="button"
+                                    onClick={() => setEditProfessional(true)}
+                                >
+                                    Chỉnh sửa
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="profile-content">
+                        {editProfessional ? (
+                            <form id="professional-form">
+                                <table className="table profile-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>Trình độ học vấn</td>
+                                            <td>
+                                                <select
+                                                    className="form-select"
+                                                    {...registerProfessional("education_level")}
+                                                >
+                                                    <option value="">Chọn trình độ</option>
+                                                    <option value="Cử nhân">Cử nhân</option>
+                                                    <option value="Thạc sĩ">Thạc sĩ</option>
+                                                    <option value="Tiến sĩ">Tiến sĩ</option>
+                                                    <option value="Khác">Khác</option>
+                                                </select>
+                                                {errorsProfessional.education_level && (
+                                                    <span className="text-danger">{errorsProfessional.education_level.message}</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Số năm kinh nghiệm</td>
+                                            <td>
+                                                <input
+                                                    className="form-control"
+                                                    type="number"
+                                                    min="0"
+                                                    {...registerProfessional("experience_years")}
+                                                    placeholder="Nhập số năm kinh nghiệm"
+                                                />
+                                                {errorsProfessional.experience_years && (
+                                                    <span className="text-danger">{errorsProfessional.experience_years.message}</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chuyên môn</td>
+                                            <td>
+                                                <textarea
+                                                    className="form-control"
+                                                    rows="3"
+                                                    {...registerProfessional("specialization")}
+                                                    placeholder="Nhập chuyên môn của bạn"
+                                                />
+                                                {errorsProfessional.specialization && (
+                                                    <span className="text-danger">{errorsProfessional.specialization.message}</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        ) : (
+                            <table className="table profile-table">
+                                <tbody>
+                                    <tr>
+                                        <td>Trình độ học vấn</td>
+                                        <td>{profile.educationLevel || "Chưa cập nhật"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Số năm kinh nghiệm</td>
+                                        <td>{profile.experienceYears !== null ? profile.experienceYears : "Chưa cập nhật"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chuyên môn</td>
+                                        <td>{profile.specialization || "Chưa cập nhật"}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+
+                <div className="profile-section">
+                    <div className="profile-header">
+                        <h5>Thống kê & Đánh giá</h5>
+                    </div>
+                    <div className="profile-content">
+                        <div className="row">
+                            <div className="col-md-6 mb-3">
+                                <div className="card border-0 shadow-sm h-100">
+                                    <div className="card-body text-center">
+                                        <div className="mb-2">
+                                            <span className="text-warning fs-1">⭐</span>
+                                        </div>
+                                        <div className="fw-bold fs-3 text-primary">
+                                            {profile.rating !== null ? profile.rating.toFixed(1) : "0.0"}
+                                        </div>
+                                        <div className="text-muted small">Điểm đánh giá trung bình</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-6 mb-3">
+                                <div className="card border-0 shadow-sm h-100">
+                                    <div className="card-body text-center">
+                                        <div className="mb-2">
+                                            <span className="text-info fs-1">📊</span>
+                                        </div>
+                                        <div className="fw-bold fs-3 text-primary">
+                                            {profile.totalReviews !== null ? profile.totalReviews : "0"}
+                                        </div>
+                                        <div className="text-muted small">Tổng số đánh giá</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <OtpModal
@@ -423,4 +609,4 @@ function UserProfile() {
     );
 }
 
-export default UserProfile;
+export default StaffProfile;

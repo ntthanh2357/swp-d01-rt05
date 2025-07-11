@@ -98,6 +98,12 @@ public class Scholarship {
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
+    @Column(name = "funding_type", length = 50)
+    private String fundingType;
+
+    @Column(name = "applicable_intake", length = 100)
+    private String applicableIntake;
+
     public Scholarship() {
     }
 
@@ -107,7 +113,8 @@ public class Scholarship {
             String eligibilityCriteria, String countries, String educationLevels,
             String fieldsOfStudy, String languageRequirements, Status status,
             Integer viewsCount, Integer applicationsCount, Boolean featured, String createdBy,
-            String approvedBy, Timestamp approvedAt, Timestamp createdAt, Timestamp updatedAt) {
+            String approvedBy, Timestamp approvedAt, Timestamp createdAt, Timestamp updatedAt, String fundingType,
+            String applicableIntake) {
         this.scholarshipId = scholarshipId;
         this.title = title;
         this.description = description;
@@ -131,6 +138,8 @@ public class Scholarship {
         this.approvedAt = approvedAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.fundingType = fundingType;
+        this.applicableIntake = applicableIntake;
     }
 
     // Getters và setters cho tất cả các trường
@@ -317,6 +326,22 @@ public class Scholarship {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getFundingType() {
+        return fundingType;
+    }
+
+    public void setFundingType(String fundingType) {
+        this.fundingType = fundingType;
+    }
+
+    public String getApplicableIntake() {
+        return applicableIntake;
+    }
+
+    public void setApplicableIntake(String applicableIntake) {
+        this.applicableIntake = applicableIntake;
     }
 
 }

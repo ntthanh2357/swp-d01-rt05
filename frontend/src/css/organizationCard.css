@@ -1,0 +1,103 @@
+/* ======= OrganizationCard Styles ======= */
+.organization-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef !important;
+  background: #fff;
+}
+
+.organization-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  border-color: #0d6efd !important;
+}
+
+.organization-card .card-body {
+  padding: 1.25rem;
+}
+
+.organization-card h5 {
+  color: #2c3e50;
+  transition: color 0.3s ease;
+}
+
+.organization-card h5:hover {
+  color: #0d6efd;
+}
+
+.organization-card .btn-outline-primary {
+  border-width: 2px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.organization-card .btn-outline-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.organization-card small {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.organization-card .text-success {
+  color: #198754 !important;
+}
+
+.organization-card .text-danger {
+  color: #dc3545 !important;
+}
+
+.organization-card .text-primary {
+  color: #0d6efd !important;
+}
+
+.organization-card .text-info {
+  color: #0dcaf0 !important;
+}
+
+.organization-card .text-warning {
+  color: #ffc107 !important;
+}
+
+.organization-card .text-muted {
+  color: #6c757d !important;
+}
+
+.organization-card img {
+  transition: transform 0.3s ease;
+}
+
+.organization-card:hover img {
+  transform: scale(1.05);
+}
+
+.organization-card a {
+  color: #0d6efd;
+  transition: color 0.3s ease;
+}
+
+.organization-card a:hover {
+  color: #0a58ca;
+  text-decoration: underline !important;
+}
+
+/* Responsive adjustments for organization cards */
+@media (max-width: 768px) {
+  .organization-card {
+    margin-bottom: 1rem;
+  }
+  
+  .organization-card h5 {
+    font-size: 1rem;
+  }
+  
+  .organization-card small {
+    font-size: 0.8rem;
+  }
+  
+  .organization-card img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+} 

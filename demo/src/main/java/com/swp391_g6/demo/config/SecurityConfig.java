@@ -15,6 +15,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.swp391_g6.demo.filter.JwtAuthenticationFilter;
+import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.Seeker;
+import jakarta.persistence.JoinColumn;
 
 @Configuration
 public class SecurityConfig {
@@ -28,8 +31,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/seeker/**").hasRole("SEEKER")
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

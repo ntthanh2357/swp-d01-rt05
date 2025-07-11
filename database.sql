@@ -599,7 +599,41 @@ INSERT INTO organizations (
 ('ORG0000017', 'British Council', 'The British Council is the UK\'s international organisation for cultural relations and educational opportunities, offering various scholarship programs.', NULL, 'https://res.cloudinary.com/dht9hd5ap/image/upload/v1748270014/british_council_logo.png', NULL, NULL, 'United Kingdom', 'Government', TRUE),
 ('ORG0000018', 'Fulbright Commission', 'The Fulbright Program is the flagship international educational exchange program sponsored by the U.S. government.', NULL, 'https://res.cloudinary.com/dht9hd5ap/image/upload/v1748270015/fulbright_logo.png', NULL, NULL, 'United States', 'Government', TRUE),
 ('ORG0000019', 'DAAD Germany', 'The German Academic Exchange Service is the largest funding organisation in the world supporting international exchange of students and researchers.', NULL, 'https://res.cloudinary.com/dht9hd5ap/image/upload/v1748270016/daad_logo.png', NULL, NULL, 'Germany', 'Government', TRUE);
-
+--cần cập nhật lại
+INSERT INTO organizations (
+    organization_id, name, description, world_rank, logo_url, number_student, avg_cost_living, country,
+    organization_type, is_verified, created_at, updated_at, website_url
+) VALUES 
+('ORG0000004', 'University of Oxford', 'The University of Oxford is one of the oldest and most prestigious universities in the world, consistently ranked in the top 5 globally. Oxford offers a unique tutorial system and world-class research facilities across all disciplines.', 3, 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9d/Oxford-University-Circlet.svg/1200px-Oxford-University-Circlet.svg.png', 26000, 1200, 'United Kingdom', 'University', TRUE, NOW(), NOW(), 'https://www.ox.ac.uk/'),
+('ORG0000005', 'University of Cambridge', 'The University of Cambridge is a prestigious institution with over 800 years of academic excellence. It has produced 121 Nobel Prize winners and continues to lead in research and innovation.', 5, 'https://upload.wikimedia.org/wikipedia/en/thumb/5/59/University_of_Cambridge_coat_of_arms.svg/1200px-University_of_Cambridge_coat_of_arms.svg.png', 25000, 1200, 'United Kingdom', 'University', TRUE, NOW(), NOW(), 'https://www.cam.ac.uk/'),
+('ORG0000006', 'Imperial College London', 'Imperial College London is a world-leading university focused on science, engineering, medicine and business, consistently ranked among the top 10 universities globally.', 8, 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Imperial_College_London_coat_of_arms.svg/1200px-Imperial_College_London_coat_of_arms.svg.png', 20000, 1150, 'United Kingdom', 'University', TRUE, NOW(), NOW(), 'https://www.imperial.ac.uk/'),
+('ORG0000007', 'Harvard University', 'Harvard University is the oldest institution of higher education in the United States and is consistently ranked as one of the top universities in the world.', 2, 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Harvard_shield_wreath.svg/1200px-Harvard_shield_wreath.svg.png', 31000, 1800, 'United States', 'University', TRUE, NOW(), NOW(), 'https://www.harvard.edu/'),
+('ORG0000008', 'Stanford University', 'Stanford University is a leading research university known for its entrepreneurial spirit and innovation, particularly in technology and business.', 4, 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b7/Stanford_University_seal_2003.svg/1200px-Stanford_University_seal_2003.svg.png', 17000, 2000, 'United States', 'University', TRUE, NOW(), NOW(), 'https://www.stanford.edu/'),
+('ORG0000009', 'Massachusetts Institute of Technology', 'MIT is a world-renowned institution focused on science, technology, engineering, and mathematics, known for its cutting-edge research and innovation.', 1, 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/MIT_logo.svg/1200px-MIT_logo.svg.png', 12000, 1900, 'United States', 'University', TRUE, NOW(), NOW(), 'https://www.mit.edu/'),
+('ORG0000010', 'University of Toronto', 'The University of Toronto is Canada\'s leading university and one of the world\'s top public research universities, known for academic excellence and diversity.', 25, 'https://upload.wikimedia.org/wikipedia/en/thumb/5/58/University_of_Toronto_coat_of_arms.svg/1200px-University_of_Toronto_coat_of_arms.svg.png', 97000, 800, 'Canada', 'University', TRUE, NOW(), NOW(), 'https://www.utoronto.ca/'),
+('ORG0000011', 'University of British Columbia', 'UBC is a global centre for research and teaching, consistently ranked among the top 20 public universities in the world.', 34, 'https://upload.wikimedia.org/wikipedia/en/thumb/d/de/University_of_British_Columbia_coat_of_arms.svg/1200px-University_of_British_Columbia_coat_of_arms.svg.png', 68000, 900, 'Canada', 'University', TRUE, NOW(), NOW(), 'https://www.ubc.ca/'),
+('ORG0000012', 'Australian National University', 'ANU is Australia\'s leading university and the only university created by the Parliament of Australia, known for research excellence and policy influence.', 30, 'https://upload.wikimedia.org/wikipedia/en/thumb/c/ca/Australian_National_University_coat_of_arms.svg/1200px-Australian_National_University_coat_of_arms.svg.png', 26000, 950, 'Australia', 'University', TRUE, NOW(), NOW(), 'https://www.anu.edu.au/'),
+('ORG0000013', 'University of Melbourne', 'The University of Melbourne is Australia\'s second oldest university and consistently ranked as Australia\'s number one university.', 13, 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b3/University_of_Melbourne_coat_of_arms.svg/1200px-University_of_Melbourne_coat_of_arms.svg.png', 52000, 980, 'Australia', 'University', TRUE, NOW(), NOW(), 'https://www.unimelb.edu.au/'),
+('ORG0000014', 'University of Auckland', 'The University of Auckland is New Zealand\'s leading university, ranked in the top 100 universities worldwide and known for research excellence.', 65, 'https://upload.wikimedia.org/wikipedia/en/thumb/8/85/University_of_Auckland_logo.svg/1200px-University_of_Auckland_logo.svg.png', 45000, 850, 'New Zealand', 'University', TRUE, NOW(), NOW(), 'https://www.auckland.ac.nz/'),
+('ORG0000015', 'Trinity College Dublin', 'Trinity College Dublin is Ireland\'s oldest university, founded in 1592, and consistently ranked as Ireland\'s leading university.', 104, 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Trinity_College_Dublin_coat_of_arms.svg/1200px-Trinity_College_Dublin_coat_of_arms.svg.png', 18000, 750, 'Ireland', 'University', TRUE, NOW(), NOW(), 'https://www.tcd.ie/'),
+('ORG0000016', 'Technical University of Munich', 'TUM is one of Europe\'s leading universities, known for excellence in engineering, technology, medicine, and applied sciences.', 50, 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Technical_University_of_Munich_Logo.svg/1200px-Technical_University_of_Munich_Logo.svg.png', 45000, 600, 'Germany', 'University', TRUE, NOW(), NOW(), 'https://www.tum.de/'),
+('ORG0000017', 'British Council', 'The British Council is the UK\'s international organisation for cultural relations and educational opportunities, offering various scholarship programs.', NULL, 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/British_Council_logo.svg/1200px-British_Council_logo.svg.png', NULL, NULL, 'United Kingdom', 'Government', TRUE, NOW(), NOW(), 'https://www.britishcouncil.org/'),
+('ORG0000018', 'Fulbright Commission', 'The Fulbright Program is the flagship international educational exchange program sponsored by the U.S. government.', NULL, 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Fulbright_Program_logo.svg/1200px-Fulbright_Program_logo.svg.png', NULL, NULL, 'United States', 'Government', TRUE, NOW(), NOW(), 'https://foreign.fulbrightonline.org/'),
+('ORG0000019', 'DAAD Germany', 'The German Academic Exchange Service is the largest funding organisation in the world supporting international exchange of students and researchers.', NULL, 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/DAAD_Logo.svg/1200px-DAAD_Logo.svg.png', NULL, NULL, 'Germany', 'Government', TRUE, NOW(), NOW(), 'https://www.daad.de/en/')
+AS new
+ON DUPLICATE KEY UPDATE
+    name = new.name,
+    description = new.description,
+    world_rank = new.world_rank,
+    logo_url = new.logo_url,
+    number_student = new.number_student,
+    avg_cost_living = new.avg_cost_living,
+    country = new.country,
+    organization_type = new.organization_type,
+    is_verified = new.is_verified,
+    updated_at = new.updated_at,
+    website_url = new.website_url;
+--phần khác
 DESC scholarship_categories;
 
 DESC organizations;
@@ -1164,6 +1198,156 @@ INSERT INTO faqs (question, answer, category, display_order, created_by) VALUES
 ('Is the service free?', 'Basic features are free. Premium counseling services may have associated fees.', 'Pricing', 3, 1),
 ('How do I contact a counselor?', 'Once registered, you can request counseling services and will be assigned a qualified staff member.', 'Counseling', 4, 1);
 
+
+SET SQL_SAFE_UPDATES = 0;
+
+ALTER TABLE scholarships
+ADD funding_type VARCHAR(50);
+
+-- Toàn phần: amount > 50000
+UPDATE scholarships
+SET funding_type = 'Full'
+WHERE amount > 50000;
+
+-- Bán phần: 25000 < amount <= 50000
+UPDATE scholarships
+SET funding_type = 'Partial'
+WHERE amount > 25000 AND amount <= 50000;
+
+-- Chỉ tài trợ học phí: 10000 < amount <= 25000
+UPDATE scholarships
+SET funding_type = 'Tuition Only'
+WHERE amount > 10000 AND amount <= 25000;
+
+-- Trợ cấp sinh hoạt: amount <= 10000
+UPDATE scholarships
+SET funding_type = 'Living Stipend'
+WHERE amount <= 10000;
+
+ALTER TABLE scholarships
+ADD applicable_intake VARCHAR(50);
+
+UPDATE scholarships
+SET applicable_intake = CASE
+    WHEN MONTH(application_deadline) BETWEEN 1 AND 4 THEN CONCAT('Summer ', YEAR(application_deadline))
+    WHEN MONTH(application_deadline) BETWEEN 5 AND 8 THEN CONCAT('Fall ', YEAR(application_deadline))
+    WHEN MONTH(application_deadline) BETWEEN 9 AND 12 THEN CONCAT('Spring ', YEAR(application_deadline) + 1)
+    ELSE 'Unknown'
+END;
+
 -- ===================================================================
 -- END OF DATABASE SCHEMA
 -- ===================================================================
+
+--Nam LEE PRO DATABASE NHE CAC TINH IU
+--Bang staff_review
+INSERT INTO staff_review (created_at, is_anonymous, rating, review_content, seeker_id, staff_id)
+VALUES
+(NOW() - INTERVAL 2 DAY, 0, 2, 'nhu l!', 'USER0000000008', 'USER0000000001');
+-- Đánh giá 1: Seeker3 đánh giá Staff1
+(NOW() - INTERVAL 5 DAY, 0, 5, 'Nhân viên rất nhiệt tình và chuyên nghiệp. Tôi rất hài lòng với dịch vụ!', 'USER0000000003', 'USER0000000001'),
+
+-- Đánh giá 2: Seeker4 đánh giá Staff1 (ẩn danh)
+(NOW() - INTERVAL 4 DAY, 1, 4, 'Dịch vụ tốt nhưng cần cải thiện thời gian phản hồi', 'USER0000000004', 'USER0000000001'),
+
+-- Đánh giá 3: Seeker5 đánh giá Staff2
+(NOW() - INTERVAL 3 DAY, 0, 5, 'Tuyệt vời! Tôi sẽ giới thiệu cho bạn bè', 'USER0000000005', 'USER0000000002'),
+
+-- Đánh giá 4: Seeker6 đánh giá Staff2 (ẩn danh)
+(NOW() - INTERVAL 2 DAY, 1, 3, 'Có một số vấn đề nhỏ nhưng nhân viên đã giải quyết tốt', 'USER0000000006', 'USER0000000002'),
+
+-- Đánh giá 5: Seeker7 đánh giá Staff1
+(NOW() - INTERVAL 1 DAY, 0, 4, 'Trải nghiệm tốt, nhân viên thân thiện', 'USER0000000007', 'USER0000000001');
+
+--Bang staff_profile
+ALTER TABLE staff_profiles
+ADD CONSTRAINT fk_staff_user
+FOREIGN KEY (staff_id) REFERENCES users(user_id)
+ON DELETE CASCADE;
+iNSERT INTO staff_profiles (
+  staff_id,
+  education_level,
+  experience_years,
+  specialization,
+  total_reviews,
+  rating,
+  created_by,
+  current_seeker_count
+)
+VALUES (
+  'USER0000000001',        
+  'Thạc sĩ',
+  5,
+  'Du học Mỹ',
+  0,
+  0.0,
+  'ADMIN0001',             
+  0
+);
+SELECT * FROM staff_profiles WHERE staff_id = 'USER0000000001';
+
+-- bang users
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Xóa dữ liệu cũ nếu cần
+-- TRUNCATE TABLE users;
+
+-- Bật lại kiểm tra khóa ngoại
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Insert random seekers
+DELETE FROM users WHERE user_id LIKE 'SEEKER%';
+INSERT INTO users (user_id, name, email, phone, password_hash, role, gender, date_of_birth, created_at, updated_at)
+VALUES
+-- User 3-7
+('USER0000000003', 'Nguyễn Văn A', 'seeker1@example.com', '0912345678', '$2a$10$ABC123', 'seeker', 'male', '1990-05-15', NOW(), NOW()),
+('USER0000000004', 'Trần Thị B', 'seeker2@example.com', '0912345679', '$2a$10$ABC124', 'seeker', 'female', '1992-08-20', NOW(), NOW()),
+('USER0000000005', 'Lê Văn C', 'seeker3@example.com', '0912345680', '$2a$10$ABC125', 'seeker', 'male', '1988-03-10', NOW(), NOW()),
+('USER0000000006', 'Phạm Thị D', 'seeker4@example.com', '0912345681', '$2a$10$ABC126', 'seeker', 'female', '1995-11-25', NOW(), NOW()),
+('USER0000000007', 'Hoàng Văn E', 'seeker5@example.com', '0912345682', '$2a$10$ABC127', 'seeker', 'male', '1993-07-30', NOW(), NOW()),
+
+-- User 8-12
+('USER0000000008', 'Vũ Thị F', 'seeker6@example.com', '0912345683', '$2a$10$ABC128', 'seeker', 'female', '1991-09-12', NOW(), NOW()),
+('USER0000000009', 'Đặng Văn G', 'seeker7@example.com', '0912345684', '$2a$10$ABC129', 'seeker', 'male', '1989-04-05', NOW(), NOW()),
+('USER0000000010', 'Bùi Thị H', 'seeker8@example.com', '0912345685', '$2a$10$ABC130', 'seeker', 'female', '1994-12-18', NOW(), NOW()),
+('USER0000000011', 'Mai Văn I', 'seeker9@example.com', '0912345686', '$2a$10$ABC131', 'seeker', 'male', '1996-02-22', NOW(), NOW()),
+('USER0000000012', 'Lý Thị K', 'seeker10@example.com', '0912345687', '$2a$10$ABC132', 'seeker', 'female', '1997-06-08', NOW(), NOW()),
+
+-- User 13-17
+('USER0000000013', 'Trương Văn L', 'seeker11@example.com', '0912345688', '$2a$10$ABC133', 'seeker', 'male', '1990-10-15', NOW(), NOW()),
+('USER0000000014', 'Chu Thị M', 'seeker12@example.com', '0912345689', '$2a$10$ABC134', 'seeker', 'female', '1992-01-20', NOW(), NOW()),
+('USER0000000015', 'Hồ Văn N', 'seeker13@example.com', '0912345690', '$2a$10$ABC135', 'seeker', 'male', '1985-07-30', NOW(), NOW()),
+('USER0000000016', 'Phan Thị O', 'seeker14@example.com', '0912345691', '$2a$10$ABC136', 'seeker', 'female', '1998-04-12', NOW(), NOW()),
+('USER0000000017', 'Đỗ Văn P', 'seeker15@example.com', '0912345692', '$2a$10$ABC137', 'seeker', 'male', '1993-11-05', NOW(), NOW());
+
+-- Cập nhật thời gian last online ngẫu nhiên
+UPDATE users SET last_online_at = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 30) DAY) 
+WHERE user_id LIKE 'USER00000000%';
+
+-- Cập nhật trạng thái online ngẫu nhiên
+UPDATE users SET status_online = FLOOR(RAND() * 2) 
+WHERE user_id LIKE 'USER00000000%';
+
+-- bang seeker_staff_mapping
+ALTER TABLE seeker_staff_mapping 
+ADD CONSTRAINT fk_seeker FOREIGN KEY (seeker_id) REFERENCES users(user_id),
+ADD CONSTRAINT fk_staff FOREIGN KEY (staff_id) REFERENCES users(user_id);
+
+-- Insert 5 mapping mẫu
+INSERT INTO seeker_staff_mapping (seeker_id, staff_id, assigned_at, status)
+VALUES
+('USER0000000008', 'USER0000000001', NOW() - INTERVAL 2 DAY, 'active'),
+-- Seeker3 -> Staff1 (active)
+('USER0000000003', 'USER0000000001', NOW() - INTERVAL 10 DAY, 'active'),
+
+-- Seeker4 -> Staff1 (active)
+('USER0000000004', 'USER0000000001', NOW() - INTERVAL 8 DAY, 'active'),
+
+-- Seeker5 -> Staff2 (active)
+('USER0000000005', 'USER0000000002', NOW() - INTERVAL 7 DAY, 'active'),
+
+-- Seeker6 -> Staff2 (inactive - đã chuyển đi)
+('USER0000000006', 'USER0000000002', NOW() - INTERVAL 15 DAY, 'inactive'),
+
+-- Seeker7 -> Staff1 (active)
+('USER0000000007', 'USER0000000001', NOW() - INTERVAL 3 DAY, 'active');

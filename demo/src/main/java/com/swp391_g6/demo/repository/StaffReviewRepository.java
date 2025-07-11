@@ -6,8 +6,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface StaffReviewRepository extends JpaRepository<StaffReview, Long> {
-
+    
     @Query("SELECT r FROM StaffReview r WHERE r.staffId = :staffId")
     List<StaffReview> getFeedbackByStaff(@Param("staffId") String staffId);
+    List<StaffReview> findByStaffId(String staffId);
 
 }

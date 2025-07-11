@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.dto.EmailRequest;
@@ -19,6 +20,12 @@ import com.swp391_g6.demo.entity.Seeker;
 import com.swp391_g6.demo.service.UserService;
 import com.swp391_g6.demo.service.SeekerService;
 import com.swp391_g6.demo.util.JwtUtil;
+import com.swp391_g6.demo.entity.FavoriteScholarship;
+import java.util.List;
+import com.swp391_g6.demo.entity.Scholarship;
+import com.swp391_g6.demo.repository.ScholarshipRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/seeker")
@@ -32,6 +39,9 @@ public class SeekerController {
 
     @Autowired
     private SeekerService seekerService;
+
+    @Autowired
+    private ScholarshipRepository scholarshipRepository;
 
     // [POST] /api/seeker/profile - Lấy thông tin hồ sơ người tìm việc
     @PostMapping("/profile")
@@ -213,6 +223,177 @@ public class SeekerController {
             return ResponseEntity.status(HttpStatus.OK).body("OTP verified successfully");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired OTP");
+        }
+    }
+
+    // [POST] /api/seeker/favorite-scholarships - Lấy danh sách học bổng yêu thích
+    // của seeker
+    @PostMapping("/favorite-scholarships")
+    public ResponseEntity<?> getFavoriteScholarships(
+            HttpServletRequest request,
+            @RequestBody(required = false) Map<String, String> body) {
+
+        System.out.println("=== GET /favorite-scholarships called ===");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Request method: " + request.getMethod());
+
+        // Get token from Authorization header first (preferred method)
+        String token = null;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (body != null && body.get("token") != null) {
+            // Fallback to request body if Authorization header is not present
+            token = body.get("token");
+        }
+
+        System.out.println("Token: " + token);
+        if (token == null) {
+            System.out.println("Token is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Token is required"));
+        }
+
+        String email = jwtUtil.extractEmail(token);
+        System.out.println("Email: " + email);
+        if (email == null) {
+            System.out.println("Email is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Invalid token"));
+        }
+
+        User user = userService.findByEmail(email);
+        System.out.println("UserId: " + (user != null ? user.getUserId() : "null"));
+        System.out.println("User role: " + (user != null ? user.getRole() : "null"));
+        if (user == null) {
+            System.out.println("User not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "User not found"));
+        }
+
+        try {
+            List<FavoriteScholarship> favorites = seekerService.findFavoriteScholarshipsByUserId(user.getUserId());
+            System.out.println("Found " + favorites.size() + " favorites");
+            return ResponseEntity.ok(favorites);
+        } catch (Exception e) {
+            System.out.println("Error getting favorites: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Failed to get favorites: " + e.getMessage()));
+        }
+    }
+
+    // [POST] /api/seeker/favorite - Thêm học bổng vào yêu thích
+    @PostMapping("/favorite")
+    public ResponseEntity<?> addFavorite(
+            HttpServletRequest request,
+            @RequestBody Map<String, String> body) {
+
+        // Get token from Authorization header first (preferred method)
+        String token = null;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (body != null && body.get("token") != null) {
+            // Fallback to request body if Authorization header is not present
+            token = body.get("token");
+        }
+
+        String scholarshipId = body.get("scholarshipId");
+        System.out.println("Token: " + token);
+        System.out.println("ScholarshipId: " + scholarshipId);
+
+        if (token == null || scholarshipId == null || scholarshipId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("error", "Token and scholarshipId are required"));
+        }
+
+        String email = jwtUtil.extractEmail(token);
+        System.out.println("Email: " + email);
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Invalid token"));
+        }
+
+        User user = userService.findByEmail(email);
+        System.out.println("UserId: " + (user != null ? user.getUserId() : "null"));
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "User not found"));
+        }
+
+        Scholarship scholarship = scholarshipRepository.findByScholarshipId(scholarshipId);
+        if (scholarship == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", "Scholarship not found"));
+        }
+
+        FavoriteScholarship favorite = seekerService.addFavoriteScholarship(user, scholarship, null);
+        return ResponseEntity.ok(favorite);
+    }
+
+    // [DELETE] /api/seeker/favorite - Bỏ học bổng khỏi yêu thích
+    @DeleteMapping("/favorite")
+    public ResponseEntity<?> removeFavorite(
+            HttpServletRequest request,
+            @RequestBody Map<String, String> body) {
+
+        System.out.println("=== DELETE /favorite called ===");
+        System.out.println("Request body: " + body);
+
+        // Get token from Authorization header first (preferred method)
+        String token = null;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (body != null && body.get("token") != null) {
+            // Fallback to request body if Authorization header is not present
+            token = body.get("token");
+        }
+
+        String scholarshipId = body.get("scholarshipId");
+        System.out.println("Token: " + token);
+        System.out.println("ScholarshipId: " + scholarshipId);
+
+        if (token == null || scholarshipId == null || scholarshipId.isEmpty()) {
+            System.out.println("Missing required parameters");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("error", "Token and scholarshipId are required"));
+        }
+
+        String email = jwtUtil.extractEmail(token);
+        System.out.println("Email: " + email);
+        if (email == null) {
+            System.out.println("Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Invalid token"));
+        }
+
+        User user = userService.findByEmail(email);
+        System.out.println("UserId: " + (user != null ? user.getUserId() : "null"));
+        if (user == null) {
+            System.out.println("User not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "User not found"));
+        }
+
+        Scholarship scholarship = scholarshipRepository.findByScholarshipId(scholarshipId);
+        System.out.println("Scholarship: " + (scholarship != null ? scholarship.getScholarshipId() : "null"));
+        if (scholarship == null) {
+            System.out.println("Scholarship not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", "Scholarship not found"));
+        }
+
+        try {
+            seekerService.removeFavoriteScholarship(user, scholarship);
+            System.out.println("Successfully removed favorite");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Removed from favorites"));
+        } catch (Exception e) {
+            System.out.println("Error removing favorite: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Failed to remove favorite: " + e.getMessage()));
         }
     }
 }
