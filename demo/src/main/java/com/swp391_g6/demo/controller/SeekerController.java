@@ -45,12 +45,13 @@ public class SeekerController {
 
     // [POST] /api/seeker/profile - Lấy thông tin hồ sơ người tìm việc
     @PostMapping("/profile")
-    public ResponseEntity<?> getSeekerProfile(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+    public ResponseEntity<?> getSeekerProfile(HttpServletRequest request) {
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bearer token is required");
         }
 
+        String token = authHeader.substring(7);
         String email = jwtUtil.extractEmail(token);
         if (email == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
@@ -61,8 +62,17 @@ public class SeekerController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
         }
 
+        // Lấy thông tin seeker profile
+        Seeker seeker = seekerService.findByUser(user);
+        if (seeker == null) {
+            // Nếu chưa có seeker profile, tạo mới
+            seekerService.createSeekerProfile(user);
+            seeker = seekerService.findByUser(user);
+        }
+
         Map<String, Object> response = new HashMap<>();
 
+        // Thông tin cơ bản từ user
         response.put("user_id", user.getUserId());
         response.put("name", user.getName());
         response.put("email", user.getEmail());
@@ -71,17 +81,33 @@ public class SeekerController {
         response.put("gender", user.getGender());
         response.put("role", user.getRole());
 
+        // Thông tin chi tiết từ seeker
+        if (seeker != null) {
+            response.put("current_education_level", seeker.getCurrentEducationLevel());
+            response.put("field_of_study", seeker.getFieldOfStudy());
+            response.put("gpa", seeker.getGpa());
+            response.put("target_degree", seeker.getTargetDegree());
+            response.put("target_countries", seeker.getTargetCountries());
+            response.put("preferred_languages", seeker.getPreferredLanguages());
+            response.put("financial_need_level", seeker.getFinancialNeedLevel());
+            response.put("cv_url", seeker.getCvUrl());
+            response.put("bio", seeker.getBio());
+            response.put("assigned_staff_id",
+                    seeker.getAssignedStaff() != null ? seeker.getAssignedStaff().getUserId() : null);
+        }
+
         return ResponseEntity.ok(response);
     }
 
     // [POST] /api/seeker/update-profile - Cập nhật hồ sơ người tìm việc
     @PostMapping("/update-seeker-profile")
-    public ResponseEntity<?> updateSeekerProfile(@RequestBody Map<String, Object> updates) {
-        String token = (String) updates.get("token");
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+    public ResponseEntity<?> updateSeekerProfile(@RequestBody Map<String, Object> updates, HttpServletRequest request) {
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bearer token is required");
         }
 
+        String token = authHeader.substring(7);
         String email = jwtUtil.extractEmail(token);
         if (email == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");

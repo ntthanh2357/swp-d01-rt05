@@ -122,7 +122,7 @@ export default function Header() {
                                                 }}
                                             >
                                                 Đăng xuất
-                                            </Link>
+                                            </a>
                                         </li>
                                     </>
                                 )}
