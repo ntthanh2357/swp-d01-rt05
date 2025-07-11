@@ -233,6 +233,10 @@ public class SeekerController {
             HttpServletRequest request,
             @RequestBody(required = false) Map<String, String> body) {
 
+        System.out.println("=== GET /favorite-scholarships called ===");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Request method: " + request.getMethod());
+
         // Get token from Authorization header first (preferred method)
         String token = null;
         String authHeader = request.getHeader("Authorization");
@@ -245,6 +249,7 @@ public class SeekerController {
 
         System.out.println("Token: " + token);
         if (token == null) {
+            System.out.println("Token is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("error", "Token is required"));
         }
@@ -252,19 +257,30 @@ public class SeekerController {
         String email = jwtUtil.extractEmail(token);
         System.out.println("Email: " + email);
         if (email == null) {
+            System.out.println("Email is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("error", "Invalid token"));
         }
 
         User user = userService.findByEmail(email);
         System.out.println("UserId: " + (user != null ? user.getUserId() : "null"));
+        System.out.println("User role: " + (user != null ? user.getRole() : "null"));
         if (user == null) {
+            System.out.println("User not found");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("error", "User not found"));
         }
 
-        List<FavoriteScholarship> favorites = seekerService.findFavoriteScholarshipsByUserId(user.getUserId());
-        return ResponseEntity.ok(favorites);
+        try {
+            List<FavoriteScholarship> favorites = seekerService.findFavoriteScholarshipsByUserId(user.getUserId());
+            System.out.println("Found " + favorites.size() + " favorites");
+            return ResponseEntity.ok(favorites);
+        } catch (Exception e) {
+            System.out.println("Error getting favorites: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Failed to get favorites: " + e.getMessage()));
+        }
     }
 
     // [POST] /api/seeker/favorite - Thêm học bổng vào yêu thích
