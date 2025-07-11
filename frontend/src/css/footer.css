@@ -122,6 +122,138 @@
   text-decoration: underline;
 }
 
+.legal-page-container {
+  max-width: 800px;
+  margin: 40px auto 60px auto;
+  background: #fff;
+  padding: 32px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  font-size: 1.08rem;
+  color: #222;
+  line-height: 1.7;
+}
+.legal-page-container h1 {
+  font-size: 2.2rem;
+  margin-bottom: 18px;
+  color: #1a237e;
+  text-align: center;
+}
+.legal-page-container h2 {
+  font-size: 1.3rem;
+  margin-top: 32px;
+  margin-bottom: 10px;
+  color: #3949ab;
+  border-left: 4px solid #1976d2;
+  padding-left: 10px;
+  background: #f5f7fa;
+}
+.legal-page-container ul {
+  margin-left: 24px;
+  margin-bottom: 18px;
+}
+.legal-page-container a {
+  color: #1976d2;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.legal-page-container a:hover {
+  color: #0d47a1;
+}
+.legal-toc {
+  background: #f5f7fa;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 28px;
+  font-size: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.legal-toc ul {
+  margin: 0 0 0 18px;
+  padding: 0;
+}
+.legal-toc li {
+  margin-bottom: 6px;
+}
+.legal-date {
+  font-size: 0.98rem;
+  color: #666;
+  margin-bottom: 10px;
+  text-align: right;
+}
+
+.legal-contact-form-container {
+  max-width: 520px;
+  margin: 40px auto 0 auto;
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 28px 24px 20px 24px;
+  margin-bottom: 36px;
+}
+.legal-contact-form-container h3 {
+  text-align: center;
+  color: #1a237e;
+  margin-bottom: 18px;
+  font-size: 1.25rem;
+}
+.legal-contact-form .form-group {
+  margin-bottom: 16px;
+}
+.legal-contact-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #222;
+}
+.legal-contact-form input,
+.legal-contact-form textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #bfc7d1;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+  transition: border 0.2s;
+}
+.legal-contact-form input:focus,
+.legal-contact-form textarea:focus {
+  border-color: #1976d2;
+  outline: none;
+}
+.legal-contact-form button[type="submit"] {
+  width: 100%;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.legal-contact-form button[type="submit"]:hover {
+  background: #0d47a1;
+}
+.form-error {
+  color: #d32f2f;
+  background: #fff0f0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 0.98rem;
+}
+.form-success {
+  color: #388e3c;
+  background: #e8f5e9;
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 0.98rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .footer-brand {

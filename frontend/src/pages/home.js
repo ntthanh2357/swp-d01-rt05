@@ -22,6 +22,12 @@ export default function Home() {
 
     // Thêm state cho danh sách trường học
     const [organizations, setOrganizations] = useState([]);
+    // State để đồng bộ bật/tắt hai nút
+    const [chatBoxOpen, setChatBoxOpen] = useState(false);
+    const [contactButtonOpen, setContactButtonOpen] = useState(false);
+
+    // Lấy danh sách quốc gia duy nhất từ organizations
+    const countryList = Array.from(new Set(organizations.map(org => org.country).filter(Boolean))).sort();
 
     useEffect(() => {
         setOrgLoading(true);
@@ -35,12 +41,12 @@ export default function Home() {
         <>
             <Header />
             <Banner />
-            <RegisterForm/>
-            <FlywireAd/>
-            <WhyChoose/>
-            <Know/>
-            <Countries/>
-            <Choose/>          
+            <RegisterForm countryList={countryList} />
+            <WhyChoose />
+            <Know />
+            <Choose />
+            <Countries />
+            <FlywireAd />
             <main className="container mt-5">
                 {/* Danh sách trường học */}
                 <section className="my-5">
@@ -59,10 +65,16 @@ export default function Home() {
                         )}
                     </div>
                 </section>
-
-                <FloatingContactButton />
-                <ChatBox />
-            </main>            
+                {/* Nhóm nút liên hệ & chat */}
+                <div className="contact-widget-group">
+                    <FloatingContactButton
+                        setChatBoxOpen={setChatBoxOpen}
+                    />
+                    <ChatBox
+                        setContactButtonOpen={setContactButtonOpen}
+                    />
+                </div>
+            </main>
             <Footer />
         </>
     );

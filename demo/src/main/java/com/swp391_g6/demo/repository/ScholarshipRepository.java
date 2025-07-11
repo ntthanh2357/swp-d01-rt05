@@ -15,4 +15,5 @@ public interface ScholarshipRepository extends JpaRepository<Scholarship, String
     @Query("SELECT COUNT(s) FROM Scholarship s WHERE s.createdAt >= CURRENT_DATE")
     int countNewScholarships();
 
+    Scholarship findByScholarshipId(String scholarshipId);
 }

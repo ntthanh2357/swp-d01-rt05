@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -31,7 +31,7 @@ const SearchScholarship = () => {
     const navigate = useNavigate();
     const [organizations, setOrganizations] = useState([]);
     const [selectedOrganization, setSelectedOrganization] = useState(null);
-    const [initialOrgFilterApplied, setInitialOrgFilterApplied] = useState(false);
+    const initialOrgFilterApplied = useRef(false);
 
     // Kiểm tra xem có filter nào đang được áp dụng không
     const hasActiveFilters = () => {
@@ -86,13 +86,13 @@ const SearchScholarship = () => {
                 // Xử lý filter theo organizationName sau khi organizations đã load
                 const params = new URLSearchParams(location.search);
                 const organizationNameFromUrl = params.get('organizationName');
-                if (organizationNameFromUrl && !initialOrgFilterApplied) {
+                if (organizationNameFromUrl && !initialOrgFilterApplied.current) {
                     const matchingOrg = orgs.find(org =>
                         org.name && org.name.toLowerCase().includes(organizationNameFromUrl.toLowerCase())
                     );
                     if (matchingOrg) {
                         setSelectedOrganization(matchingOrg.organizationId);
-                        setInitialOrgFilterApplied(true);
+                        initialOrgFilterApplied.current = true;
                     }
                 }
             })
@@ -198,7 +198,7 @@ const SearchScholarship = () => {
         setSelectedAmount(null);
         setSelectedOrganization(null);
         setFilteredScholarships(scholarships);
-        setInitialOrgFilterApplied(false);
+        initialOrgFilterApplied.current = false;
         // Xóa organizationName khỏi URL
         navigate('/search-scholarships', { replace: true });
     };
@@ -222,7 +222,6 @@ const SearchScholarship = () => {
         <>
             <Header />
             <div className="container mt-4">
-                <p className="breadcrumb">Heatwave / Tìm học bổng cho bạn ngay nào</p>
                 <h2 className="fw-bold mb-2">Học bổng cho bạn</h2>
                 <p className="text-muted">
                     Khám phá các học bổng từ các trường đại học hàng đầu bên dưới. Sử dụng bộ lọc để tìm kiếm theo lĩnh vực, quốc gia, trường học và mức học bổng

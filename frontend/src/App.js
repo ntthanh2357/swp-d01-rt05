@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { UserProvider } from "./contexts/UserContext";
 import { ChatProvider } from './contexts/ChatContext';
+import { FavoriteProvider } from './contexts/FavoriteContext';
 import AuthRoute from "./routes/authRoute";
 import UserRoute from "./routes/userRoute";
 import SeekerRoute from "./routes/seekerRoute";
@@ -13,13 +14,18 @@ import ChatBox from './components/ChatBox';
 import Payment from './pages/payment'; // Import component thanh toán
 import OrganizationRoute from "./routes/organizationRoute";
 import SearchOrganization from './pages/searchOrganization';
+import PrivacyPolicy from './pages/privacy';
+import TermsOfUse from './pages/terms';
+import Disclaimer from './pages/disclaimer';
+import Library from "./pages/library";
 
 function App() {
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
             <UserProvider>
                 <ChatProvider>
-                    <Router>
+                    <FavoriteProvider>
+                        <Router>
                         <Routes>
                             <Route path="/auth/*" element={<AuthRoute />} />
                             <Route path="/admin/*" element={<UserRoute />} />
@@ -31,9 +37,14 @@ function App() {
                             <Route path="/chat" element={<ChatBox />} />
                             <Route path="/payment" element={<Payment />} />
                             <Route path="/search-university" element={<SearchOrganization />} />
+                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                            <Route path="/terms" element={<TermsOfUse />} />
+                            <Route path="/disclaimer" element={<Disclaimer />} />
+                            <Route path="/library" element={<Library />} />
                             <Route path="/*" element={<ScholarshipRoute />} />
                         </Routes>
                     </Router>
+                    </FavoriteProvider>
                 </ChatProvider>
             </UserProvider>
         </GoogleOAuthProvider>

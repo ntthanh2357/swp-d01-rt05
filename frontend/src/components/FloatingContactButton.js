@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RegisterForm from "./Register-book";
 import "../css/FloatingContactButton.css";
+import '../css/ContactWidget.css';
 
-const FloatingContactButton = () => {
+const FloatingContactButton = ({ setChatBoxOpen }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showForm, setShowForm] = useState(false);
 
-    const toggleContactBox = () => setIsOpen(!isOpen);
+    // XÓA useEffect gây lỗi tự tắt popup
+
+    const toggleContactBox = () => {
+        setChatBoxOpen(false); // Luôn tắt chatbox trước
+        setIsOpen((prev) => !prev);
+    };
     const toggleForm = () => setShowForm(!showForm);
 
     return (
@@ -14,7 +20,7 @@ const FloatingContactButton = () => {
             {/* Floating button */}
             <button
                 onClick={toggleContactBox}
-                className="floating-button"
+                className="contact-widget-btn"
                 aria-label="Contact"
             >
                 🤙
