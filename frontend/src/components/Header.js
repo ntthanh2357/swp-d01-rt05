@@ -121,7 +121,7 @@ export default function Header() {
                                                 }}
                                             >
                                                 Logout
-                                            </Link>
+                                            </a>
                                         </li>
                                     </>
                                 )}
