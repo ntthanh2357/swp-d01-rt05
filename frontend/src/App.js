@@ -27,6 +27,8 @@ function App() {
                             <Route path="/chat" element={<ChatBox />} />
                             <Route path="/payment" element={<Payment />} />
                             <Route path="/staff/*" element={<StaffRoute />} />
+                            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
                             {/* Thêm các route khác ở đây nếu có */}
                         </Routes>
                     </Router>
