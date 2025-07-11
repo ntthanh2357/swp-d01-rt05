@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import {
     getAllScholarships,
-    createScholarship,
+    addScholarship,
     updateScholarship,
     deleteScholarship
 } from "../services/scholarshipApi";
-import { getAllStaff } from "../services/staffApi"; // You need to implement this
+import { getStaffOverview } from "../services/staffApi"; // hoặc hàm phù hợp bạn muốn dùng
 import ScholarshipCard1 from "../components/ScholarshipCard1";
+import { UserContext } from "../contexts/UserContext";
 
 function AdminDashboard() {
     const [scholarships, setScholarships] = useState([]);
@@ -17,6 +18,9 @@ function AdminDashboard() {
     const [editId, setEditId] = useState(null);
     const [staffList, setStaffList] = useState([]);
     const [selectedStaff, setSelectedStaff] = useState("");
+    const [scrapeUrl, setScrapeUrl] = useState("");
+    const [scrapeResult, setScrapeResult] = useState(null);
+    const { user } = useContext(UserContext);
 
     useEffect(() => {
         fetchData();
@@ -37,7 +41,7 @@ function AdminDashboard() {
 
     async function fetchStaff() {
         try {
-            const res = await getAllStaff();
+            const res = await getStaffOverview();
             setStaffList(res.data);
         } catch (err) {
             setStaffList([]);
@@ -59,7 +63,7 @@ function AdminDashboard() {
             if (editId) {
                 await updateScholarship(editId, form);
             } else {
-                await createScholarship(form);
+                await addScholarship(form);
             }
             setForm({ name: "", description: "" });
             setEditId(null);
@@ -82,6 +86,23 @@ function AdminDashboard() {
             } catch (err) {
                 alert("Error deleting scholarship");
             }
+        }
+    };
+
+    const handleScrape = async (e) => {
+        e.preventDefault();
+        try {
+            const token = user?.accessToken; // Or your auth context
+            const res = await fetch("/api/scholarship-scraper/scrape-and-save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: scrapeUrl, token })
+            });
+            const data = await res.json();
+            setScrapeResult(data);
+            // Optionally refresh scholarship list
+        } catch {
+            setScrapeResult({ error: "Scrape failed" });
         }
     };
 
@@ -123,6 +144,22 @@ function AdminDashboard() {
                         </button>
                     )}
                 </form>
+                <form onSubmit={handleScrape} className="mb-4">
+                    <input
+                        type="text"
+                        placeholder="Paste scholarship URL here"
+                        value={scrapeUrl}
+                        onChange={e => setScrapeUrl(e.target.value)}
+                        required
+                    />
+                    <button type="submit">Scrape & Save Scholarship</button>
+                </form>
+                {scrapeResult && scrapeResult.error && (
+                    <div className="text-danger">{scrapeResult.error}</div>
+                )}
+                {scrapeResult && scrapeResult.scholarship && (
+                    <div className="text-success">Scholarship saved: {scrapeResult.scholarship.title}</div>
+                )}
                 {loading ? (
                     <div className="text-center">Đang tải dữ liệu...</div>
                 ) : (

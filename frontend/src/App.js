@@ -11,6 +11,7 @@ import DetailRoute from "./routes/detailRoute";
 import Messages from './pages/messages';
 import ChatBox from './components/ChatBox';
 import Payment from './pages/payment'; // Import component thanh toán
+import AdminDashboard from "./pages/admin-dashboard";
 function App() {
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
