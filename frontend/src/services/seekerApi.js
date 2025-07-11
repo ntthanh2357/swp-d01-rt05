@@ -1,7 +1,11 @@
 import { axiosInstance } from "./api";
 
 export const seekerProfile = async (data) => {
-    return await axiosInstance.post("/seeker/profile", data);
+    return await axiosInstance.post(
+        "/seeker/profile", 
+        {}, 
+        { headers: { Authorization: `Bearer ${data.token}` } }
+    );
 }
 
 export const sendUpdateSeekerProfileOtp = async (data) => {
@@ -13,7 +17,12 @@ export const verifyUpdateSeekerProfileOtp = async (data) => {
 }
 
 export const seekerProfileUpdate = async (data) => {
-    return await axiosInstance.post("/seeker/update-seeker-profile", data);
+    const { token, ...updateData } = data;
+    return await axiosInstance.post(
+        "/seeker/update-seeker-profile", 
+        updateData,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
 }
 
 export const seekerProfileDelete = async (data) => {

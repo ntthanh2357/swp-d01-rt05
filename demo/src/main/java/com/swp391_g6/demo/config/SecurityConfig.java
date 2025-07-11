@@ -15,9 +15,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.swp391_g6.demo.filter.JwtAuthenticationFilter;
-import com.swp391_g6.demo.entity.User;
-import com.swp391_g6.demo.entity.Seeker;
-import jakarta.persistence.JoinColumn;
 
 @Configuration
 public class SecurityConfig {
