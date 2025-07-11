@@ -2,11 +2,14 @@ package com.swp391_g6.demo.controller;
 
 import com.swp391_g6.demo.dto.ChatDTO;
 import com.swp391_g6.demo.service.ChatService;
+import com.swp391_g6.demo.service.FileUploadService;
 import com.swp391_g6.demo.util.JwtUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +23,36 @@ public class ChatController {
     private ChatService chatService;
     
     @Autowired
+    private FileUploadService fileUploadService;
+    
+    @Autowired
     private JwtUtil jwtUtil;
+    
+    // Upload file endpoint
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("token") String token) {
+        
+        try {
+            String userId = jwtUtil.getUserIdFromToken(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            }
+            
+            Map<String, Object> result = fileUploadService.uploadFile(file, userId);
+            return ResponseEntity.ok(result);
+            
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Lỗi khi upload file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
     
     // Get conversation between two users
     @PostMapping("/conversation")

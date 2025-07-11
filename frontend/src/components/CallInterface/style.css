@@ -1,0 +1,270 @@
+.call-interface {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+}
+
+/* Incoming Call Modal */
+.incoming-call-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.incoming-call-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+}
+
+.caller-info {
+    margin-bottom: 30px;
+}
+
+.caller-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 auto 20px;
+}
+
+.caller-info h3 {
+    margin: 0 0 10px;
+    color: #333;
+    font-size: 24px;
+}
+
+.caller-info p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.call-actions {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.btn-reject,
+.btn-answer {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-reject {
+    background: #ff4757;
+}
+
+.btn-reject:hover {
+    background: #ff3742;
+    transform: scale(1.1);
+}
+
+.btn-answer {
+    background: #2ed573;
+}
+
+.btn-answer:hover {
+    background: #26d467;
+    transform: scale(1.1);
+}
+
+/* Active Call Modal */
+.active-call-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+}
+
+.call-header {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.call-info h3 {
+    margin: 0 0 5px;
+    font-size: 20px;
+}
+
+.call-info p {
+    margin: 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.btn-minimize {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.video-container {
+    flex: 1;
+    position: relative;
+    background: #000;
+}
+
+.remote-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.local-video {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid white;
+    background: #333;
+}
+
+.video-disabled {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+}
+
+.video-disabled i {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.call-controls {
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.control-btn.disabled {
+    background: #ff4757;
+}
+
+.control-btn.end-call {
+    background: #ff4757;
+}
+
+.control-btn.end-call:hover {
+    background: #ff3742;
+}
+
+/* Peer Status Indicator */
+.peer-status-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10001;
+}
+
+.connecting-indicator {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.connecting-indicator i {
+    color: #4285f4;
+}
+
+/* Disable buttons when peer not ready */
+.btn-answer:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-answer:disabled:hover {
+    background: #ccc;
+    transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .local-video {
+        width: 120px;
+        height: 90px;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .call-controls {
+        padding: 20px;
+        gap: 15px;
+    }
+    
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+    }
+}
