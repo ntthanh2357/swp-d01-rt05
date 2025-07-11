@@ -21,6 +21,7 @@ import TermsOfUse from './pages/terms';
 import Disclaimer from './pages/disclaimer';
 import Library from "./pages/library";
 
+import AdminDashboard from "./pages/admin-dashboard";
 function App() {
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
@@ -44,6 +45,7 @@ function App() {
                             <Route path="/disclaimer" element={<Disclaimer />} />
                             <Route path="/library" element={<Library />} />
                             <Route path="/*" element={<ScholarshipRoute />} />
+                            <Route path="/admin-dashboard" element={<AdminDashboard />} />
                         </Routes>
                     </Router>
                     </FavoriteProvider>
