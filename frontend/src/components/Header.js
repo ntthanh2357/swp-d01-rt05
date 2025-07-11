@@ -121,7 +121,7 @@ export default function Header() {
                                                     window.location.href = "/auth/login";
                                                 }}
                                             >
-                                                Đăng xuất
+                                                Logout
                                             </a>
                                         </li>
                                     </>
