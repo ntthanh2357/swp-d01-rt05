@@ -33,3 +33,15 @@ export const verifyUpdateStaffProfileOtp = async (data) => {
 export const updateStaffProfile = async (data) => {
     return await axiosInstance.post(`/staff/update-staff-profile`, data);
 };
+
+export const getPublicStaffList = async () => {
+    return await axiosInstance.get("/staff/public-list");
+};
+
+export const getPublicStaffProfile = async (staffId) => {
+    return await axiosInstance.get(`/staff/public-profile/${staffId}`);
+};
+
+export const postStaffReview = async (data) => {
+    return await axiosInstance.post('/staff/review', data);
+};
