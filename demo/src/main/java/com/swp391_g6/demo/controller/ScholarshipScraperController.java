@@ -49,10 +49,9 @@ public class ScholarshipScraperController {
             // Set other fields as needed, or let admin edit after scraping
 
             Scholarship saved = scholarshipService.addScholarship(
-                null, // scholarshipId sẽ được tự động tạo trong database
                 scholarship.getTitle(),
                 scholarship.getDescription(),
-                scholarship.getOrganization(),
+                scholarship.getOrganization() != null ? scholarship.getOrganization().getName() : null,
                 scholarship.getCategoryId(),
                 scholarship.getAmount(),
                 scholarship.getCurrency(),
@@ -62,18 +61,10 @@ public class ScholarshipScraperController {
                 scholarship.getCountries(),
                 scholarship.getEducationLevels(),
                 scholarship.getFieldsOfStudy(),
-                scholarship.getLanguageRequirements(),
-                scholarship.getStatus(),
-                scholarship.getViewsCount(),
-                scholarship.getApplicationsCount(),
-                scholarship.getFeatured(),
-                scholarship.getCreatedBy(),
-                scholarship.getApprovedBy(),
-                scholarship.getApprovedAt(),
-                new Timestamp(System.currentTimeMillis()), // createdAt
-                new Timestamp(System.currentTimeMillis())  // updatedAt
+                scholarship.getCreatedBy()
             );
             result.put("scholarship", saved);
+            result.put("success", true);
         } catch (IOException e) {
             result.put("error", "Failed to fetch or parse the page.");
         }
