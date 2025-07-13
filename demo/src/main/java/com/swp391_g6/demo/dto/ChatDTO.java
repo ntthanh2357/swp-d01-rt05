@@ -11,10 +11,15 @@ public class ChatDTO {
     private String receiverName;
     private String receiverRole;
     private String message;
+    private String messageType = "text"; // text, image, document
+    private String fileUrl;
+    private String fileName;
+    private String fileType;
+    private Long fileSize;
     private boolean isRead;
     private Timestamp createdAt;
 
-    // Constructors, getters and setters
+    // Constructors
     public ChatDTO() {
     }
 
@@ -81,6 +86,46 @@ public class ChatDTO {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 
     public boolean isRead() {

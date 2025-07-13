@@ -205,6 +205,21 @@ function UserProfile() {
             <div className="container user-profile-container">
                 <h2 className="page-title">Thông tin cá nhân</h2>
 
+                {/* Avatar section */}
+                <div className="profile-avatar">
+                    {profile.avatar ? (
+                        <img
+                            src={profile.avatar}
+                            alt="avatar"
+                            className="profile-avatar-img"
+                        />
+                    ) : (
+                        <div className="profile-avatar-placeholder">
+                            {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
+                        </div>
+                    )}
+                </div>
+
                 <div className="user-id-display">
                     <span className="label">ID người dùng:</span>
                     <span className="value">{profile.user_id || "Chưa cập nhật"}</span>

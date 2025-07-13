@@ -107,7 +107,7 @@ function UserRegister() {
                                     {isLoading ? "Đang gửi..." : "Gửi mã OTP"}
                                 </button>
                                 <p className="text-center mt-3">
-                                    Đã có tài khoản? <a href="/login">Đăng nhập</a>
+                                    Đã có tài khoản? <a href="/auth/login">Đăng nhập</a>
                                 </p>
                                 <p className="text-center text-muted mt-3">
                                     Hoặc đăng ký bằng tài khoản Google

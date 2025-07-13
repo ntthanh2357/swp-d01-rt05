@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import StaffActivityChart from "../components/StaffActivityChart";
-import { getStaffOverview, getStaffFeedback } from "../services/staffApi";
+import ActiveSeekersModal from "../components/ActiveSeekersModal";
+import { getStaffOverview, getStaffFeedback, getActiveSeekers } from "../services/staffApi";
 import { UserContext } from "../contexts/UserContext";
 import { Card, Row, Col, Spinner, Table, Container, Button } from "react-bootstrap";
 import { User, Mail, Clock, Award } from "lucide-react";
@@ -14,6 +15,12 @@ function StaffDashboard({ staffId }) {
     const [feedback, setFeedback] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [ratingFilter, setRatingFilter] = useState('all');
+    
+    // State cho modal active seekers
+    const [showActiveSeekersModal, setShowActiveSeekersModal] = useState(false);
+    const [activeSeekers, setActiveSeekers] = useState([]);
+    const [loadingSeekers, setLoadingSeekers] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -53,6 +60,46 @@ function StaffDashboard({ staffId }) {
         return (<div className="alert alert-danger">{error}</div>);
     }
 
+    // Tính toán thống kê đánh giá
+    const getRatingStats = () => {
+        if (feedback.length === 0) return { avgRating: 0, totalReviews: 0, ratingDistribution: {} };
+        
+        const avgRating = (feedback.reduce((sum, fb) => sum + fb.rating, 0) / feedback.length).toFixed(1);
+        const totalReviews = feedback.length;
+        
+        const ratingDistribution = {};
+        for (let i = 1; i <= 5; i++) {
+            ratingDistribution[i] = feedback.filter(fb => fb.rating === i).length;
+        }
+        
+        return { avgRating, totalReviews, ratingDistribution };
+    };
+
+    // Lọc đánh giá theo rating
+    const filteredFeedback = ratingFilter === 'all' 
+        ? feedback 
+        : feedback.filter(fb => fb.rating === parseInt(ratingFilter));
+
+    const ratingStats = getRatingStats();
+
+    // Function để mở modal và lấy danh sách active seekers
+    const handleShowActiveSeekers = async () => {
+        setShowActiveSeekersModal(true);
+        setLoadingSeekers(true);
+        try {
+            const response = await getActiveSeekers({ 
+                staffId, 
+                token: contextUser.accessToken 
+            });
+            setActiveSeekers(response.data || []);
+        } catch (error) {
+            console.error('Error fetching active seekers:', error);
+            setActiveSeekers([]);
+        } finally {
+            setLoadingSeekers(false);
+        }
+    };
+
     if (loading || !overview) return (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
             <Spinner animation="border" />
@@ -77,7 +124,11 @@ function StaffDashboard({ staffId }) {
                 <h2 className="mb-4 fade-in text-center mb-5">Staff Dashboard</h2>
                 <Row className="mb-4 fade-in">
                     <Col md={3} xs={6} className="mb-3">
-                        <Card className="text-center border-0 shadow-sm">
+                        <Card 
+                            className="text-center border-0 shadow-sm cursor-pointer" 
+                            style={{ cursor: 'pointer' }}
+                            onClick={handleShowActiveSeekers}
+                        >
                             <Card.Body>
                                 <User size={22} className="mb-2 text-primary" />
                                 <div className="fw-semibold">Seeker đang tư vấn</div>
@@ -137,38 +188,154 @@ function StaffDashboard({ staffId }) {
                     </Col>
                 </Row>
 
+                {/* Thống kê đánh giá */}
+                {feedback.length > 0 && (
+                    <Row className="mb-4 fade-in" style={{ animationDelay: "0.3s" }}>
+                        <Col md={6} className="mb-3">
+                            <Card className="border-0 shadow-sm">
+                                <Card.Body>
+                                    <div className="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <div className="fw-semibold mb-1">Điểm đánh giá trung bình</div>
+                                            <div className="fs-3 fw-bold text-primary">{ratingStats.avgRating} ⭐</div>
+                                            <div className="text-muted small">Từ {ratingStats.totalReviews} đánh giá</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-warning fs-1">📊</div>
+                                        </div>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col md={6} className="mb-3">
+                            <Card className="border-0 shadow-sm">
+                                <Card.Body>
+                                    <div className="fw-semibold mb-2">Phân bố đánh giá</div>
+                                    {[5, 4, 3, 2, 1].map(rating => (
+                                        <div key={rating} className="d-flex align-items-center mb-1">
+                                            <div className="me-2" style={{ width: '20px' }}>
+                                                {rating}⭐
+                                            </div>
+                                            <div className="flex-grow-1 me-2">
+                                                <div className="progress" style={{ height: '8px' }}>
+                                                    <div 
+                                                        className="progress-bar bg-warning" 
+                                                        style={{ 
+                                                            width: `${ratingStats.totalReviews > 0 ? (ratingStats.ratingDistribution[rating] / ratingStats.totalReviews) * 100 : 0}%` 
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="text-muted small" style={{ width: '30px' }}>
+                                                {ratingStats.ratingDistribution[rating] || 0}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
+
                 <Card className="border-0 shadow-sm mb-4 fade-in" style={{ animationDelay: "0.4s" }}>
-                    <Card.Header className="bg-white fw-semibold">Đánh giá từ người dùng</Card.Header>
+                    <Card.Header className="bg-white fw-semibold">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span>Đánh giá từ người dùng</span>
+                            <div className="d-flex align-items-center">
+                                <span className="me-2 text-muted">Tổng: {feedback.length}</span>
+                                {feedback.length > 0 && (
+                                    <span className="badge bg-primary">
+                                        {ratingStats.avgRating}⭐
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        {feedback.length > 0 && (
+                            <div className="d-flex align-items-center">
+                                <label className="me-2 small text-muted">Lọc theo đánh giá:</label>
+                                <select 
+                                    className="form-select form-select-sm" 
+                                    style={{ width: 'auto' }}
+                                    value={ratingFilter}
+                                    onChange={(e) => setRatingFilter(e.target.value)}
+                                >
+                                    <option value="all">Tất cả ({feedback.length})</option>
+                                    <option value="5">5 sao ({ratingStats.ratingDistribution[5] || 0})</option>
+                                    <option value="4">4 sao ({ratingStats.ratingDistribution[4] || 0})</option>
+                                    <option value="3">3 sao ({ratingStats.ratingDistribution[3] || 0})</option>
+                                    <option value="2">2 sao ({ratingStats.ratingDistribution[2] || 0})</option>
+                                    <option value="1">1 sao ({ratingStats.ratingDistribution[1] || 0})</option>
+                                </select>
+                            </div>
+                        )}
+                    </Card.Header>
                     <Card.Body>
-                        <Table striped bordered hover responsive>
-                            <thead>
-                                <tr>
-                                    <th>Seeker</th>
-                                    <th>Rating</th>
-                                    <th>Nội dung</th>
-                                    <th>Ẩn danh</th>
-                                    <th>Ngày</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {feedback.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="text-center text-muted">Chưa có đánh giá</td>
-                                    </tr>
-                                ) : feedback.map((fb, idx) => (
-                                    <tr key={idx}>
-                                        <td>{fb.seekerId}</td>
-                                        <td>{fb.rating}</td>
-                                        <td>{fb.reviewContent}</td>
-                                        <td>{fb.isAnonymous ? "Có" : "Không"}</td>
-                                        <td>{fb.createdAt ? new Date(fb.createdAt).toLocaleString() : ""}</td>
-                                    </tr>
+                        {filteredFeedback.length === 0 ? (
+                            <div className="text-center text-muted py-4">
+                                <div className="mb-2">📝</div>
+                                <div>{feedback.length === 0 ? 'Chưa có đánh giá nào' : 'Không có đánh giá phù hợp với bộ lọc'}</div>
+                                <small>
+                                    {feedback.length === 0 
+                                        ? 'Đánh giá sẽ xuất hiện khi người dùng đánh giá dịch vụ của bạn'
+                                        : 'Thử thay đổi bộ lọc để xem thêm đánh giá'
+                                    }
+                                </small>
+                            </div>
+                        ) : (
+                            <div className="row">
+                                {filteredFeedback.map((fb, idx) => (
+                                    <div key={idx} className="col-md-6 col-lg-4 mb-3">
+                                        <div className="card h-100 border-0 shadow-sm">
+                                            <div className="card-body">
+                                                <div className="d-flex justify-content-between align-items-start mb-2">
+                                                    <div className="d-flex align-items-center">
+                                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                             style={{ width: '32px', height: '32px', fontSize: '14px' }}>
+                                                            {fb.isAnonymous ? 'A' : fb.seekerId?.slice(-2) || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="fw-semibold small">
+                                                                {fb.isAnonymous
+                                                                    ? 'Người dùng ẩn danh'
+                                                                    : fb.seekerName || `Seeker ${fb.seekerId}`
+                                                                }
+                                                            </div>
+                                                            <div className="text-muted small">
+                                                                {fb.createdAt ? new Date(fb.createdAt).toLocaleDateString('vi-VN') : ''}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-warning">
+                                                        {'⭐'.repeat(fb.rating)}
+                                                        <span className="text-muted ms-1">({fb.rating}/5)</span>
+                                                    </div>
+                                                </div>
+                                                <div className="review-content">
+                                                    {fb.reviewContent ? (
+                                                        <p className="mb-0 small" style={{ lineHeight: '1.4' }}>
+                                                            "{fb.reviewContent}"
+                                                        </p>
+                                                    ) : (
+                                                        <p className="mb-0 small text-muted">Không có nội dung đánh giá</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </Table>
+                            </div>
+                        )}
                     </Card.Body>
                 </Card>
             </Container>
+
+            {/* Modal hiển thị danh sách active seekers */}
+            <ActiveSeekersModal
+                show={showActiveSeekersModal}
+                onHide={() => setShowActiveSeekersModal(false)}
+                seekers={activeSeekers}
+                loading={loadingSeekers}
+            />
         </>
     );
 }

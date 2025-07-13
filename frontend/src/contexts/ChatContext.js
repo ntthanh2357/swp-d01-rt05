@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useReducer, useCallback } from 'react';
 import io from 'socket.io-client';
 import { UserContext } from './UserContext';
-import { getConversation, getContacts, getUnreadMessageCount, markAsRead as markAsReadApi } from '../services/chatApi';
+import { getConversation, getContacts, getUnreadMessageCount, markAsRead as markAsReadApi, uploadFile } from '../services/chatApi';
 
 export const ChatContext = createContext();
 
@@ -59,8 +59,26 @@ export const ChatProvider = ({ children }) => {
                 setIsConnected(false);
             });
 
-            // Nhận tin nhắn realtime
+            // Nhận tin nhắn text
             socketInstance.on('chat', (message) => {
+                const conversationId = message.senderId === user.userId
+                    ? message.receiverId
+                    : message.senderId;
+                dispatchConversations({
+                    type: 'ADD_MESSAGE',
+                    payload: { conversationId, message }
+                });
+                // Tăng số tin chưa đọc nếu không phải activeConversation
+                if (
+                    message.senderId !== user.userId &&
+                    (!activeConversation || activeConversation !== message.senderId)
+                ) {
+                    setUnreadCount(prev => prev + 1);
+                }
+            });
+
+            // Nhận tin nhắn file
+            socketInstance.on('file_message', (message) => {
                 const conversationId = message.senderId === user.userId
                     ? message.receiverId
                     : message.senderId;
@@ -96,31 +114,92 @@ export const ChatProvider = ({ children }) => {
         }
     }, [user?.accessToken, user?.userId, activeConversation]);
 
-    // Gửi tin nhắn: tin đầu tiên gửi tới "system", các tin sau gửi tới staff
+    // Gửi tin nhắn text
     const sendMessage = (receiverId, message) => {
-        if (!socket || !isConnected) return;
-        sendMessageToSocket(receiverId, message);
+        return new Promise((resolve, reject) => {
+            if (!socket || !isConnected) {
+                reject(new Error('Socket not connected'));
+                return;
+            }
+
+            const messageData = {
+                senderId: user.userId,
+                senderName: user.name || 'User',
+                senderRole: user.role,
+                receiverId: receiverId,
+                message: message
+            };
+
+            socket.emit('chat', messageData, (response) => {
+                if (response) {
+                    dispatchConversations({
+                        type: 'ADD_MESSAGE',
+                        payload: {
+                            conversationId: receiverId,
+                            message: response
+                        }
+                    });
+                    resolve(response);
+                } else {
+                    reject(new Error('No response from server'));
+                }
+            });
+        });
     };
 
-    const sendMessageToSocket = (receiverId, message) => {
-        const messageData = {
-            senderId: user.userId,
-            senderName: user.name || 'User',
-            senderRole: user.role,
-            receiverId: receiverId,
-            message: message
-        };
-        socket.emit('chat', messageData, (response) => {
-            if (response) {
-                dispatchConversations({
-                    type: 'ADD_MESSAGE',
-                    payload: {
-                        conversationId: receiverId,
-                        message: response
+    // Gửi tin nhắn file
+    const sendFileMessage = async (receiverId, file) => {
+        try {
+            if (!user?.accessToken) {
+                throw new Error('User not authenticated');
+            }
+
+            // Upload file first
+            const uploadResult = await uploadFile(file, user.accessToken);
+            
+            console.log('Upload result:', uploadResult.data);
+            
+            return new Promise((resolve, reject) => {
+                if (!socket || !isConnected) {
+                    reject(new Error('Socket not connected'));
+                    return;
+                }
+
+                const fileMessageData = {
+                    senderId: user.userId,
+                    senderName: user.name || 'User',
+                    senderRole: user.role,
+                    receiverId: receiverId,
+                    message: uploadResult.data.fileName || 'File attachment', // Sửa uploadResult thành uploadResult.data
+                    messageType: uploadResult.data.messageType,
+                    fileUrl: uploadResult.data.fileUrl,
+                    fileName: uploadResult.data.fileName,
+                    fileType: uploadResult.data.fileType,
+                    fileSize: uploadResult.data.fileSize
+                };
+
+                console.log('Sending file message data:', fileMessageData);
+
+                socket.emit('file_message', fileMessageData, (response) => {
+                    console.log('File message response:', response);
+                    if (response) {
+                        dispatchConversations({
+                            type: 'ADD_MESSAGE',
+                            payload: {
+                                conversationId: receiverId,
+                                message: response
+                            }
+                        });
+                        resolve(response);
+                    } else {
+                        reject(new Error('No response from server'));
                     }
                 });
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error in sendFileMessage:', error);
+            throw error;
+        }
     };
 
     // Load hội thoại với 1 user (staff hoặc seeker)
@@ -157,7 +236,7 @@ export const ChatProvider = ({ children }) => {
         if (!user?.accessToken) return;
         try {
             const response = await getUnreadMessageCount(user.accessToken);
-            setUnreadCount(response.data.count);
+            setUnreadCount(response.data.unreadCount || 0);
         } catch (error) {
             setUnreadCount(0);
         }
@@ -172,10 +251,10 @@ export const ChatProvider = ({ children }) => {
     }, [fetchUnreadCount, user?.accessToken]);
 
     // Đánh dấu đã đọc và cập nhật số lượng chưa đọc
-    const markAsRead = useCallback(async (messageIds) => {
+    const markAsRead = useCallback(async (otherUserId) => {
         if (!user?.accessToken) return;
         try {
-            await markAsReadApi(user.accessToken, messageIds);
+            await markAsReadApi(user.accessToken, otherUserId);
             await fetchUnreadCount();
         } catch (error) {
             // Bỏ qua lỗi
@@ -194,6 +273,7 @@ export const ChatProvider = ({ children }) => {
                 setActiveConversation,
                 loadConversation,
                 sendMessage,
+                sendFileMessage,
                 fetchUnreadCount,
                 markAsRead,
             }}

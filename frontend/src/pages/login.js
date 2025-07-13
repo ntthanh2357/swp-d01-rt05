@@ -140,7 +140,7 @@ function LoginForm() {
 
                                 <div className="text-center mt-3">
                                     <p className="text-muted">
-                                        Chưa có tài khoản? <a href="/user-register">Đăng ký ngay</a>
+                                        Chưa có tài khoản? <a href="/auth/user-register">Đăng ký ngay</a>
                                     </p>
                                     <a href="/auth/forgot-password">Quên mật khẩu?</a>
                                 </div>

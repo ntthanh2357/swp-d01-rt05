@@ -17,6 +17,26 @@ footer, .footer {
   margin-top: auto !important;
 }
 
+/* Overlay cho popup tư vấn */
+.register-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-form-popup {
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  z-index: 3100;
+}
+
 /* ======= Khung form ======= */
 .register-form {
   border: none;

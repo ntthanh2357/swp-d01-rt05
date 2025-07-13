@@ -7,8 +7,6 @@ import com.swp391_g6.demo.entity.Scholarship;
 public class ScholarshipDTO {
     private String scholarshipId;
     private String title;
-    private String organizationName;
-    private Integer organizationWorldRank;
     private boolean featured;
     private String fieldsOfStudy;
     private String countries;
@@ -16,15 +14,21 @@ public class ScholarshipDTO {
     private String languageRequirements;
     private double amount;
     private String currency;
-    
+    private String description;
+    private String eligibilityCriteria;
+    private String educationLevels;
+    private int applicationsCount;
+    private int viewsCount;
+    private String fundingType;
+    private String applicableIntake;
+    private OrganizationDTO organization;
+
     public ScholarshipDTO() {
     }
 
     public ScholarshipDTO(Scholarship scholarship) {
         this.scholarshipId = scholarship.getScholarshipId();
         this.title = scholarship.getTitle();
-        this.organizationName = scholarship.getOrganization().getName();
-        this.organizationWorldRank = scholarship.getOrganization().getWorldRank();
         this.featured = scholarship.getFeatured();
         this.fieldsOfStudy = scholarship.getFieldsOfStudy();
         this.countries = scholarship.getCountries();
@@ -32,6 +36,14 @@ public class ScholarshipDTO {
         this.languageRequirements = scholarship.getLanguageRequirements();
         this.amount = scholarship.getAmount();
         this.currency = scholarship.getCurrency();
+        this.description = scholarship.getDescription();
+        this.eligibilityCriteria = scholarship.getEligibilityCriteria();
+        this.educationLevels = scholarship.getEducationLevels();
+        this.applicationsCount = scholarship.getApplicationsCount();
+        this.viewsCount = scholarship.getViewsCount();
+        this.fundingType = scholarship.getFundingType();
+        this.applicableIntake = scholarship.getApplicableIntake();
+        this.organization = new OrganizationDTO(scholarship.getOrganization());
     }
 
     public String getScholarshipId() {
@@ -48,22 +60,6 @@ public class ScholarshipDTO {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getOrganizationName() {
-        return organizationName;
-    }
-
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
-
-    public Integer getOrganizationWorldRank() {
-        return organizationWorldRank;
-    }
-
-    public void setOrganizationWorldRank(Integer organizationWorldRank) {
-        this.organizationWorldRank = organizationWorldRank;
     }
 
     public boolean isFeatured() {
@@ -120,6 +116,70 @@ public class ScholarshipDTO {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getEligibilityCriteria() {
+        return eligibilityCriteria;
+    }
+
+    public void setEligibilityCriteria(String eligibilityCriteria) {
+        this.eligibilityCriteria = eligibilityCriteria;
+    }
+
+    public String getEducationLevels() {
+        return educationLevels;
+    }
+
+    public void setEducationLevels(String educationLevels) {
+        this.educationLevels = educationLevels;
+    }
+
+    public int getApplicationsCount() {
+        return applicationsCount;
+    }
+
+    public void setApplicationsCount(int applicationsCount) {
+        this.applicationsCount = applicationsCount;
+    }
+
+    public int getViewsCount() {
+        return viewsCount;
+    }
+
+    public void setViewsCount(int viewsCount) {
+        this.viewsCount = viewsCount;
+    }
+
+    public String getFundingType() {
+        return fundingType;
+    }
+
+    public void setFundingType(String fundingType) {
+        this.fundingType = fundingType;
+    }
+
+    public String getApplicableIntake() {
+        return applicableIntake;
+    }
+
+    public void setApplicableIntake(String applicableIntake) {
+        this.applicableIntake = applicableIntake;
+    }
+
+    public OrganizationDTO getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(OrganizationDTO organization) {
+        this.organization = organization;
     }
 
 }

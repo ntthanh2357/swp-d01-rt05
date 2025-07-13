@@ -1,0 +1,40 @@
+.contact-widget-btn {
+  width: 56px;
+  height: 56px;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: none;
+  outline: none;
+}
+.contact-widget-btn:hover,
+.contact-widget-btn:focus {
+  background: #1565c0;
+  outline: none;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.contact-widget-group {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  flex-direction: row;
+  z-index: 9999;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .contact-widget-group {
+    bottom: 16px;
+    right: 16px;
+    gap: 8px;
+  }
+} 
