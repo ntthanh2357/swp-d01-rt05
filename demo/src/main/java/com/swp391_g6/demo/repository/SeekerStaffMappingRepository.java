@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface SeekerStaffMappingRepository extends JpaRepository<SeekerStaffMapping, Long> {
+public interface SeekerStaffMappingRepository extends JpaRepository<SeekerStaffMapping, String> {
     List<SeekerStaffMapping> findByStaffIdAndStatus(String staffId, Status status);
     SeekerStaffMapping findBySeekerId(String seekerId);
     List<SeekerStaffMapping> findByStaffId(String staffId);
