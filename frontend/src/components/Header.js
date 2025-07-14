@@ -110,7 +110,9 @@ export default function Header() {
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
+                                        {user.role === 'seeker' && (
                                         <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
+                                        )}
                                         <li>
                                             <Link
                                                 className="dropdown-item text-danger"
