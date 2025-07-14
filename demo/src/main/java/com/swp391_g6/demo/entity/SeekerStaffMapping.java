@@ -42,4 +42,7 @@ public class SeekerStaffMapping {
 
     public Timestamp getAssignedAt() { return assignedAt; }
     public void setAssignedAt(Timestamp assignedAt) { this.assignedAt = assignedAt; }
+
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
 }

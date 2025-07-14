@@ -2,6 +2,7 @@ package com.swp391_g6.demo.controller;
 
 import com.swp391_g6.demo.dto.EmailRequest;
 import com.swp391_g6.demo.dto.StaffDTO;
+import com.swp391_g6.demo.entity.Staff;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.StaffService;
 import com.swp391_g6.demo.service.UserService;
@@ -12,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/staff")
@@ -113,11 +116,10 @@ public class StaffController {
     public ResponseEntity<String> verifyUpdateOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String otp = request.get("otp");
-
+        System.out.println("[OTP-STAFF] Controller: /staff/verify-otp called, email=" + email + ", otp=" + otp);
         if (email == null || otp == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email và OTP là bắt buộc");
         }
-
         boolean verified = staffService.verifyUpdateStaffProfileOtp(email, otp);
         return verified
                 ? ResponseEntity.ok("OTP đã được xác minh thành công")

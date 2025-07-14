@@ -13,9 +13,11 @@ import com.swp391_g6.demo.repository.StaffReviewRepository;
 import com.swp391_g6.demo.repository.UserRepository;
 import com.swp391_g6.demo.entity.SeekerStaffMapping;
 import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.StaffStatistics;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
 
 @Service
 public class DashboardService {
@@ -45,17 +47,38 @@ public class DashboardService {
         Map<String, Object> result = new HashMap<>();
         result.put("activeSeekers", seekerStaffMappingRepo.countActiveSeekersByStaff(staffId));
         result.put("unreadMessages", messageRepo.countUnreadMessagesByStaff(staffId));
-        result.put("pendingCases", counselingCaseRepo.countPendingCasesByStaff(staffId));
+        // Lấy pendingCases từ staff_statistics
+        StaffStatistics latestStats = staffStatisticsRepo.findTopByStaffIdOrderByStatisticDateDesc(staffId);
+        int pendingCases = 0;
+        if (latestStats != null) {
+            int handled = latestStats.getCasesHandled() != null ? latestStats.getCasesHandled() : 0;
+            int resolved = latestStats.getCasesResolved() != null ? latestStats.getCasesResolved() : 0;
+            pendingCases = handled - resolved;
+            if (pendingCases < 0) pendingCases = 0;
+        }
+        result.put("pendingCases", pendingCases);
         result.put("newScholarships", scholarshipRepo.countNewScholarships());
         result.put("completedChats", counselingCaseRepo.countCompletedChatsByStaff(staffId));
         result.put("avgResponseTime", staffStatisticsRepo.getAvgResponseTime(staffId));
         return result;
     }
 
-    // Biểu đồ hoạt động
+    // Biểu đồ hoạt động (dùng staff_statistics, có cache)
+    @Cacheable(value = "staffActivityChart", key = "#staffId + '_' + #period")
     public Map<String, Object> getActivityChart(String staffId, String period) {
-        // Trả về dữ liệu dạng {labels: [...], data: [...]}
-        return counselingCaseRepo.getActivityChartData(staffId, period);
+        // Lấy dữ liệu từ staff_statistics
+        var stats = staffStatisticsRepo.findByStaffIdOrderByStatisticDateAsc(staffId);
+        List<String> labels = stats.stream()
+            .map(s -> s.getStatisticDate().toString())
+            .collect(Collectors.toList());
+        List<Integer> casesHandled = stats.stream()
+            .map(s -> s.getCasesHandled() != null ? s.getCasesHandled() : 0)
+            .collect(Collectors.toList());
+        // Có thể bổ sung thêm các trường khác nếu muốn
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels);
+        result.put("data", casesHandled);
+        return result;
     }
 
     // Đánh giá từ người dùng (có tên seeker)
