@@ -14,7 +14,6 @@ import ChatBox from './components/ChatBox';
 import PaymentSuccess from './pages/payment-success';
 import PaymentCancel from './pages/payment-cancel';
 import Payment from './pages/payment'; // Import component thanh toán
-import TransactionHistory from './pages/transaction-history';
 import OrganizationRoute from "./routes/organizationRoute";
 import SearchOrganization from './pages/searchOrganization';
 import PrivacyPolicy from './pages/privacy';
@@ -44,7 +43,6 @@ function App() {
                                 <Route path="/payment" element={<Payment />} />
                                 <Route path="/payment/success" element={<PaymentSuccess />} />
                                 <Route path="/payment/cancel" element={<PaymentCancel />} />
-                                <Route path="/transaction-history" element={<TransactionHistory />} />
                                 <Route path="/search-university" element={<SearchOrganization />} />
                                 <Route path="/privacy" element={<PrivacyPolicy />} />
                                 <Route path="/terms" element={<TermsOfUse />} />

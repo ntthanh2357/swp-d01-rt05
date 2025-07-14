@@ -39,15 +39,7 @@ export default function Header() {
                                     <li><Link to="/search-staff">Find a Staff</Link></li>
                                 </ul>
                             </li>
-                            <li className="nav-item dropdown mx-3">
-                                <a className="nav-link dropdown-toggle text-dark" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown">
-                                    SERVICES
-                                </a>
-                                <ul className="dropdown-menu">
-                                    <li><Link className="dropdown-item" to="/services">Lịch sử giao dịch</Link></li>
-                                    <li><Link className="dropdown-item" to="/transaction-history">Quản lý giao dịch</Link></li>
-                                </ul>
-                            </li>
+
 
                             {user.isLoggedIn && (
                                 <>
