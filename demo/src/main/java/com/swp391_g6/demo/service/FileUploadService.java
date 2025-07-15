@@ -50,6 +50,8 @@ public class FileUploadService {
         System.out.println("File content type: " + file.getContentType());
         System.out.println("Detected file category: " + fileType);
 
+
+
         // Configure upload options
         Map<String, Object> uploadOptions = ObjectUtils.asMap(
                 "folder", "chat/" + fileType + "s",

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Modal, Table } from 'react-bootstrap';
 
-const ActiveSeekersModal = ({ show, onHide, seekers, loading }) => {
+const ActiveSeekersModal = ({ show, onHide, seekers, loading, onSeekerClick }) => {
     return (
         <Modal show={show} onHide={onHide} size="md" centered>
             <Modal.Header closeButton>
-                <Modal.Title>Danh sách Seeker đang tư vấn</Modal.Title>
+                <Modal.Title>Danh sách Seeker</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {loading ? (
@@ -27,7 +27,15 @@ const ActiveSeekersModal = ({ show, onHide, seekers, loading }) => {
                                 {seekers.map((seeker, index) => (
                                     <tr key={seeker.id || index}>
                                         <td className="text-center">{index + 1}</td>
-                                        <td>{seeker.name || `Seeker ${seeker.id}`}</td>
+                                        <td>
+                                            <button 
+                                                className="btn btn-link p-0 text-decoration-none"
+                                                onClick={() => onSeekerClick(seeker)}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                {seeker.name || `Seeker ${seeker.id}`}
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

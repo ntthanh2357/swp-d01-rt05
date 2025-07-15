@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import StaffActivityChart from "../components/StaffActivityChart";
 import ActiveSeekersModal from "../components/ActiveSeekersModal";
-import { getStaffOverview, getStaffFeedback, getActiveSeekers } from "../services/staffApi";
+import SeekerDetailModal from "../components/SeekerDetailModal";
+import { getStaffOverview, getStaffFeedback, getActiveSeekers, getSeekerDetail } from "../services/staffApi";
 import { UserContext } from "../contexts/UserContext";
 import { Card, Row, Col, Spinner, Table, Container, Button } from "react-bootstrap";
 import { User, Mail, Clock, Award } from "lucide-react";
@@ -21,6 +22,11 @@ function StaffDashboard({ staffId }) {
     const [showActiveSeekersModal, setShowActiveSeekersModal] = useState(false);
     const [activeSeekers, setActiveSeekers] = useState([]);
     const [loadingSeekers, setLoadingSeekers] = useState(false);
+
+    // State cho modal seeker detail
+    const [showSeekerDetailModal, setShowSeekerDetailModal] = useState(false);
+    const [selectedSeeker, setSelectedSeeker] = useState(null);
+    const [loadingSeekerDetail, setLoadingSeekerDetail] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -100,6 +106,27 @@ function StaffDashboard({ staffId }) {
         }
     };
 
+    // Function để xem chi tiết seeker
+    const handleSeekerClick = async (seeker) => {
+        setSelectedSeeker(seeker);
+        setShowSeekerDetailModal(true);
+        setLoadingSeekerDetail(true);
+        
+        try {
+            // Lấy thông tin chi tiết của seeker
+            const response = await getSeekerDetail({ 
+                seekerId: seeker.seeker_id || seeker.user_id, 
+                token: contextUser.accessToken 
+            });
+            setSelectedSeeker(response.data || seeker);
+        } catch (error) {
+            console.error('Error fetching seeker detail:', error);
+            // Nếu không lấy được chi tiết, vẫn hiển thị thông tin cơ bản
+        } finally {
+            setLoadingSeekerDetail(false);
+        }
+    };
+
     if (loading || !overview) return (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
             <Spinner animation="border" />
@@ -131,7 +158,7 @@ function StaffDashboard({ staffId }) {
                         >
                             <Card.Body>
                                 <User size={22} className="mb-2 text-primary" />
-                                <div className="fw-semibold">Seeker đang tư vấn</div>
+                                <div className="fw-semibold">Seeker đang chờ phản hồi</div>
                                 <div className="fs-4">{overview.activeSeekers}</div>
                             </Card.Body>
                         </Card>
@@ -335,6 +362,15 @@ function StaffDashboard({ staffId }) {
                 onHide={() => setShowActiveSeekersModal(false)}
                 seekers={activeSeekers}
                 loading={loadingSeekers}
+                onSeekerClick={handleSeekerClick}
+            />
+
+            {/* Modal hiển thị chi tiết seeker */}
+            <SeekerDetailModal
+                show={showSeekerDetailModal}
+                onHide={() => setShowSeekerDetailModal(false)}
+                seeker={selectedSeeker}
+                loading={loadingSeekerDetail}
             />
         </>
     );

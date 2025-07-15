@@ -45,7 +45,7 @@ public class SeekerController {
 
     // [POST] /api/seeker/profile - Lấy thông tin hồ sơ người tìm việc
     @PostMapping("/profile")
-    public ResponseEntity<?> getSeekerProfile(HttpServletRequest request) {
+    public ResponseEntity<?> getSeekerProfile(HttpServletRequest request, @RequestBody(required = false) Map<String, String> body) {
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bearer token is required");
@@ -62,27 +62,46 @@ public class SeekerController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
         }
 
+        // Kiểm tra nếu có seekerId trong body thì lấy thông tin seeker đó
+        String targetSeekerId = null;
+        if (body != null && body.get("seekerId") != null) {
+            targetSeekerId = body.get("seekerId");
+        }
+
+        User targetUser = user;
+        if (targetSeekerId != null && !targetSeekerId.equals(user.getUserId())) {
+            // Nếu có seekerId khác, kiểm tra quyền (chỉ staff mới được xem thông tin seeker khác)
+            if (!"staff".equals(user.getRole()) && !"admin".equals(user.getRole())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+            targetUser = userService.getUserById(targetSeekerId);
+            if (targetUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Target user not found");
+            }
+        }
+
         // Lấy thông tin seeker profile
-        Seeker seeker = seekerService.findByUser(user);
+        Seeker seeker = seekerService.findByUser(targetUser);
         if (seeker == null) {
             // Nếu chưa có seeker profile, tạo mới
-            seekerService.createSeekerProfile(user);
-            seeker = seekerService.findByUser(user);
+            seekerService.createSeekerProfile(targetUser);
+            seeker = seekerService.findByUser(targetUser);
         }
 
         Map<String, Object> response = new HashMap<>();
 
         // Thông tin cơ bản từ user
-        response.put("user_id", user.getUserId());
-        response.put("name", user.getName());
-        response.put("email", user.getEmail());
-        response.put("phone", user.getPhone());
-        response.put("date_of_birth", user.getDateOfBirth());
-        response.put("gender", user.getGender());
-        response.put("role", user.getRole());
+        response.put("user_id", targetUser.getUserId());
+        response.put("name", targetUser.getName());
+        response.put("email", targetUser.getEmail());
+        response.put("phone", targetUser.getPhone());
+        response.put("date_of_birth", targetUser.getDateOfBirth());
+        response.put("gender", targetUser.getGender());
+        response.put("role", targetUser.getRole());
 
         // Thông tin chi tiết từ seeker
         if (seeker != null) {
+            response.put("seeker_id", seeker.getSeekerId());
             response.put("current_education_level", seeker.getCurrentEducationLevel());
             response.put("field_of_study", seeker.getFieldOfStudy());
             response.put("gpa", seeker.getGpa());
@@ -94,6 +113,27 @@ public class SeekerController {
             response.put("bio", seeker.getBio());
             response.put("assigned_staff_id",
                     seeker.getAssignedStaff() != null ? seeker.getAssignedStaff().getUserId() : null);
+            
+            // Thêm thông tin từ form đăng ký tư vấn
+            response.put("study_time", seeker.getStudyTime());
+            response.put("city", seeker.getCity());
+            response.put("advice_type", seeker.getAdviceType());
+            response.put("scholarship_goal", seeker.getScholarshipGoal());
+            response.put("major", seeker.getMajor());
+            response.put("note", seeker.getNote());
+            response.put("contact_zalo_facebook", seeker.getContactZaloFacebook());
+            response.put("receive_promotions", seeker.getReceivePromotions());
+            response.put("created_at", seeker.getCreatedAt());
+            response.put("updated_at", seeker.getUpdatedAt());
+            
+            // Debug: In ra console để kiểm tra
+            System.out.println("Seeker data being sent:");
+            System.out.println("Study time: " + seeker.getStudyTime());
+            System.out.println("City: " + seeker.getCity());
+            System.out.println("Advice type: " + seeker.getAdviceType());
+            System.out.println("Scholarship goal: " + seeker.getScholarshipGoal());
+            System.out.println("Major: " + seeker.getMajor());
+            System.out.println("Note: " + seeker.getNote());
         }
 
         return ResponseEntity.ok(response);

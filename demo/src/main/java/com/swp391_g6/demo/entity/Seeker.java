@@ -47,6 +47,36 @@ public class Seeker {
     @Column(name = "bio", columnDefinition = "text")
     private String bio;
 
+    @Column(name = "study_time", length = 50)
+    private String studyTime;
+
+    @Column(name = "city", length = 200)
+    private String city;
+
+    @Column(name = "advice_type", length = 100)
+    private String adviceType;
+
+    @Column(name = "scholarship_goal", columnDefinition = "text")
+    private String scholarshipGoal;
+
+    @Column(name = "major", length = 200)
+    private String major;
+
+    @Column(name = "note", columnDefinition = "text")
+    private String note;
+
+    @Column(name = "contact_zalo_facebook")
+    private Boolean contactZaloFacebook;
+
+    @Column(name = "receive_promotions")
+    private Boolean receivePromotions;
+
+    @Column(name = "created_at")
+    private java.sql.Timestamp createdAt;
+
+    @Column(name = "updated_at")
+    private java.sql.Timestamp updatedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_staff_id", referencedColumnName = "user_id")
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -158,5 +188,86 @@ public class Seeker {
 
     public void setAssignedStaff(User assignedStaff) {
         this.assignedStaff = assignedStaff;
+    }
+
+    // Getters and setters for new fields
+    public String getStudyTime() {
+        return studyTime;
+    }
+
+    public void setStudyTime(String studyTime) {
+        this.studyTime = studyTime;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getAdviceType() {
+        return adviceType;
+    }
+
+    public void setAdviceType(String adviceType) {
+        this.adviceType = adviceType;
+    }
+
+    public String getScholarshipGoal() {
+        return scholarshipGoal;
+    }
+
+    public void setScholarshipGoal(String scholarshipGoal) {
+        this.scholarshipGoal = scholarshipGoal;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public Boolean getContactZaloFacebook() {
+        return contactZaloFacebook;
+    }
+
+    public void setContactZaloFacebook(Boolean contactZaloFacebook) {
+        this.contactZaloFacebook = contactZaloFacebook;
+    }
+
+    public Boolean getReceivePromotions() {
+        return receivePromotions;
+    }
+
+    public void setReceivePromotions(Boolean receivePromotions) {
+        this.receivePromotions = receivePromotions;
+    }
+
+    public java.sql.Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.sql.Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.sql.Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.sql.Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
