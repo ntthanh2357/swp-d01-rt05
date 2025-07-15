@@ -1,16 +1,16 @@
 package com.swp391_g6.demo.controller;
 
-import com.swp391_g6.demo.dto.ConsultationRequestDTO;
-import com.swp391_g6.demo.entity.SeekerStaffMapping;
-import com.swp391_g6.demo.entity.User;
-import com.swp391_g6.demo.service.SeekerStaffMappingService;
-import com.swp391_g6.demo.service.UserService;
-import com.swp391_g6.demo.util.JwtUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.swp391_g6.demo.dto.ConsultationRequestDTO;
+import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.Seeker;
+import com.swp391_g6.demo.service.UserService;
+import com.swp391_g6.demo.service.SeekerService;
+import com.swp391_g6.demo.util.JwtUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ public class ConsultationController {
     private UserService userService;
 
     @Autowired
-    private SeekerStaffMappingService mappingService;
+    private SeekerService seekerService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerConsultation(@RequestBody ConsultationRequestDTO request) {
@@ -34,89 +34,110 @@ public class ConsultationController {
             // Validate token
             String token = request.getToken();
             if (token == null || token.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Token is required"));
             }
 
-            String userId = jwtUtil.getUserIdFromToken(token);
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            String email = jwtUtil.extractEmail(token);
+            if (email == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid token"));
             }
 
-            // Kiểm tra user có tồn tại và có role seeker không
-            User user = userService.getUserById(userId);
+            User user = userService.findByEmail(email);
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "User not found"));
             }
 
-            if (!"seeker".equals(user.getRole())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only seekers can register for consultation");
+            // Validate required fields
+            if (request.getFullName() == null || request.getFullName().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Full name is required"));
             }
 
-            // Kiểm tra xem seeker đã có mapping chưa
-            if (mappingService.hasExistingMapping(userId)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Seeker already has a staff assigned");
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Email is required"));
             }
 
-            // Random mapping với staff
-            SeekerStaffMapping mapping = mappingService.randomAssignStaffToSeeker(userId);
-            
-            if (mapping == null) {
-                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("No staff available at the moment");
+            if (request.getPhone() == null || request.getPhone().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Phone is required"));
             }
+
+            // Đăng ký tư vấn
+            Seeker seeker = seekerService.registerConsultation(request, user);
 
             // Tạo response
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Đăng ký tư vấn thành công!");
-            response.put("seekerId", userId);
-            response.put("assignedStaffId", mapping.getStaffId());
-            response.put("assignedAt", mapping.getAssignedAt());
-            response.put("status", mapping.getStatus());
-            
-            // Thêm thông tin consultation 
-            Map<String, Object> details = new HashMap<>();
-            details.put("fullName", request.getFullName());
-            details.put("email", request.getEmail());
-            details.put("phone", request.getPhone());
-            details.put("country", request.getCountry());
-            details.put("studyTime", request.getStudyTime());
-            details.put("city", request.getCity());
-            details.put("educationLevel", request.getEducationLevel());
-            details.put("adviceType", request.getAdviceType());
-            details.put("scholarshipGoal", request.getScholarshipGoal());
-            details.put("major", request.getMajor());
-            details.put("note", request.getNote());
-            response.put("consultationDetails", details);
+            response.put("seeker_id", seeker.getSeekerId());
+            response.put("assigned_staff_id", seeker.getAssignedStaff() != null ? 
+                    seeker.getAssignedStaff().getUserId() : null);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Lỗi khi đăng ký tư vấn: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Có lỗi xảy ra: " + e.getMessage()));
         }
     }
 
-    @GetMapping("/status/{seekerId}")
-    public ResponseEntity<?> getConsultationStatus(@PathVariable String seekerId) {
+    @GetMapping("/profile")
+    public ResponseEntity<?> getConsultationProfile(@RequestHeader("Authorization") String authHeader) {
         try {
-            SeekerStaffMapping mapping = mappingService.getMappingBySeeker(seekerId);
-            
-            if (mapping == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No consultation found for this seeker");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Bearer token is required"));
             }
 
+            String token = authHeader.substring(7);
+            String email = jwtUtil.extractEmail(token);
+            if (email == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid token"));
+            }
+
+            User user = userService.findByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "User not found"));
+            }
+
+            Seeker seeker = seekerService.findByUser(user);
+            if (seeker == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Consultation profile not found"));
+            }
+
+            // Tạo response với thông tin đầy đủ
             Map<String, Object> response = new HashMap<>();
-            response.put("seekerId", mapping.getSeekerId());
-            response.put("staffId", mapping.getStaffId());
-            response.put("assignedAt", mapping.getAssignedAt());
-            response.put("status", mapping.getStatus());
+            response.put("seeker_id", seeker.getSeekerId());
+            response.put("full_name", user.getName());
+            response.put("email", user.getEmail());
+            response.put("phone", user.getPhone());
+            response.put("study_time", seeker.getStudyTime());
+            response.put("city", seeker.getCity());
+            response.put("education_level", seeker.getCurrentEducationLevel());
+            response.put("advice_type", seeker.getAdviceType());
+            response.put("scholarship_goal", seeker.getScholarshipGoal());
+            response.put("major", seeker.getMajor());
+            response.put("note", seeker.getNote());
+            response.put("contact_zalo_facebook", seeker.getContactZaloFacebook());
+            response.put("receive_promotions", seeker.getReceivePromotions());
+            response.put("assigned_staff_id", seeker.getAssignedStaff() != null ? 
+                    seeker.getAssignedStaff().getUserId() : null);
+            response.put("created_at", seeker.getCreatedAt());
+            response.put("updated_at", seeker.getUpdatedAt());
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Lỗi khi lấy trạng thái tư vấn: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Có lỗi xảy ra: " + e.getMessage()));
         }
     }
 } 

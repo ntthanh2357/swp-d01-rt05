@@ -18,9 +18,9 @@ const defaultCityOptionsByCountry = {
 const RegisterForm = ({ countryList }) => {
   const { user } = useContext(UserContext);
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
+    fullName: user ? user.name || "" : "",
+    email: user ? user.email || "" : "",
+    phone: user ? user.phone || "" : "",
     country: "",
     studyTime: "",
     city: "",
@@ -140,6 +140,7 @@ const RegisterForm = ({ countryList }) => {
             placeholder="Họ và tên*"
             value={formData.fullName}
             onChange={handleChange}
+            disabled={user && user.name}
           />
           {errors.fullName && <span className="error-msg">{errors.fullName}</span>}
         </div>
@@ -151,6 +152,7 @@ const RegisterForm = ({ countryList }) => {
             placeholder="Email*"
             value={formData.email}
             onChange={handleChange}
+            disabled={user && user.email}
           />
           {errors.email && <span className="error-msg">{errors.email}</span>}
         </div>
@@ -168,6 +170,7 @@ const RegisterForm = ({ countryList }) => {
               placeholder="Số điện thoại*"
               value={formData.phone}
               onChange={handleChange}
+              disabled={user && user.phone}
             />
             {errors.phone && <span className="error-msg">{errors.phone}</span>}
           </div>

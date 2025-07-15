@@ -33,3 +33,37 @@ export const verifyUpdateStaffProfileOtp = async (data) => {
 export const updateStaffProfile = async (data) => {
     return await axiosInstance.post(`/staff/update-staff-profile`, data);
 };
+
+export const getAllStaffs = async (filters) => {
+    if (!filters || Object.values(filters).every(v => v === undefined || v === "")) {
+        return await axiosInstance.post(`/staff/all`);
+    }
+    return await axiosInstance.post(`/staff/all`, filters);
+};
+
+// Lấy thông tin chi tiết của một seeker
+export const getSeekerDetail = async ({ seekerId, token }) => {
+    try {
+        console.log('Calling API with seekerId:', seekerId);
+        
+        const response = await fetch(`/api/seeker/profile`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ seekerId })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch seeker detail');
+        }
+
+        const data = await response.json();
+        console.log('API response:', data);
+        return data;
+    } catch (error) {
+        console.error('Error fetching seeker detail:', error);
+        throw error;
+    }
+};
