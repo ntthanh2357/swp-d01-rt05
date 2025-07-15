@@ -1381,3 +1381,6 @@ VALUES
 
 -- Seeker7 -> Staff1 (active)
 ('USER0000000007', 'USER0000000001', NOW() - INTERVAL 3 DAY, 'active');
+-- update bảng staff_review
+ALTER TABLE staff_review 
+MODIFY created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6);

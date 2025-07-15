@@ -1,14 +1,13 @@
 package com.swp391_g6.demo.service;
 
-import com.swp391_g6.demo.entity.Scholarship;
-import com.swp391_g6.demo.repository.ScholarshipRepository;
-
-import org.springframework.stereotype.Service;
-
 import java.sql.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.swp391_g6.demo.entity.Scholarship;
+import com.swp391_g6.demo.repository.ScholarshipRepository;
 
 @Service
 public class ScholarshipService {
@@ -35,7 +34,7 @@ public class ScholarshipService {
                 .orElseThrow(() -> new IllegalArgumentException("Scholarship not found with id: " + scholarshipId));
     }
 
-    public void addScholarship(String title, String description, String organizationName, String categoryId,
+    public Scholarship addScholarship(String title, String description, String organizationName, String categoryId,
             Double amount, String currency, Integer duration, Date applicationDeadline,
             String eligibilityCriteria, String countries, String educationLevels, String fieldsOfStudy, String createdBy) {
         String scholarshipId = idGeneratorService.generateScholarshipId();
@@ -54,9 +53,8 @@ public class ScholarshipService {
         scholarship.setEducationLevels(educationLevels);
         scholarship.setFieldsOfStudy(fieldsOfStudy);
         scholarship.setCreatedBy(createdBy);
-
-        scholarshipRepository.save(scholarship);
-
+        Scholarship savedScholarship = scholarshipRepository.save(scholarship);
+        return savedScholarship;
     }
 
     public void updateScholarship(Scholarship scholarship) {

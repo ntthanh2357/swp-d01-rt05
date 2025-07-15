@@ -36,11 +36,10 @@ export default function Header() {
                                 <ul className="dropdown-content">
                                     <li><Link to="/search-scholarships">Find Scholarships</Link></li>
                                     <li><Link to="/search-university">Find a University</Link></li>
+                                    <li><Link to="/search-staff">Find a Staff</Link></li>
                                 </ul>
                             </li>
-                            <li className="nav-item mx-3">
-                                <Link className="nav-link text-dark" to="/services">SERVICES</Link>
-                            </li>
+
 
                             {user.isLoggedIn && (
                                 <>
