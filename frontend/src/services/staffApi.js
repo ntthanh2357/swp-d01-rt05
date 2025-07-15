@@ -45,3 +45,7 @@ export const getPublicStaffProfile = async (staffId) => {
 export const postStaffReview = async (data) => {
     return await axiosInstance.post('/staff/review', data);
 };
+
+export const getSeekerDetail = async (seekerId) => {
+    return await axiosInstance.get(`/staff-dashboard/seeker/${seekerId}`);
+};

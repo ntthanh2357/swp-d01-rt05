@@ -110,12 +110,23 @@ public class DashboardService {
         return result;
     }
 
-    public List<User> getActiveSeekersForStaff(String staffId) {
+    public List<Map<String, Object>> getActiveSeekersForStaff(String staffId) {
         List<SeekerStaffMapping> mappings = seekerStaffMappingRepo.findByStaffIdAndStatus(
             staffId, SeekerStaffMapping.Status.active
         );
         List<String> seekerIds = mappings.stream().map(SeekerStaffMapping::getSeekerId).toList();
         if (seekerIds.isEmpty()) return List.of();
-        return userRepository.findByUserIdIn(seekerIds);
+        List<User> users = userRepository.findByUserIdIn(seekerIds);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (User u : users) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("user_id", u.getUserId());
+            map.put("name", u.getName());
+            map.put("email", u.getEmail());
+            map.put("phone", u.getPhone());
+            // Có thể bổ sung thêm các trường khác nếu muốn
+            result.add(map);
+        }
+        return result;
     }
 }
