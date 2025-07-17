@@ -286,9 +286,6 @@ const RegisterForm = ({ countryList }) => {
             {errors.agree && <span className="error-msg">{errors.agree}</span>}
           </label>
           <label>
-            <input type="checkbox" /> Liên hệ với tôi qua Zalo / Facebook
-          </label>
-          <label>
             <input type="checkbox" /> Tôi muốn nhận tin khuyến mãi / học bổng
           </label>
         </div>

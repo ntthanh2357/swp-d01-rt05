@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import RegisterForm from "./Register-book";
 import "../css/FloatingContactButton.css";
 import '../css/ContactWidget.css';
@@ -52,18 +52,6 @@ const FloatingContactButton = ({ setChatBoxOpen }) => {
                         >
                             <img src="/icons/fb-icon.png" alt="Facebook" className="icon-img" />
                             <span className="text">Facebook</span>
-                        </a>
-                    </div>
-
-                    <div className="contact-item">
-                        <a
-                            href="https://zalo.me/0867955247"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="contact-link full-item"
-                        >
-                            <img src="/icons/zalo-icon.jpg" alt="Zalo" className="icon-img" />
-                            <span className="text">Zalo</span>
                         </a>
                     </div>
                 </div>

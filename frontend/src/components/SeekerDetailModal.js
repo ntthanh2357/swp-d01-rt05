@@ -182,12 +182,6 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                             <Col md={6}>
                                 <h6 className="text-primary mb-3">📞 Liên hệ</h6>
                                 <div className="mb-2">
-                                    <strong>Liên hệ qua Zalo/Facebook:</strong> 
-                                    <Badge bg={seeker.contact_zalo_facebook ? "success" : "secondary"} className="ms-2">
-                                        {seeker.contact_zalo_facebook ? "Có" : "Không"}
-                                    </Badge>
-                                </div>
-                                <div className="mb-2">
                                     <strong>Nhận tin khuyến mãi:</strong>
                                     <Badge bg={seeker.receive_promotions ? "success" : "secondary"} className="ms-2">
                                         {seeker.receive_promotions ? "Có" : "Không"}

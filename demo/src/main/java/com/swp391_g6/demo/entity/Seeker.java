@@ -65,9 +65,6 @@ public class Seeker {
     @Column(name = "note", columnDefinition = "text")
     private String note;
 
-    @Column(name = "contact_zalo_facebook")
-    private Boolean contactZaloFacebook;
-
     @Column(name = "receive_promotions")
     private Boolean receivePromotions;
 
@@ -237,14 +234,6 @@ public class Seeker {
 
     public void setNote(String note) {
         this.note = note;
-    }
-
-    public Boolean getContactZaloFacebook() {
-        return contactZaloFacebook;
-    }
-
-    public void setContactZaloFacebook(Boolean contactZaloFacebook) {
-        this.contactZaloFacebook = contactZaloFacebook;
     }
 
     public Boolean getReceivePromotions() {

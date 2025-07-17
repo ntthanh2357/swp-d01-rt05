@@ -157,7 +157,6 @@ public class SeekerService {
         seeker.setScholarshipGoal(request.getScholarshipGoal());
         seeker.setMajor(request.getMajor());
         seeker.setNote(request.getNote());
-        seeker.setContactZaloFacebook(request.getContactZaloFacebook());
         seeker.setReceivePromotions(request.getReceivePromotions());
         seeker.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         seeker.setUpdatedAt(new Timestamp(System.currentTimeMillis()));

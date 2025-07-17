@@ -121,7 +121,6 @@ public class SeekerController {
             response.put("scholarship_goal", seeker.getScholarshipGoal());
             response.put("major", seeker.getMajor());
             response.put("note", seeker.getNote());
-            response.put("contact_zalo_facebook", seeker.getContactZaloFacebook());
             response.put("receive_promotions", seeker.getReceivePromotions());
             response.put("created_at", seeker.getCreatedAt());
             response.put("updated_at", seeker.getUpdatedAt());
