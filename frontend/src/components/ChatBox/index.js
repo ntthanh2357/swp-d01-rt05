@@ -31,6 +31,7 @@ const ChatBox = ({ setContactButtonOpen }) => {
     const [isSending, setIsSending] = useState(false);
     const [contactsLoaded, setContactsLoaded] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [showCallHistory, setShowCallHistory] = useState(false);
 
     const messagesEndRef = useRef(null);
     const prevMessagesLengthRef = useRef(0);
@@ -38,6 +39,40 @@ const ChatBox = ({ setContactButtonOpen }) => {
 
     // Add WebRTC hook
     const webRTC = useWebRTC(socket, user);
+
+    // Helper function to sort contacts with system support
+    const sortContactsWithSystem = (contactsData) => {
+        // Luôn đảm bảo có 'system' trong danh sách để tư vấn (ChatBox cần system để tư vấn)
+        const contactsWithSystem = [...contactsData];
+        const hasSystemContact = contactsWithSystem.some(contact => contact.userId === 'system');
+        if (!hasSystemContact) {
+            contactsWithSystem.push({
+                userId: 'system',
+                name: 'Tư vấn viên hỗ trợ',
+                lastMessage: 'Bắt đầu cuộc trò chuyện để được tư vấn',
+                lastMessageTime: null,
+                unreadCount: 0,
+                isOnline: true
+            });
+        }
+
+        // Sắp xếp: những conversation có tin nhắn sẽ lên đầu, system sẽ ở cuối nếu không có tin nhắn
+        return contactsWithSystem.sort((a, b) => {
+            const timeA = a.lastMessageTime ? new Date(a.lastMessageTime) : new Date(0);
+            const timeB = b.lastMessageTime ? new Date(b.lastMessageTime) : new Date(0);
+            
+            // Nếu cả hai đều có tin nhắn hoặc cả hai đều không có tin nhắn
+            if ((timeA.getTime() > 0 && timeB.getTime() > 0) || (timeA.getTime() === 0 && timeB.getTime() === 0)) {
+                return timeB - timeA;
+            }
+            
+            // Ưu tiên conversation có tin nhắn
+            if (timeA.getTime() > 0 && timeB.getTime() === 0) return -1;
+            if (timeA.getTime() === 0 && timeB.getTime() > 0) return 1;
+            
+            return 0;
+        });
+    };
 
     // Auto scroll to bottom - chỉ scroll khi có tin nhắn mới
     useEffect(() => {
@@ -57,18 +92,22 @@ const ChatBox = ({ setContactButtonOpen }) => {
             getContacts(user.accessToken)
                 .then(response => {
                     if (response.status === 200) {
-                        const sortedContacts = response.data.sort((a, b) => {
-                            const timeA = a.lastMessageTime ? new Date(a.lastMessageTime) : new Date(0);
-                            const timeB = b.lastMessageTime ? new Date(b.lastMessageTime) : new Date(0);
-                            return timeB - timeA;
-                        });
+                        const sortedContacts = sortContactsWithSystem(response.data);
 
                         setContacts(sortedContacts);
                         setContactsLoaded(true);
 
-                        // Auto-select first contact if no active conversation
-                        if (sortedContacts.length > 0 && !activeConversation) {
-                            loadConversation(sortedContacts[0].userId);
+                        // Nếu chưa có activeConversation, set về cuộc trò chuyện gần nhất hoặc 'system'
+                        if (!activeConversation) {
+                            const hasRecentMessages = sortedContacts.some(contact => contact.lastMessageTime && contact.userId !== 'system');
+                            if (hasRecentMessages) {
+                                // Load cuộc trò chuyện gần nhất nếu có tin nhắn (không phải system)
+                                const recentContact = sortedContacts.find(contact => contact.lastMessageTime && contact.userId !== 'system');
+                                setActiveConversation(recentContact.userId);
+                            } else {
+                                // Nếu không có tin nhắn nào, load 'system' để hiển thị prompts
+                                setActiveConversation('system');
+                            }
                         }
                     }
                 })
@@ -134,11 +173,7 @@ const ChatBox = ({ setContactButtonOpen }) => {
                         getContacts(user.accessToken)
                             .then(response => {
                                 if (response.status === 200) {
-                                    const sortedContacts = response.data.sort((a, b) => {
-                                        const timeA = a.lastMessageTime ? new Date(a.lastMessageTime) : new Date(0);
-                                        const timeB = b.lastMessageTime ? new Date(b.lastMessageTime) : new Date(0);
-                                        return timeB - timeA;
-                                    });
+                                    const sortedContacts = sortContactsWithSystem(response.data);
                                     setContacts(sortedContacts);
                                 }
                             })
@@ -185,11 +220,7 @@ const ChatBox = ({ setContactButtonOpen }) => {
                         getContacts(user.accessToken)
                             .then(response => {
                                 if (response.status === 200) {
-                                    const sortedContacts = response.data.sort((a, b) => {
-                                        const timeA = a.lastMessageTime ? new Date(a.lastMessageTime) : new Date(0);
-                                        const timeB = b.lastMessageTime ? new Date(b.lastMessageTime) : new Date(0);
-                                        return timeB - timeA;
-                                    });
+                                    const sortedContacts = sortContactsWithSystem(response.data);
                                     setContacts(sortedContacts);
                                 }
                             })
@@ -282,51 +313,49 @@ const ChatBox = ({ setContactButtonOpen }) => {
             {user?.isLoggedIn && isOpen && (
                 <div className="chat-box-container">
                     <div className="chat-box-header">
-                        <h5>Trò chuyện</h5>
-                        <div>
+                        <h5>Chat</h5>
+                        <div className="chat-header-controls">
+                            {/* Add call history button */}
+                            <button
+                                className="control-btn"
+                                onClick={() => setShowCallHistory(true)}
+                                title="Lịch sử cuộc gọi"
+                            >
+                                <i className="fas fa-history"></i>
+                            </button>
                             {/* Add call buttons */}
                             <button
-                                className="control-btn me-2"
-                                onClick={() => webRTC.startCall('system', 'Tư vấn viên hỗ trợ', false)}
+                                className="control-btn"
+                                onClick={() => webRTC.startCall(
+                                    activeConversation,
+                                    activeConversation === 'system' 
+                                        ? 'Tư vấn viên hỗ trợ'
+                                        : contacts.find(c => c.userId === activeConversation)?.name || 'Người dùng',
+                                    false
+                                )}
                                 title="Audio Call"
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'white',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                                disabled={!activeConversation}
                             >
                                 <i className="fas fa-phone"></i>
                             </button>
                             <button
-                                className="control-btn me-2"
-                                onClick={() => webRTC.startCall('system', 'Tư vấn viên hỗ trợ', true)}
+                                className="control-btn"
+                                onClick={() => webRTC.startCall(
+                                    activeConversation,
+                                    activeConversation === 'system' 
+                                        ? 'Tư vấn viên hỗ trợ'
+                                        : contacts.find(c => c.userId === activeConversation)?.name || 'Người dùng',
+                                    true
+                                )}
                                 title="Video Call"
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'white',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                                disabled={!activeConversation}
                             >
                                 <i className="fas fa-video"></i>
                             </button>
-                            <Link to="/messages" className="view-all-link" onClick={handleViewAll}>
-                                Xem tất cả
+                            <Link to="/messages" className="control-btn" onClick={handleViewAll} title="Xem tất cả">
+                                <i className="fas fa-external-link-alt"></i>
                             </Link>
-                            <button className="close-button" onClick={() => setIsOpen(false)}>
+                            <button className="close-button" onClick={() => setIsOpen(false)} title="Đóng">
                                 <i className="fas fa-times"></i>
                             </button>
                         </div>
@@ -367,18 +396,27 @@ const ChatBox = ({ setContactButtonOpen }) => {
                                 key={`${msg.id || index}-${msg.createdAt}`}
                                 className={`message-bubble ${msg.senderId === user?.userId ? 'outgoing' : 'incoming'}`}
                             >
-                                {renderMessageContent(msg)}
-                                <div className="message-time">
-                                    {moment(msg.createdAt).format('HH:mm')}
-                                    {msg.senderId === user?.userId && (
-                                        <span className="read-status">
-                                            {msg.isRead ? (
-                                                <i className="fas fa-check-double text-primary"></i>
-                                            ) : (
-                                                <i className="fas fa-check"></i>
-                                            )}
-                                        </span>
-                                    )}
+                                {msg.senderId !== user?.userId && (
+                                    <div className="message-avatar">
+                                        S
+                                    </div>
+                                )}
+                                <div className="message-content-wrapper">
+                                    <div className="message-content">
+                                        {renderMessageContent(msg)}
+                                    </div>
+                                    <div className="message-time">
+                                        {moment(msg.createdAt).format('HH:mm')}
+                                        {msg.senderId === user?.userId && (
+                                            <span className="read-status">
+                                                {msg.isRead ? (
+                                                    <i className="fas fa-check-double text-primary"></i>
+                                                ) : (
+                                                    <i className="fas fa-check"></i>
+                                                )}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -386,6 +424,24 @@ const ChatBox = ({ setContactButtonOpen }) => {
                     </div>
 
                     <div className="chat-box-footer">
+                        <div className="footer-actions">
+                            <button className="footer-btn emoji-btn" title="Emoji">
+                                <i className="fas fa-smile"></i>
+                            </button>
+                            <button
+                                className="footer-btn"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading || !isConnected}
+                                title="Gửi file"
+                            >
+                                {isUploading ? (
+                                    <i className="fas fa-spinner fa-spin"></i>
+                                ) : (
+                                    <i className="fas fa-paperclip"></i>
+                                )}
+                            </button>
+                        </div>
+                        
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -393,31 +449,22 @@ const ChatBox = ({ setContactButtonOpen }) => {
                             style={{ display: 'none' }}
                             accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
                         />
-                        <button
-                            className="file-upload-button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading || !isConnected}
-                            title="Gửi file"
-                        >
-                            {isUploading ? (
-                                <i className="fas fa-spinner fa-spin"></i>
-                            ) : (
-                                <i className="fas fa-paperclip"></i>
-                            )}
-                        </button>
+                        
                         <input
                             type="text"
                             className="chat-input"
-                            placeholder="Nhập tin nhắn..."
+                            placeholder="Aa"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && !isSending && handleSendMessage()}
                             disabled={isSending}
                         />
+                        
                         <button
                             className="send-button"
                             onClick={handleSendMessage}
                             disabled={!message.trim() || !isConnected || isSending}
+                            title="Gửi"
                         >
                             {isSending ? (
                                 <i className="fas fa-spinner fa-spin"></i>
