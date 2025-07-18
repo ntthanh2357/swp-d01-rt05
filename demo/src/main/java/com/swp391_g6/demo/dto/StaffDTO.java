@@ -14,6 +14,7 @@ public class StaffDTO {
     private Integer totalReviews;
     private Double rating;
     private Integer currentSeekerCount;
+    private String role;
 
     // Thông tin từ User
     private String name;
@@ -41,7 +42,7 @@ public class StaffDTO {
         this.phone = user.getPhone();
         this.dateOfBirth = user.getDateOfBirth();
         this.gender = user.getGender();
-        
+        this.role = user.getRole();
         // sử dụng SimpleDateFormat để định dạng ngày tháng
         if (user.getDateOfBirth() != null) {
             this.dateOfBirthString = new SimpleDateFormat("yyyy-MM-dd").format(user.getDateOfBirth());
@@ -151,5 +152,13 @@ public class StaffDTO {
 
     public void setDateOfBirthString(String dateOfBirthString) {
         this.dateOfBirthString = dateOfBirthString;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

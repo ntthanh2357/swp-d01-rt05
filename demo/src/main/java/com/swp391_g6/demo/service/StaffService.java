@@ -153,4 +153,15 @@ public class StaffService {
     public void saveStaffReview(StaffReview review) {
         staffReviewRepository.save(review);
     }
+
+    public void createStaffProfile(User user) {
+        if (user == null || !"staff".equals(user.getRole())) {
+            throw new RuntimeException("User must have role 'staff' to create staff profile");
+        }
+        if (staffRepository.findByStaffId(user.getUserId()) == null) {
+            Staff staff = new Staff();
+            staff.setUser(user);
+            staffRepository.save(staff);
+        }
+    }
 }

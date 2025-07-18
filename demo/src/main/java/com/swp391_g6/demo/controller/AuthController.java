@@ -19,6 +19,7 @@ import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.AuthService;
 import com.swp391_g6.demo.service.SeekerService;
 import com.swp391_g6.demo.service.GoogleAuthService;
+import com.swp391_g6.demo.service.StaffService;
 import com.swp391_g6.demo.util.JwtUtil;
 
 @RestController
@@ -36,6 +37,9 @@ public class AuthController {
 
     @Autowired
     private GoogleAuthService googleAuthService;
+
+    @Autowired
+    private StaffService staffService;
 
     // [POST] /api/auth/send-otp - Gửi mã OTP đến email
     @PostMapping("/send-otp")
@@ -61,6 +65,10 @@ public class AuthController {
         authService.createStaff(
                 user.getEmail(),
                 user.getPasswordHash());
+        // Lấy lại user vừa tạo và tạo staff profile liên kết (phòng trường hợp logic
+        // thay đổi)
+        User createdUser = authService.findByEmail(user.getEmail());
+        staffService.createStaffProfile(createdUser);
         return ResponseEntity.status(HttpStatus.CREATED).body("Staff created successfully");
     }
 
