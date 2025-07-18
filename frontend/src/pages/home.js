@@ -49,22 +49,6 @@ export default function Home() {
             <FlywireAd />
             <main className="container mt-5">
                 {/* Danh sách trường học */}
-                <section className="my-5">
-                    <h3 className="fw-bold mb-4">Trường học</h3>
-                    <div className="row g-4">
-                        {orgLoading ? (
-                            <div className="text-center my-5">Đang tải trường học...</div>
-                        ) : organizations.length === 0 ? (
-                            <div className="text-center my-5">Không có trường học nào.</div>
-                        ) : (
-                            organizations.map(org => (
-                                <div className="col-md-4" key={org.organizationId}>
-                                    <OrganizationCard organization={org} />
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </section>
                 {/* Nhóm nút liên hệ & chat */}
                 <div className="contact-widget-group">
                     <FloatingContactButton
