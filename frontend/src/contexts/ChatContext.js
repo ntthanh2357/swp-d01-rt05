@@ -170,7 +170,7 @@ export const ChatProvider = ({ children }) => {
                     senderName: user.name || 'User',
                     senderRole: user.role,
                     receiverId: receiverId,
-                    message: uploadResult.data.fileName || 'File attachment', // Sửa uploadResult thành uploadResult.data
+                    message: uploadResult.data.fileName || 'File attachment',
                     messageType: uploadResult.data.messageType,
                     fileUrl: uploadResult.data.fileUrl,
                     fileName: uploadResult.data.fileName,
