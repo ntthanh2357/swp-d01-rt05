@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { UserContext } from "../contexts/UserContext";
 import "../css/payment.css";
 
 const packages = [
@@ -39,6 +40,7 @@ const packages = [
 ];
 
 export default function PaymentPage() {
+  const { user } = useContext(UserContext);
   const [activeTab, setActiveTab] = useState('payment');
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -124,19 +126,35 @@ export default function PaymentPage() {
   };
   const handlePayment = async (selectedPackage) => {
     try {
+      // Check if user is logged in
+      if (!user || !user.accessToken) {
+        alert("Vui lòng đăng nhập để thực hiện thanh toán.");
+        return;
+      }
+
       const response = await fetch("/api/payos/create-payment-link", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.accessToken}`,
         },
         body: JSON.stringify({
           amount: selectedPackage.amount,
           description: selectedPackage.name,
+          packageId: selectedPackage.id,
         }),
       });
 
       const data = await response.json();
       if (data.success && data.checkoutUrl) {
+        // Store package info in localStorage for payment success page
+        localStorage.setItem('pendingPayment', JSON.stringify({
+          packageId: selectedPackage.id,
+          packageName: selectedPackage.name,
+          orderCode: data.orderCode,
+          paymentId: data.paymentId
+        }));
+        
         // Redirect to PayOS hosted payment page
         window.location.href = data.checkoutUrl;
       } else {

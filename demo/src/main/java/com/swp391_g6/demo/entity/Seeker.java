@@ -68,6 +68,9 @@ public class Seeker {
     @Column(name = "receive_promotions")
     private Boolean receivePromotions;
 
+    @Column(name = "purchased_package", length = 20)
+    private String purchasedPackage;
+
     @Column(name = "created_at")
     private java.sql.Timestamp createdAt;
 
@@ -242,6 +245,14 @@ public class Seeker {
 
     public void setReceivePromotions(Boolean receivePromotions) {
         this.receivePromotions = receivePromotions;
+    }
+
+    public String getPurchasedPackage() {
+        return purchasedPackage;
+    }
+
+    public void setPurchasedPackage(String purchasedPackage) {
+        this.purchasedPackage = purchasedPackage;
     }
 
     public java.sql.Timestamp getCreatedAt() {

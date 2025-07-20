@@ -1383,3 +1383,50 @@ VALUES
 -- update bảng staff_review
 ALTER TABLE staff_review 
 MODIFY created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6);
+
+-- ===================================================================
+-- PAYMENT SYSTEM TABLES
+-- ===================================================================
+
+-- Payment packages table
+CREATE TABLE payment_packages (
+    package_id VARCHAR(20) PRIMARY KEY,
+    package_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    amount INT NOT NULL,
+    features JSON,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default packages
+INSERT INTO payment_packages (package_id, package_name, description, amount, features) VALUES
+('basic', 'GÓI HỖ TRỢ ĐƠN GIẢN', 'Phù hợp với người có thể tự làm, chỉ cần hướng dẫn đúng lộ trình.', 10000, 
+'["Định hướng chọn ngành, trường, học bổng phù hợp.", "Checklist hồ sơ cần chuẩn bị.", "Mẫu CV, SOP, thư giới thiệu.", "Nhận xét nhanh 1 lần trên hồ sơ.", "Không bao gồm: sửa bài luận, hỗ trợ nộp hồ sơ hoặc visa."]'),
+('premium', 'GÓI TOÀN DIỆN', 'Phù hợp với người cần hỗ trợ đầy đủ toàn bộ quy trình.', 50000, 
+'["Tư vấn chiến lược toàn diện về ngành học và quốc gia.", "Sửa CV, bài luận, thư giới thiệu không giới hạn.", "Hướng dẫn và đồng hành nộp hồ sơ học bổng, visa.", "Ưu tiên phản hồi nhanh và tư vấn 1:1."]');
+
+-- Payments table
+CREATE TABLE payments (
+    payment_id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(15) NOT NULL,
+    package_id VARCHAR(20) NOT NULL,
+    order_code BIGINT NOT NULL UNIQUE,
+    amount INT NOT NULL,
+    description TEXT,
+    payment_method VARCHAR(50) DEFAULT 'PayOS',
+    status ENUM('PENDING', 'PAID', 'CANCELLED', 'FAILED') DEFAULT 'PENDING',
+    payment_url TEXT,
+    checkout_url TEXT,
+    paid_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES payment_packages(package_id)
+);
+
+-- Add purchased_package field to seeker_profiles
+ALTER TABLE seeker_profiles 
+ADD COLUMN purchased_package VARCHAR(20) DEFAULT NULL,
+ADD FOREIGN KEY (purchased_package) REFERENCES payment_packages(package_id);

@@ -73,6 +73,8 @@ function UserProfile() {
                 if (response.status !== 200) {
                     throw new Error("Failed to fetch profile");
                 }
+                console.log("Profile data received:", response.data);
+                console.log("Purchased package:", response.data.purchased_package);
                 setProfile(response.data);
                 reset(response.data);
             } catch (error) {
@@ -381,6 +383,22 @@ function UserProfile() {
                                                 : profile.gender === "female"
                                                     ? "Nữ"
                                                     : "Chưa cập nhật"}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gói dịch vụ đã mua</td>
+                                        <td>
+                                            {profile.purchased_package ? (
+                                                <span className="badge bg-success">
+                                                    {profile.purchased_package === 'basic' 
+                                                        ? 'Gói Hỗ trợ Đơn giản' 
+                                                        : profile.purchased_package === 'premium' 
+                                                        ? 'Gói Toàn diện' 
+                                                        : profile.purchased_package}
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted">Chưa mua gói nào</span>
+                                            )}
                                         </td>
                                     </tr>
                                     <tr>
