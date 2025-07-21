@@ -51,7 +51,7 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                         </div>
                         <div>
                             <div className="fw-bold">{seeker.name || 'Thông tin Seeker'}</div>
-                            <small className="text-muted">ID: {seeker.seeker_id || seeker.user_id}</small>
+                            <small className="text-muted">ID: {seeker.seekerId || seeker.seeker_id || seeker.userId || seeker.user_id || 'Chưa cập nhật'}</small>
                         </div>
                     </div>
                 </Modal.Title>
@@ -88,10 +88,10 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                             <Col md={6}>
                                 <h6 className="text-primary mb-3">🎓 Thông tin học vấn</h6>
                                 <div className="mb-2">
-                                    <strong>Cấp độ học vấn hiện tại:</strong> {getEducationLevelText(seeker.current_education_level)}
+                                    <strong>Cấp độ học vấn hiện tại:</strong> {getEducationLevelText(seeker.currentEducationLevel || seeker.current_education_level)}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Ngành học:</strong> {seeker.field_of_study || seeker.major || 'Chưa cập nhật'}
+                                    <strong>Ngành học:</strong> {seeker.field_of_study || seeker.fieldOfStudy || seeker.major || 'Chưa cập nhật'}
                                 </div>
                                 <div className="mb-2">
                                     <strong>Major (từ form):</strong> {seeker.major || 'Chưa cập nhật'}
@@ -112,8 +112,8 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                                 <div className="mb-2">
                                     <strong>Quốc gia mục tiêu:</strong>
                                     <div className="mt-1">
-                                        {parseJsonField(seeker.target_countries).length > 0 ? (
-                                            parseJsonField(seeker.target_countries).map((country, index) => (
+                                        {parseJsonField(seeker.targetCountries || seeker.target_countries).length > 0 ? (
+                                            parseJsonField(seeker.targetCountries || seeker.target_countries).map((country, index) => (
                                                 <Badge key={index} bg="info" className="me-1 mb-1">
                                                     {country}
                                                 </Badge>
@@ -127,22 +127,22 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                                     <strong>Thành phố:</strong> {seeker.city || 'Chưa cập nhật'}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Thời gian dự định:</strong> {seeker.study_time || 'Chưa cập nhật'}
+                                    <strong>Thời gian dự định:</strong> {seeker.studyTime || seeker.study_time || 'Chưa cập nhật'}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Advice Type:</strong> {seeker.advice_type || 'Chưa cập nhật'}
+                                    <strong>Advice Type:</strong> {seeker.adviceType || seeker.advice_type || 'Chưa cập nhật'}
                                 </div>
                             </Col>
                             <Col md={6}>
                                 <h6 className="text-primary mb-3">💬 Thông tin tư vấn</h6>
                                 <div className="mb-2">
-                                    <strong>Hình thức tư vấn:</strong> {seeker.advice_type || 'Chưa cập nhật'}
+                                    <strong>Hình thức tư vấn:</strong> {seeker.adviceType || seeker.advice_type || 'Chưa cập nhật'}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Mục tiêu học bổng:</strong> {seeker.scholarship_goal || 'Chưa cập nhật'}
+                                    <strong>Mục tiêu học bổng:</strong> {seeker.scholarshipGoal || seeker.scholarship_goal || 'Chưa cập nhật'}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Scholarship Goal (raw):</strong> {seeker.scholarship_goal || 'Chưa cập nhật'}
+                                    <strong>Scholarship Goal (raw):</strong> {seeker.scholarshipGoal || seeker.scholarship_goal || 'Chưa cập nhật'}
                                 </div>
                                 <div className="mb-2">
                                     <strong>Mức độ cần hỗ trợ tài chính:</strong> {getFinancialNeedText(seeker.financial_need_level)}
@@ -191,13 +191,13 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                             <Col md={6}>
                                 <h6 className="text-primary mb-3">📅 Thông tin hệ thống</h6>
                                 <div className="mb-2">
-                                    <strong>Ngày tạo:</strong> {formatDate(seeker.created_at)}
+                                    <strong>Ngày tạo:</strong> {formatDate(seeker.createdAt || seeker.created_at)}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Cập nhật lần cuối:</strong> {formatDate(seeker.updated_at)}
+                                    <strong>Cập nhật lần cuối:</strong> {formatDate(seeker.updatedAt || seeker.updated_at)}
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Staff được phân công:</strong> {seeker.assigned_staff_id || 'Chưa phân công'}
+                                    <strong>Staff được phân công:</strong> {seeker.assignedStaffId || seeker.assigned_staff_id || 'Chưa phân công'}
                                 </div>
                             </Col>
                         </Row>

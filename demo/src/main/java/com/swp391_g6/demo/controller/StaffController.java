@@ -2,6 +2,7 @@ package com.swp391_g6.demo.controller;
 
 import com.swp391_g6.demo.dto.EmailRequest;
 import com.swp391_g6.demo.dto.StaffDTO;
+import com.swp391_g6.demo.entity.Staff;
 import com.swp391_g6.demo.entity.StaffReview;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.DashboardService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

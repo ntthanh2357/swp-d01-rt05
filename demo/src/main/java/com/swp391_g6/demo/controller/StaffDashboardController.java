@@ -9,6 +9,9 @@ import com.swp391_g6.demo.entity.StaffReview;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.util.JwtUtil;
 import com.swp391_g6.demo.service.DashboardService;
+import com.swp391_g6.demo.repository.SeekerRepository;
+import com.swp391_g6.demo.entity.Seeker;
+import com.swp391_g6.demo.dto.SeekerDTO;
 
 import java.util.*;
 
@@ -22,6 +25,9 @@ public class StaffDashboardController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private SeekerRepository seekerRepository;
 
     // Tổng quan số liệu
     @PostMapping("/overview")
@@ -86,7 +92,42 @@ public class StaffDashboardController {
         if (user == null || user.getRole() == null || !user.getRole().equals("staff")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
-        List<User> seekers = dashboardService.getActiveSeekersForStaff(user.getUserId());
+        List<Map<String, Object>> seekers = dashboardService.getActiveSeekersForStaff(user.getUserId());
         return ResponseEntity.ok(seekers);
+    }
+
+    @GetMapping("/seeker/{userId}")
+    public ResponseEntity<?> getSeekerDetail(@PathVariable String userId) {
+        Seeker seeker = seekerRepository.findById(userId).orElse(null);
+        if (seeker != null && seeker.getUser() != null) {
+            User user = seeker.getUser();
+            SeekerDTO dto = new SeekerDTO();
+            dto.setUserId(user.getUserId());
+            dto.setName(user.getName());
+            dto.setEmail(user.getEmail());
+            dto.setPhone(user.getPhone());
+            dto.setGender(user.getGender());
+            dto.setBio(seeker.getBio());
+            dto.setCurrentEducationLevel(seeker.getCurrentEducationLevel() != null ? seeker.getCurrentEducationLevel().name() : null);
+            dto.setCity(seeker.getCity());
+            dto.setGpa(seeker.getGpa());
+            dto.setMajor(seeker.getMajor());
+            dto.setNote(seeker.getNote());
+            dto.setAdviceType(seeker.getAdviceType());
+            dto.setTargetCountries(seeker.getTargetCountries());
+            dto.setPreferredLanguages(seeker.getPreferredLanguages());
+            dto.setScholarshipGoal(seeker.getScholarshipGoal());
+            dto.setStudyTime(seeker.getStudyTime());
+            dto.setContactZaloFacebook(seeker.getContactZaloFacebook());
+            dto.setReceivePromotions(seeker.getReceivePromotions());
+            dto.setSeekerId(seeker.getSeekerId());
+            dto.setAssignedStaffId(seeker.getAssignedStaff() != null ? seeker.getAssignedStaff().getUserId() : null);
+            dto.setCreatedAt(seeker.getCreatedAt());
+            dto.setUpdatedAt(seeker.getUpdatedAt());
+            // ... set các trường khác nếu cần
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Seeker not found");
+        }
     }
 }

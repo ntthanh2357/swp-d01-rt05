@@ -108,17 +108,16 @@ function StaffDashboard({ staffId }) {
 
     // Function để xem chi tiết seeker
     const handleSeekerClick = async (seeker) => {
+        // Lấy đúng seekerId (ưu tiên các trường phổ biến)
+        const seekerId = seeker.seeker_id || seeker.user_id || seeker.id;
         setSelectedSeeker(seeker);
         setShowSeekerDetailModal(true);
         setLoadingSeekerDetail(true);
         
         try {
-            // Lấy thông tin chi tiết của seeker
-            const response = await getSeekerDetail({ 
-                seekerId: seeker.seeker_id || seeker.user_id, 
-                token: contextUser.accessToken 
-            });
-            setSelectedSeeker(response.data || seeker);
+            // SỬA: chỉ truyền seekerId (string) vào getSeekerDetail
+            const response = await getSeekerDetail(seekerId);
+            setSelectedSeeker(response.data || response || seeker);
         } catch (error) {
             console.error('Error fetching seeker detail:', error);
             // Nếu không lấy được chi tiết, vẫn hiển thị thông tin cơ bản
