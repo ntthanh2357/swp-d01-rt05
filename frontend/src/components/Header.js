@@ -160,6 +160,7 @@ export default function Header() {
                                     <ul className="dropdown-content">
                                         <li><Link to="/search-scholarships" onClick={() => setDrawerOpen(false)}>Find Scholarships</Link></li>
                                         <li><Link to="/search-university" onClick={() => setDrawerOpen(false)}>Find a University</Link></li>
+                                        <li><Link to="/search-staff" onClick={() => setDrawerOpen(false)}>Find a Staff</Link></li>
                                     </ul>
                                 </li>
                                 <li className="nav-item mb-3">

@@ -33,30 +33,39 @@ function LoginForm() {
     const onSubmit = async (data) => {
         setIsLoading(true);
         setErrorMessage("");
-
         try {
             const res = await loginUser({
                 email: data.email,
                 password: data.password,
             });
-
+            console.log("API Response:", res); // Log phản hồi API
             if (res.status === 200) {
                 const accessToken = res.data.token;
+                console.log("Access Token:", accessToken); // Log token
                 if (typeof accessToken === "string" && accessToken.length > 0) {
-                    // Lưu token vào localStorage nếu cần
                     localStorage.setItem("accessToken", accessToken);
-                    // Giải mã token để lấy role
                     const decoded = jwtDecode(accessToken);
+                    console.log("Decoded Token:", decoded); // Log decoded token
                     if (decoded.role === "staff") {
-                        window.location.href = "/staff/staff-dashboard";
+                        toast.success("Đăng nhập thành công với quyền nhân viên!");
+                        setTimeout(() => {
+                            console.log("Redirecting to /staff/staff-dashboard");
+                            window.location.href = "/staff/staff-dashboard";
+                        }, 1000);
                     } else {
-                        window.location.href = "/";
+                        toast.success("Đăng nhập thành công!");
+                        setTimeout(() => {
+                            console.log("Redirecting to /");
+                            window.location.href = "/";
+                        }, 1000);
                     }
                 } else {
                     setErrorMessage("Lỗi: Không nhận được accessToken hợp lệ từ server.");
                 }
             }
         } catch (error) {
+            console.error("Login Error:", error); // Log lỗi
+            toast.error("Đăng nhập thất bại.");
             setErrorMessage("Email hoặc mật khẩu không đúng");
         } finally {
             setIsLoading(false);

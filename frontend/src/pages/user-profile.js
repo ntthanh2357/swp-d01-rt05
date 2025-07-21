@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
@@ -189,12 +189,41 @@ function UserProfile() {
                 newPassword: data.new_password,
                 token: user.accessToken
             });
+
             if (res.status === 200) {
-                toast.success("Đổi mật khẩu thành công!");
                 setShowChangePasswordModal(false);
+                setTimeout(() => {
+                    toast.success("Đổi mật khẩu thành công!", { autoClose: 3000 });
+                }, 300);
             }
         } catch (err) {
-            setChangePasswordError("Đổi mật khẩu thất bại. Vui lòng thử lại.");
+            let errorMessage = "Đổi mật khẩu thất bại. Vui lòng thử lại.";
+
+            if (err.response) {
+                switch (err.response.status) {
+                    case 400:
+                        // Kiểm tra message cụ thể để phân biệt 2 loại lỗi 400
+                        if (err.response.data.includes("trùng")) {
+                            errorMessage = "Mật khẩu mới không được trùng với mật khẩu cũ";
+                        } else {
+                            errorMessage = "Mật khẩu cũ không đúng";
+                        }
+                        break;
+                    case 404:
+                        errorMessage = "Người dùng không tồn tại";
+                        break;
+                    case 500:
+                        errorMessage = "Lỗi server. Vui lòng thử lại sau";
+                        break;
+                    default:
+                        errorMessage = err.response.data || "Đổi mật khẩu thất bại";
+                }
+            }
+
+            setChangePasswordError(errorMessage);
+            setTimeout(() => {
+                toast.error(errorMessage, { autoClose: 3000 });
+            }, 300);
         }
         setChangePasswordLoading(false);
     };
@@ -400,6 +429,7 @@ function UserProfile() {
                         )}
                     </div>
                 </div>
+                <ToastContainer />
             </div>
 
             <OtpModal

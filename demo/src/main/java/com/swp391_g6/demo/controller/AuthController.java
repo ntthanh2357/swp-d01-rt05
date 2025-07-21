@@ -144,14 +144,28 @@ public class AuthController {
     }
 
     // [POST] /api/auth/change-password - Đổi mật khẩu
+    // [POST] /api/auth/change-password - Đổi mật khẩu
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String oldPassword = request.get("oldPassword");
         String newPassword = request.get("newPassword");
 
-        authService.changePassword(email, oldPassword, newPassword);
-        return ResponseEntity.status(HttpStatus.OK).body("Mật khẩu đã được cập nhật thành công");
+        int result = authService.changePassword(email, oldPassword, newPassword);
+
+        switch (result) {
+            case 0:
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Người dùng không tồn tại");
+            case 1:
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mật khẩu cũ không đúng");
+            case 2:
+                return ResponseEntity.status(HttpStatus.OK).body("Mật khẩu đã được cập nhật thành công");
+            case 3:
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Mật khẩu mới không được trùng với mật khẩu cũ");
+            default:
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi không xác định");
+        }
     }
 
     @PostMapping("/refresh-token")
