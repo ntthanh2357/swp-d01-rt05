@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { UserContext } from "../contexts/UserContext";
-import { seekerProfile, sendUpdateSeekerProfileOtp, verifyUpdateSeekerProfileOtp, seekerProfileUpdate } from "../services/seekerApi";
+import { seekerProfile, sendUpdateSeekerProfileOtp, verifyUpdateSeekerProfileOtp } from "../services/seekerApi";
 import { sendUpdateUserProfileOtp, verifyUpdateUserProfileOtp, userProfileUpdate } from "../services/userApi";
 import { changePassword } from "../services/authApi";
 
@@ -35,7 +35,7 @@ const profileSchema = yup.object().shape({
 });
 
 function UserProfile() {
-    const { user } = useContext(UserContext);
+    const { user, updatePurchasedPackage } = useContext(UserContext);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editPersonal, setEditPersonal] = useState(false);
@@ -77,6 +77,11 @@ function UserProfile() {
                 console.log("Purchased package:", response.data.purchased_package);
                 setProfile(response.data);
                 reset(response.data);
+                
+                // Cập nhật purchased package trong UserContext nếu có
+                if (response.data.purchased_package && updatePurchasedPackage) {
+                    updatePurchasedPackage(response.data.purchased_package);
+                }
             } catch (error) {
                 console.error("Error fetching profile:", error);
             } finally {
@@ -85,7 +90,7 @@ function UserProfile() {
         };
 
         fetchProfile();
-    }, [user, reset]);
+    }, [user, reset, updatePurchasedPackage]);
 
     if (loading) {
         return (

@@ -55,17 +55,19 @@ export default function Header() {
 
                             {user.isLoggedIn && (
                                 <>
-
-                                    <li className="nav-item mx-3">
-                                        <Link to="/messages" className="nav-link text-dark position-relative">
-                                            MESSAGES
-                                            {unreadCount > 0 && (
-                                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                    {unreadCount}
-                                                </span>
-                                            )}
-                                        </Link>
-                                    </li>
+                                    {/* Chỉ hiển thị Messages cho seeker đã mua gói hoặc non-seeker */}
+                                    {(user.role !== 'seeker' || user.purchasedPackage) && (
+                                        <li className="nav-item mx-3">
+                                            <Link to="/messages" className="nav-link text-dark position-relative">
+                                                MESSAGES
+                                                {unreadCount > 0 && (
+                                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                        {unreadCount}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </li>
+                                    )}
                                     {user.role === 'seeker' && (
                                         <>
                                             <li className="nav-item mx-3">
@@ -167,16 +169,19 @@ export default function Header() {
                                 </li>
                                 {user.isLoggedIn && (
                                     <>
-                                        <li className="nav-item mb-3">
-                                            <Link to="/messages" className="nav-link text-dark position-relative" onClick={() => setDrawerOpen(false)}>
-                                                MESSAGES
-                                                {unreadCount > 0 && (
-                                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                        {unreadCount}
-                                                    </span>
-                                                )}
-                                            </Link>
-                                        </li>
+                                        {/* Chỉ hiển thị Messages cho seeker đã mua gói hoặc non-seeker */}
+                                        {(user.role !== 'seeker' || user.purchasedPackage) && (
+                                            <li className="nav-item mb-3">
+                                                <Link to="/messages" className="nav-link text-dark position-relative" onClick={() => setDrawerOpen(false)}>
+                                                    MESSAGES
+                                                    {unreadCount > 0 && (
+                                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                            {unreadCount}
+                                                        </span>
+                                                    )}
+                                                </Link>
+                                            </li>
+                                        )}
                                         {user.role === 'seeker' && (
                                             <>
                                                 <li className="nav-item mb-3">

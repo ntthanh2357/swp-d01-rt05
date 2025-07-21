@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { UserContext } from '../contexts/UserContext';
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [processing, setProcessing] = useState(true);
   const [message, setMessage] = useState('Đang xử lý thanh toán...');
+  const { updatePurchasedPackage } = useContext(UserContext);
 
   useEffect(() => {
     const handlePaymentSuccess = async () => {
@@ -31,6 +33,17 @@ export default function PaymentSuccess() {
           if (data.success) {
             setMessage('Thanh toán thành công! Gói dịch vụ đã được kích hoạt.');
             
+            // Cập nhật purchased package trong UserContext
+            const pendingPayment = localStorage.getItem('pendingPayment');
+            if (pendingPayment) {
+              try {
+                const paymentInfo = JSON.parse(pendingPayment);
+                updatePurchasedPackage(paymentInfo.packageId);
+              } catch (e) {
+                console.error('Error parsing pending payment:', e);
+              }
+            }
+            
             // Clean up localStorage
             localStorage.removeItem('pendingPayment');
           } else {
@@ -55,7 +68,7 @@ export default function PaymentSuccess() {
     };
 
     handlePaymentSuccess();
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, updatePurchasedPackage]);
 
   return (
     <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>

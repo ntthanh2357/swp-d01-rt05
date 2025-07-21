@@ -5,6 +5,7 @@ import { ChatContext } from '../contexts/ChatContext';
 import { getContacts, markAsRead, getPrompts } from '../services/chatApi';
 import moment from 'moment';
 import Header from '../components/Header';
+import PurchaseRequiredModal from '../components/PurchaseRequiredModal';
 import '../css/messages.css';
 import { useWebRTC } from '../hooks/useWebRTC';
 import CallInterface from '../components/CallInterface';
@@ -31,6 +32,7 @@ const Messages = () => {
     const [loading, setLoading] = useState(true);
     const [prompts, setPrompts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
     // Add WebRTC hook
     const webRTC = useWebRTC(socket, user);
@@ -90,14 +92,24 @@ const Messages = () => {
                 navigate('/auth/login');
                 setIsCheckingAuth(false);
             } else {
+                // Kiểm tra nếu là seeker chưa mua gói thì hiển thị modal
+                if (user.role === 'seeker' && !user.purchasedPackage) {
+                    setShowPurchaseModal(true);
+                }
                 setIsCheckingAuth(false);
             }
         }
-    }, [user, navigate, isInitialLoading]);
+    }, [user, navigate, isInitialLoading, setShowPurchaseModal]);
 
     // Load contacts
     useEffect(() => {
         if (user?.accessToken && !isCheckingAuth && !isInitialLoading) {
+            // Nếu là seeker chưa mua gói thì không load contacts
+            if (user.role === 'seeker' && !user.purchasedPackage) {
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             getContacts(user.accessToken)
                 .then(response => {
@@ -128,7 +140,7 @@ const Messages = () => {
                     setLoading(false);
                 });
         }
-    }, [user?.accessToken, isCheckingAuth, isInitialLoading, activeConversation, loadConversation]);
+    }, [user?.accessToken, user?.role, user?.purchasedPackage, isCheckingAuth, isInitialLoading, activeConversation, loadConversation]);
 
     // Auto scroll to bottom
     const messagesEndRef = useRef(null);
@@ -627,6 +639,15 @@ const Messages = () => {
                     )}
                 </div>
             </div>
+
+            {/* Purchase Required Modal */}
+            <PurchaseRequiredModal 
+                show={showPurchaseModal} 
+                onClose={() => {
+                    setShowPurchaseModal(false);
+                    navigate('/');
+                }} 
+            />
         </div>
     );
 };
