@@ -47,8 +47,18 @@ const SearchScholarship = () => {
             try {
                 const res = await getAllScholarships();
                 const data = res.data;
-                setScholarships(data);
-                setFilteredScholarships(data);
+
+                const now = new Date();
+                const validScholarships = data.filter(sch => {
+                    if (!sch.applicationDeadline) return true;
+                    const deadlineDate = new Date(sch.applicationDeadline);
+                    return deadlineDate >= now ;
+                }  );
+                setScholarships(validScholarships);
+                setFilteredScholarships(validScholarships);
+
+                // setScholarships(data);
+                // setFilteredScholarships(data);
                 const fieldsSet = new Set();
                 const citiesSet = new Set();
                 data.forEach((sch) => {
