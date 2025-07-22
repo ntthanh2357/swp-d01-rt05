@@ -169,16 +169,25 @@ public class AuthService {
         }
     }
 
-    public void changePassword(String email, String oldPassword, String newPassword) {
+    public int changePassword(String email, String oldPassword, String newPassword) {
         User user = userRepository.findByEmail(email);
-        if (user != null && passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-            String password_hash = passwordEncoder.encode(newPassword);
-            user.setPasswordHash(password_hash);
-            Timestamp now = Timestamp
-                    .from(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Bangkok")).toInstant());
-            user.setUpdatedAt(now);
-            userRepository.save(user);
+        if (user == null) {
+            return 0;
         }
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            return 1;
+        }
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            return 3;
+        }
+
+        String password_hash = passwordEncoder.encode(newPassword);
+        user.setPasswordHash(password_hash);
+        Timestamp now = Timestamp
+                .from(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Bangkok")).toInstant());
+        user.setUpdatedAt(now);
+        userRepository.save(user);
+        return 2;
     }
 
 }

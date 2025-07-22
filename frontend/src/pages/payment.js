@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from "react";
+// Import React hooks và components cần thiết
+import React, { useState, useEffect, useContext } from "react";
+// Import các component layout
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+// Import UserContext để quản lý thông tin người dùng
+import { UserContext } from "../contexts/UserContext";
+// Import CSS styling cho trang thanh toán
 import "../css/payment.css";
 
+// Định nghĩa các gói dịch vụ tư vấn học bổng
 const packages = [
   {
     id: "basic",
-    name: "GÓI HỖ TRỢ ĐƠN GIẢN",
+    name: "GÓI HỖ TRỢ ĐƠN GIẢN", // Tên gói cơ bản
     description: "Phù hợp với người có thể tự làm, chỉ cần hướng dẫn đúng lộ trình.",
-    price: "10.000 VNĐ",
-    amount: 10000,
+    price: "10.000 VNĐ", // Giá hiển thị
+    amount: 10000, // Số tiền thực tế
     features: [
       "Định hướng chọn ngành, trường, học bổng phù hợp.",
       "Checklist hồ sơ cần chuẩn bị.",
@@ -17,12 +23,12 @@ const packages = [
       "Nhận xét nhanh 1 lần trên hồ sơ.",
       "Không bao gồm: sửa bài luận, hỗ trợ nộp hồ sơ hoặc visa.",
     ],
-    color: "primary",
-    icon: "fas fa-star"
+    color: "primary", // Màu theme của gói
+    icon: "fas fa-star" // Icon hiển thị
   },
   {
     id: "premium",
-    name: "GÓI TOÀN DIỆN",
+    name: "GÓI TOÀN DIỆN", // Tên gói cao cấp
     description: "Phù hợp với người cần hỗ trợ đầy đủ toàn bộ quy trình.",
     price: "50.000 VNĐ",
     amount: 50000,
@@ -34,38 +40,55 @@ const packages = [
     ],
     color: "success",
     icon: "fas fa-crown",
-    popular: true
+    popular: true // Đánh dấu gói phổ biến
   },
 ];
 
+/**
+ * Component PaymentPage - Trang thanh toán và lịch sử giao dịch
+ * Chức năng:
+ * - Hiển thị các gói dịch vụ có sẵn
+ * - Cho phép chọn và thanh toán gói dịch vụ
+ * - Hiển thị lịch sử giao dịch của người dùng
+ * - Quản lý các trạng thái thanh toán
+ */
 export default function PaymentPage() {
-  const [activeTab, setActiveTab] = useState('payment');
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const { user } = useContext(UserContext); // Lấy thông tin user từ context
+  
+  // State management cho component
+  const [activeTab, setActiveTab] = useState('payment'); // Tab hiện tại (payment/history)
+  const [transactions, setTransactions] = useState([]); // Danh sách giao dịch
+  const [loading, setLoading] = useState(false); // Trạng thái loading
+  const [selectedTransaction, setSelectedTransaction] = useState(null); // Giao dịch được chọn
+  const [showModal, setShowModal] = useState(false); // Trạng thái hiển thị modal
 
+  // Effect để load dữ liệu khi thay đổi tab
   useEffect(() => {
+    // Load lịch sử giao dịch khi chuyển sang tab history
     if (activeTab === 'history') {
       fetchTransactionHistory();
     }
   }, [activeTab]);
 
+  /**
+   * Hàm lấy lịch sử giao dịch của người dùng
+   * Hiện tại sử dụng mock data để demo
+   */
   const fetchTransactionHistory = async () => {
-    setLoading(true);
+    setLoading(true); // Bật trạng thái loading
     try {
-      // Mock data for demonstration
+      // Mock data for demonstration - sẽ thay thế bằng API call thực tế
       const mockTransactions = [
         {
           id: 1,
-          transactionId: 'TXN001',
-          package: 'GÓI TOÀN DIỆN',
-          amount: 50000,
-          status: 'SUCCESS',
-          date: '2024-01-15',
-          time: '14:30:25',
-          paymentMethod: 'Banking',
-          description: 'Premium Package Purchase'
+          transactionId: 'TXN001', // Mã giao dịch
+          package: 'GÓI TOÀN DIỆN', // Tên gói đã mua
+          amount: 50000, // Số tiền
+          status: 'SUCCESS', // Trạng thái giao dịch
+          date: '2024-01-15', // Ngày giao dịch
+          time: '14:30:25', // Thời gian giao dịch
+          paymentMethod: 'Banking', // Phương thức thanh toán
+          description: 'Premium Package Purchase' // Mô tả giao dịch
         },
         {
           id: 2,
@@ -83,7 +106,7 @@ export default function PaymentPage() {
           transactionId: 'TXN003',
           package: 'GÓI TOÀN DIỆN',
           amount: 50000,
-          status: 'FAILED',
+          status: 'FAILED', // Giao dịch thất bại
           date: '2024-01-05',
           time: '16:45:10',
           paymentMethod: 'Credit Card',
@@ -91,9 +114,10 @@ export default function PaymentPage() {
         }
       ];
       
+      // Simulate API delay
       setTimeout(() => {
         setTransactions(mockTransactions);
-        setLoading(false);
+        setLoading(false); // Tắt trạng thái loading
       }, 1000);
     } catch (error) {
       console.error('Error fetching transaction history:', error);
@@ -124,19 +148,35 @@ export default function PaymentPage() {
   };
   const handlePayment = async (selectedPackage) => {
     try {
+      // Check if user is logged in
+      if (!user || !user.accessToken) {
+        alert("Vui lòng đăng nhập để thực hiện thanh toán.");
+        return;
+      }
+
       const response = await fetch("/api/payos/create-payment-link", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.accessToken}`,
         },
         body: JSON.stringify({
           amount: selectedPackage.amount,
           description: selectedPackage.name,
+          packageId: selectedPackage.id,
         }),
       });
 
       const data = await response.json();
       if (data.success && data.checkoutUrl) {
+        // Store package info in localStorage for payment success page
+        localStorage.setItem('pendingPayment', JSON.stringify({
+          packageId: selectedPackage.id,
+          packageName: selectedPackage.name,
+          orderCode: data.orderCode,
+          paymentId: data.paymentId
+        }));
+        
         // Redirect to PayOS hosted payment page
         window.location.href = data.checkoutUrl;
       } else {

@@ -8,4 +8,7 @@ import com.swp391_g6.demo.entity.User;
 public interface SeekerRepository extends JpaRepository<Seeker, String> {
 
     Seeker findByUser(User user);
+
+    // Thêm method này để tìm theo userId (String)
+    Seeker findByUser_UserId(String userId);
 }

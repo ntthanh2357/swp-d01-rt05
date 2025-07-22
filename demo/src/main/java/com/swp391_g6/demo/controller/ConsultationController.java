@@ -125,7 +125,6 @@ public class ConsultationController {
             response.put("scholarship_goal", seeker.getScholarshipGoal());
             response.put("major", seeker.getMajor());
             response.put("note", seeker.getNote());
-            response.put("contact_zalo_facebook", seeker.getContactZaloFacebook());
             response.put("receive_promotions", seeker.getReceivePromotions());
             response.put("assigned_staff_id", seeker.getAssignedStaff() != null ? 
                     seeker.getAssignedStaff().getUserId() : null);

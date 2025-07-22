@@ -12,7 +12,6 @@ public class ConsultationRequestDTO {
     private String scholarshipGoal;
     private String major;
     private String note;
-    private Boolean contactZaloFacebook;
     private Boolean receivePromotions;
     private String token;
 
@@ -22,7 +21,7 @@ public class ConsultationRequestDTO {
     public ConsultationRequestDTO(String fullName, String email, String phone, String country, 
                                  String studyTime, String city, String educationLevel, 
                                  String adviceType, String scholarshipGoal, String major, 
-                                 String note, Boolean contactZaloFacebook, Boolean receivePromotions) {
+                                 String note, Boolean receivePromotions) {
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
@@ -34,7 +33,6 @@ public class ConsultationRequestDTO {
         this.scholarshipGoal = scholarshipGoal;
         this.major = major;
         this.note = note;
-        this.contactZaloFacebook = contactZaloFacebook;
         this.receivePromotions = receivePromotions;
     }
 
@@ -125,14 +123,6 @@ public class ConsultationRequestDTO {
 
     public void setNote(String note) {
         this.note = note;
-    }
-
-    public Boolean getContactZaloFacebook() {
-        return contactZaloFacebook;
-    }
-
-    public void setContactZaloFacebook(Boolean contactZaloFacebook) {
-        this.contactZaloFacebook = contactZaloFacebook;
     }
 
     public Boolean getReceivePromotions() {

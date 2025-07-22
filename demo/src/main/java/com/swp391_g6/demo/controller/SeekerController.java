@@ -121,13 +121,15 @@ public class SeekerController {
             response.put("scholarship_goal", seeker.getScholarshipGoal());
             response.put("major", seeker.getMajor());
             response.put("note", seeker.getNote());
-            response.put("contact_zalo_facebook", seeker.getContactZaloFacebook());
             response.put("receive_promotions", seeker.getReceivePromotions());
+            response.put("purchased_package", seeker.getPurchasedPackage());
             response.put("created_at", seeker.getCreatedAt());
             response.put("updated_at", seeker.getUpdatedAt());
             
             // Debug: In ra console để kiểm tra
             System.out.println("Seeker data being sent:");
+            System.out.println("User ID: " + targetUser.getUserId());
+            System.out.println("Purchased Package: " + seeker.getPurchasedPackage());
             System.out.println("Study time: " + seeker.getStudyTime());
             System.out.println("City: " + seeker.getCity());
             System.out.println("Advice type: " + seeker.getAdviceType());

@@ -65,11 +65,11 @@ public class Seeker {
     @Column(name = "note", columnDefinition = "text")
     private String note;
 
-    @Column(name = "contact_zalo_facebook")
-    private Boolean contactZaloFacebook;
-
     @Column(name = "receive_promotions")
     private Boolean receivePromotions;
+
+    @Column(name = "purchased_package", length = 20)
+    private String purchasedPackage;
 
     @Column(name = "created_at")
     private java.sql.Timestamp createdAt;
@@ -239,20 +239,20 @@ public class Seeker {
         this.note = note;
     }
 
-    public Boolean getContactZaloFacebook() {
-        return contactZaloFacebook;
-    }
-
-    public void setContactZaloFacebook(Boolean contactZaloFacebook) {
-        this.contactZaloFacebook = contactZaloFacebook;
-    }
-
     public Boolean getReceivePromotions() {
         return receivePromotions;
     }
 
     public void setReceivePromotions(Boolean receivePromotions) {
         this.receivePromotions = receivePromotions;
+    }
+
+    public String getPurchasedPackage() {
+        return purchasedPackage;
+    }
+
+    public void setPurchasedPackage(String purchasedPackage) {
+        this.purchasedPackage = purchasedPackage;
     }
 
     public java.sql.Timestamp getCreatedAt() {
@@ -269,5 +269,12 @@ public class Seeker {
 
     public void setUpdatedAt(java.sql.Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getContactZaloFacebook() {
+        return false;
+    }
+
+    public void setContactZaloFacebook(Boolean contactZaloFacebook) {
     }
 }
