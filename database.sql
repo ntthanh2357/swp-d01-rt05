@@ -1430,3 +1430,50 @@ CREATE TABLE payments (
 ALTER TABLE seeker_profiles 
 ADD COLUMN purchased_package VARCHAR(20) DEFAULT NULL,
 ADD FOREIGN KEY (purchased_package) REFERENCES payment_packages(package_id);
+
+---sửa seeker profile:
+ALTER TABLE seeker_profiles 
+ADD COLUMN study_time VARCHAR(50) DEFAULT NULL AFTER target_degree;
+
+-- 2. Thêm city  
+ALTER TABLE seeker_profiles 
+ADD COLUMN city VARCHAR(200) DEFAULT NULL AFTER study_time;
+
+-- 3. Thêm scholarship_goal
+ALTER TABLE seeker_profiles 
+ADD COLUMN scholarship_goal TEXT DEFAULT NULL AFTER advice_type;
+
+-- 4. Thêm major
+ALTER TABLE seeker_profiles 
+ADD COLUMN major VARCHAR(200) DEFAULT NULL AFTER scholarship_goal;
+
+-- 5. Thêm note
+ALTER TABLE seeker_profiles 
+ADD COLUMN note TEXT DEFAULT NULL AFTER major;
+
+-- 6. Thêm contact_zalo_facebook
+ALTER TABLE seeker_profiles 
+ADD COLUMN contact_zalo_facebook BOOLEAN DEFAULT FALSE AFTER note;
+
+-- 7. Thêm receive_promotions
+ALTER TABLE seeker_profiles 
+ADD COLUMN receive_promotions BOOLEAN DEFAULT FALSE AFTER contact_zalo_facebook;
+
+-- 8. Thêm created_at
+ALTER TABLE seeker_profiles 
+ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER receive_promotions;
+
+-- 9. Thêm updated_at
+ALTER TABLE seeker_profiles 
+ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at;
+
+-- Kiểm tra cấu trúc bảng sau khi cập nhật
+DESC seeker_profiles;
+
+-- Tạo index cho các trường thường query
+CREATE INDEX idx_seeker_profiles_assigned_staff ON seeker_profiles(assigned_staff_id);
+CREATE INDEX idx_seeker_profiles_created_at ON seeker_profiles(created_at);
+CREATE INDEX idx_seeker_profiles_advice_type ON seeker_profiles(advice_type);
+
+-- Kiểm tra dữ liệu hiện có
+SELECT COUNT(*) as total_seekers FROM seeker_profiles;

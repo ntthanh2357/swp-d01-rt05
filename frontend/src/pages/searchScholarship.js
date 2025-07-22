@@ -47,16 +47,18 @@ const SearchScholarship = () => {
             try {
                 const res = await getAllScholarships();
                 const data = res.data;
-                // Lọc bỏ học bổng đã quá deadline
+
                 const now = new Date();
                 const validScholarships = data.filter(sch => {
-                    if (!sch.deadline) return true;
-                    const deadlineDate = new Date(sch.deadline);
-                    return deadlineDate >= now;
-                });
+                    if (!sch.applicationDeadline) return true;
+                    const deadlineDate = new Date(sch.applicationDeadline);
+                    return deadlineDate >= now ;
+                }  );
                 setScholarships(validScholarships);
                 setFilteredScholarships(validScholarships);
 
+                // setScholarships(data);
+                // setFilteredScholarships(data);
                 const fieldsSet = new Set();
                 const citiesSet = new Set();
                 validScholarships.forEach((sch) => {
@@ -73,7 +75,7 @@ const SearchScholarship = () => {
                         else citiesSet.add(cs);
                     } catch {
                         if (sch.countries) citiesSet.add(sch.countries);
-                    }
+                    }  
                 });
                 setFields(Array.from(fieldsSet).sort());
                 setCities(Array.from(citiesSet).sort());
