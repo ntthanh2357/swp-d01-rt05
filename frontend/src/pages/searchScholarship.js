@@ -65,7 +65,7 @@ const SearchScholarship = () => {
                         else citiesSet.add(cs);
                     } catch {
                         if (sch.countries) citiesSet.add(sch.countries);
-                    }
+                    }  
                 });
                 setFields(Array.from(fieldsSet).sort());
                 setCities(Array.from(citiesSet).sort());

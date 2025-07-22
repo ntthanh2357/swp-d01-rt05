@@ -40,9 +40,7 @@ export default function Header() {
                     {/* Menu chính giữa - desktop */}
                     <div className="mx-auto d-none d-lg-block">
                         <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                            <li className="nav-item mx-3">
-                                <Link className="nav-link text-dark" to="/about">ABOUT</Link>
-                            </li>
+                            
                             <li className="nav-item custom-dropdown mx-3">
                                 <a className="nav-link text-dark">FIND SCHOLARSHIPS</a>
                                 <ul className="dropdown-content">
@@ -76,15 +74,19 @@ export default function Header() {
                                             <li className="nav-item mx-3">
                                                 <Link to="/library" className="nav-link text-dark">LIBRARY</Link>
                                             </li>
+                                            
                                         </>
                                     )}
                                 </>
                             )}
+                            <li className="nav-item mx-3">
+                                <Link className="nav-link text-dark" to="/about">ABOUT</Link>
+                            </li>
                         </ul>
                     </div>
 
                     {/* User menu */}
-                    <div className="ms-auto">
+                    <div className="ms-auto d-flex align-items-center">
                         <div className="dropdown">
                             <button
                                 className="btn btn-light dropdown-toggle d-flex align-items-center"
@@ -146,17 +148,27 @@ export default function Header() {
                                 )}
                             </ul>
                         </div>
+                        {/* Notification bell button */}
+                        <button
+                            className="btn btn-light position-relative ms-2"
+                            style={{ border: 'none' }}
+                            aria-label="Notifications"
+                        >
+                            <i className="fas fa-bell fs-4"></i>
+                            {/* Badge số lượng thông báo, tạm thời hardcode 0 */}
+                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                                0
+                            </span>
+                        </button>
                     </div>
 
                     {/* Drawer menu for mobile */}
                     <div className={`header-drawer ${drawerOpen ? 'open' : ''}`}>
                         <div className="drawer-overlay" onClick={() => setDrawerOpen(false)}></div>
                         <div className="drawer-content">
-                            <button className="drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close menu">&times;</button>
+                            
                             <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                                <li className="nav-item mb-3">
-                                    <Link className="nav-link text-dark" to="/about" onClick={() => setDrawerOpen(false)}>ABOUT</Link>
-                                </li>
+                                
                                 <li className="nav-item custom-dropdown mb-3">
                                     <span className="nav-link text-dark">FIND SCHOLARSHIPS</span>
                                     <ul className="dropdown-content">
@@ -195,6 +207,9 @@ export default function Header() {
                                         )}
                                     </>
                                 )}
+                                <li className="nav-item mb-3">
+                                    <Link className="nav-link text-dark" to="/about" onClick={() => setDrawerOpen(false)}>ABOUT</Link>
+                                </li>
                             </ul>
                         </div>
                     </div>

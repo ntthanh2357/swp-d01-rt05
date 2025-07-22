@@ -270,4 +270,11 @@ public class Seeker {
     public void setUpdatedAt(java.sql.Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public Boolean getContactZaloFacebook() {
+        return false;
+    }
+
+    public void setContactZaloFacebook(Boolean contactZaloFacebook) {
+    }
 }
