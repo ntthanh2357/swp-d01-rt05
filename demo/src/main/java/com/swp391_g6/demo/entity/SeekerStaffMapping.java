@@ -25,7 +25,8 @@ public class SeekerStaffMapping {
         active, inactive
     }
 
-    public SeekerStaffMapping() {}
+    public SeekerStaffMapping() {
+    }
 
     public SeekerStaffMapping(String seekerId, String staffId, Timestamp assignedAt) {
         this.seekerId = seekerId;
@@ -34,15 +35,35 @@ public class SeekerStaffMapping {
     }
 
     // Getters and setters
-    public String getSeekerId() { return seekerId; }
-    public void setSeekerId(String seekerId) { this.seekerId = seekerId; }
+    public String getSeekerId() {
+        return seekerId;
+    }
 
-    public String getStaffId() { return staffId; }
-    public void setStaffId(String staffId) { this.staffId = staffId; }
+    public void setSeekerId(String seekerId) {
+        this.seekerId = seekerId;
+    }
 
-    public Timestamp getAssignedAt() { return assignedAt; }
-    public void setAssignedAt(Timestamp assignedAt) { this.assignedAt = assignedAt; }
+    public String getStaffId() {
+        return staffId;
+    }
 
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    public void setStaffId(String staffId) {
+        this.staffId = staffId;
+    }
+
+    public Timestamp getAssignedAt() {
+        return assignedAt;
+    }
+
+    public void setAssignedAt(Timestamp assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }

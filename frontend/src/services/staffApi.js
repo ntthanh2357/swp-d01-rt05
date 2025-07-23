@@ -17,6 +17,11 @@ export const getActiveSeekers = async (data) => {
     return await axiosInstance.post(`/staff-dashboard/active-seekers`, data);
 };
 
+// SỬA: API để lấy seekers premium - endpoint chính xác từ StaffController
+export const getPremiumSeekers = async (token) => {
+    return await axiosInstance.post(`/staff/premium-seekers`, { token });
+};
+
 // Profile APIs
 export const getStaffProfile = async (data) => {
     return await axiosInstance.post(`/staff/profile`, data);

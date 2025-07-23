@@ -56,6 +56,10 @@ public class SeekerService {
         return seekerRepository.findByUser(user);
     }
 
+    public Seeker findBySeekerId(String seekerId) {
+        return seekerRepository.findByUser_UserId(seekerId);
+    }
+
     public void updateSeekerProfile(Seeker seeker) {
         seekerRepository.save(seeker);
     }
@@ -206,7 +210,8 @@ public class SeekerService {
             // Kiểm tra xem seeker đã có mapping chưa
             SeekerStaffMapping existingMapping = seekerStaffMappingRepository.findBySeekerId(seeker.getSeekerId());
             if (existingMapping != null) {
-                System.out.println("Seeker " + seeker.getSeekerId() + " already has staff assigned: " + existingMapping.getStaffId());
+                System.out.println("Seeker " + seeker.getSeekerId() + " already has staff assigned: "
+                        + existingMapping.getStaffId());
                 return;
             }
 
@@ -236,7 +241,7 @@ public class SeekerService {
                 mapping.setStaffId(selectedStaff.getUserId());
                 mapping.setAssignedAt(new Timestamp(System.currentTimeMillis()));
                 mapping.setStatus(SeekerStaffMapping.Status.active);
-                
+
                 // Lưu mapping
                 seekerStaffMappingRepository.save(mapping);
 
@@ -244,8 +249,8 @@ public class SeekerService {
                 seeker.setAssignedStaff(selectedStaff);
                 seekerRepository.save(seeker);
 
-                System.out.println("Successfully assigned staff " + selectedStaff.getUserId() + 
-                                 " to seeker " + seeker.getSeekerId());
+                System.out.println("Successfully assigned staff " + selectedStaff.getUserId() +
+                        " to seeker " + seeker.getSeekerId());
             } else {
                 System.out.println("Failed to assign staff to seeker " + seeker.getSeekerId());
             }

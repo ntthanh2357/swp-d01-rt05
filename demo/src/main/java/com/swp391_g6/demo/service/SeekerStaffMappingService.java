@@ -75,4 +75,22 @@ public class SeekerStaffMappingService {
     public boolean hasExistingMapping(String seekerId) {
         return mappingRepository.findBySeekerId(seekerId) != null;
     }
+
+    /**
+     * Lấy số lượng seekers premium đang được tư vấn bởi staff
+     * @param staffId ID của staff
+     * @return số lượng seekers premium active
+     */
+    public int countPremiumSeekersByStaff(String staffId) {
+        return mappingRepository.countPremiumSeekersByStaff(staffId);
+    }
+
+    /**
+     * Lấy danh sách seekers premium đang được tư vấn bởi staff
+     * @param staffId ID của staff
+     * @return danh sách seekers premium active
+     */
+    public List<SeekerStaffMapping> getPremiumSeekersByStaff(String staffId) {
+        return mappingRepository.findPremiumSeekersByStaff(staffId);
+    }
 }

@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
-import com.swp391_g6.demo.repository.MessageRepository;
 import com.swp391_g6.demo.entity.StaffReview;
 import com.swp391_g6.demo.repository.CounselingCaseRepository;
 import com.swp391_g6.demo.repository.ScholarshipRepository;
@@ -28,9 +27,6 @@ public class DashboardService {
     private UserRepository userRepository;
 
     @Autowired
-    private MessageRepository messageRepo;
-
-    @Autowired
     private CounselingCaseRepository counselingCaseRepo;
 
     @Autowired
@@ -46,7 +42,15 @@ public class DashboardService {
     public Map<String, Object> getOverview(String staffId) {
         Map<String, Object> result = new HashMap<>();
         result.put("activeSeekers", seekerStaffMappingRepo.countActiveSeekersByStaff(staffId));
-        result.put("unreadMessages", messageRepo.countUnreadMessagesByStaff(staffId));
+
+        // SỬA: Đảm bảo lấy đúng số premium seekers
+        try {
+            int premiumCount = seekerStaffMappingRepo.countPremiumSeekersByStaff(staffId);
+            result.put("premiumSeekers", premiumCount);
+        } catch (Exception e) {
+            result.put("premiumSeekers", 0);
+        }
+
         // Lấy pendingCases từ staff_statistics
         StaffStatistics latestStats = staffStatisticsRepo.findTopByStaffIdOrderByStatisticDateDesc(staffId);
         int pendingCases = 0;
@@ -54,7 +58,8 @@ public class DashboardService {
             int handled = latestStats.getCasesHandled() != null ? latestStats.getCasesHandled() : 0;
             int resolved = latestStats.getCasesResolved() != null ? latestStats.getCasesResolved() : 0;
             pendingCases = handled - resolved;
-            if (pendingCases < 0) pendingCases = 0;
+            if (pendingCases < 0)
+                pendingCases = 0;
         }
         result.put("pendingCases", pendingCases);
         result.put("newScholarships", scholarshipRepo.countNewScholarships());
@@ -69,11 +74,11 @@ public class DashboardService {
         // Lấy dữ liệu từ staff_statistics
         var stats = staffStatisticsRepo.findByStaffIdOrderByStatisticDateAsc(staffId);
         List<String> labels = stats.stream()
-            .map(s -> s.getStatisticDate().toString())
-            .collect(Collectors.toList());
+                .map(s -> s.getStatisticDate().toString())
+                .collect(Collectors.toList());
         List<Integer> casesHandled = stats.stream()
-            .map(s -> s.getCasesHandled() != null ? s.getCasesHandled() : 0)
-            .collect(Collectors.toList());
+                .map(s -> s.getCasesHandled() != null ? s.getCasesHandled() : 0)
+                .collect(Collectors.toList());
         // Có thể bổ sung thêm các trường khác nếu muốn
         Map<String, Object> result = new HashMap<>();
         result.put("labels", labels);
@@ -86,10 +91,10 @@ public class DashboardService {
         List<StaffReview> reviews = staffReviewRepo.getFeedbackByStaff(staffId);
         Map<String, String> seekerIdToName = new HashMap<>();
         List<String> seekerIds = reviews.stream()
-            .filter(r -> r.getSeekerId() != null)
-            .map(StaffReview::getSeekerId)
-            .distinct()
-            .collect(Collectors.toList());
+                .filter(r -> r.getSeekerId() != null)
+                .map(StaffReview::getSeekerId)
+                .distinct()
+                .collect(Collectors.toList());
         if (!seekerIds.isEmpty()) {
             List<User> seekers = userRepository.findByUserIdIn(seekerIds);
             for (User u : seekers) {
@@ -112,10 +117,10 @@ public class DashboardService {
 
     public List<Map<String, Object>> getActiveSeekersForStaff(String staffId) {
         List<SeekerStaffMapping> mappings = seekerStaffMappingRepo.findByStaffIdAndStatus(
-            staffId, SeekerStaffMapping.Status.active
-        );
+                staffId, SeekerStaffMapping.Status.active);
         List<String> seekerIds = mappings.stream().map(SeekerStaffMapping::getSeekerId).toList();
-        if (seekerIds.isEmpty()) return List.of();
+        if (seekerIds.isEmpty())
+            return List.of();
         List<User> users = userRepository.findByUserIdIn(seekerIds);
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : users) {

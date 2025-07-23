@@ -383,6 +383,21 @@ public class ChatSocketHandler {
         }
     }
 
+    // Gửi notification realtime cho user
+    public void sendNotification(String userId, String title, String content) {
+        UUID clientId = userClients.get(userId);
+        if (clientId != null) {
+            SocketIOClient client = socketIOServer.getClient(clientId);
+            if (client != null) {
+                Map<String, Object> notification = new HashMap<>();
+                notification.put("title", title);
+                notification.put("content", content);
+                notification.put("timestamp", System.currentTimeMillis());
+                client.sendEvent("notification", notification);
+            }
+        }
+    }
+
     // Call request handler
     @SuppressWarnings("rawtypes")
     private DataListener<Map> onCallRequest() {
