@@ -24,9 +24,12 @@ export const getPremiumSeekers = async (token) => {
 
 // Profile APIs
 export const getStaffProfile = async (data) => {
-    return await axiosInstance.post(`/staff/profile`, data);
-};
-
+    return await axiosInstance.post(
+        "/staff/profile", 
+        {}, 
+        { headers: { Authorization: `Bearer ${data.token}` } }
+    );
+}
 export const sendUpdateStaffProfileOtp = async (data) => {
     return await axiosInstance.post(`/staff/send-otp`, data);
 };
@@ -36,7 +39,12 @@ export const verifyUpdateStaffProfileOtp = async (data) => {
 };
 
 export const updateStaffProfile = async (data) => {
-    return await axiosInstance.post(`/staff/update-staff-profile`, data);
+    const { token, ...updateData } = data;
+    return await axiosInstance.post(
+        "/staff/update-staff-profile",
+        { ...updateData, token }, 
+        { headers: { Authorization: `Bearer ${token}` } } 
+    );
 };
 
 export const getPublicStaffList = async () => {

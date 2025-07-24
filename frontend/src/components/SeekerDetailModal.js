@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Row, Col, Badge } from 'react-bootstrap';
 
 const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
-    if (!seeker) return null;
-
-    // Debug: In ra console để kiểm tra dữ liệu
+        if (!seeker) return null;
     console.log('SeekerDetailModal - seeker data:', seeker);
 
     const formatDate = (dateString) => {
@@ -50,8 +48,8 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
             <Modal.Header closeButton>
                 <Modal.Title>
                     <div className="d-flex align-items-center">
-                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                             style={{ width: '40px', height: '40px' }}>
+                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                            style={{ width: '40px', height: '40px' }}>
                             {seeker.name ? seeker.name.charAt(0).toUpperCase() : 'S'}
                         </div>
                         <div>
@@ -129,7 +127,18 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                                     </div>
                                 </div>
                                 <div className="mb-2">
-                                    <strong>Thành phố:</strong> {seeker.city || 'Chưa cập nhật'}
+                                    <strong>Thành phố:</strong>
+                                    <div className="mt-1">
+                                        {parseJsonField(seeker.city).length > 0 ? (
+                                            parseJsonField(seeker.city).map((city, idx) => (
+                                                <Badge key={idx} bg="secondary" className="me-1 mb-1">
+                                                    {city}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-muted">Chưa cập nhật</span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="mb-2">
                                     <strong>Thời gian dự định:</strong> {seeker.studyTime || seeker.study_time || 'Chưa cập nhật'}

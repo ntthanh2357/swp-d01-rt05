@@ -12,6 +12,8 @@ import com.swp391_g6.demo.service.UserService;
 import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
 import com.swp391_g6.demo.util.JwtUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,12 +48,13 @@ public class StaffController {
     private DashboardService dashboardService;
 
     @PostMapping("/profile")
-    public ResponseEntity<?> getStaffProfile(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+    public ResponseEntity<?> getStaffProfile(HttpServletRequest request) {
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bearer token is required");
         }
 
+        String token = authHeader.substring(7);
         String userId = jwtUtil.getUserIdFromToken(token);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
@@ -183,7 +186,8 @@ public class StaffController {
         return ResponseEntity.ok(result);
     }
 
-    // [GET] /api/staff/public-list - Public API lấy danh sách staff (có thể filter sau)
+    // [GET] /api/staff/public-list - Public API lấy danh sách staff (có thể filter
+    // sau)
     @GetMapping("/public-list")
     public ResponseEntity<?> getPublicStaffList() {
         List<com.swp391_g6.demo.dto.StaffDTO> staffList = staffService.getAllStaffDTOs();
