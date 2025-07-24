@@ -1437,3 +1437,95 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- 1. Kiểm tra cấu trúc hiện tại của bảng seeker_profiles
+DESCRIBE seeker_profiles;
+
+-- 2. Thêm trường purchased_package vào bảng seeker_profiles
+ALTER TABLE seeker_profiles 
+ADD COLUMN purchased_package ENUM('basic', 'premium') DEFAULT NULL
+COMMENT 'Gói dịch vụ đã mua: basic = Gói Hỗ trợ Đơn giản, premium = Gói Toàn diện';
+
+-- 3. Kiểm tra lại cấu trúc sau khi thêm trường
+DESCRIBE seeker_profiles;
+
+-- 4. Tạo dữ liệu test: Thêm một số seeker với different packages để test
+-- Cập nhật một số seeker có sẵn với gói premium để test MY CV
+UPDATE seeker_profiles 
+SET purchased_package = 'premium' 
+WHERE seeker_id IN (
+    SELECT user_id FROM users 
+    WHERE role = 'seeker' 
+    LIMIT 3
+);
+
+-- Cập nhật một số seeker với gói basic để test
+UPDATE seeker_profiles 
+SET purchased_package = 'basic' 
+WHERE seeker_id IN (
+    SELECT user_id FROM users 
+    WHERE role = 'seeker' 
+    AND user_id NOT IN (
+        SELECT seeker_id FROM seeker_profiles WHERE purchased_package = 'premium'
+    )
+    LIMIT 3
+);
+
+-- 5. Kiểm tra dữ liệu test đã được tạo
+SELECT u.user_id, u.name, u.email, sp.purchased_package, sp.updated_at
+FROM users u 
+INNER JOIN seeker_profiles sp ON u.user_id = sp.seeker_id
+WHERE sp.purchased_package IS NOT NULL
+ORDER BY sp.purchased_package, u.name;
+
+-- 6. Thống kê số lượng theo từng gói
+SELECT seeker_profiles
+    purchased_package,
+    COUNT(*) as count
+FROM seeker_profiles 
+WHERE purchased_package IS NOT NULL
+GROUP BY purchased_package;
+
+-- 7. Test query để verify logic
+-- Seekers có premium package (should see MY CV + Roadmap)
+SELECT u.user_id, u.name, u.email, 'CAN_SEE_MY_CV_AND_ROADMAP' as permissions
+FROM users u 
+INNER JOIN seeker_profiles sp ON u.user_id = sp.seeker_id
+WHERE u.role = 'seeker' AND sp.purchased_package = 'premium';
+
+-- Seekers có basic package (should NOT see MY CV + Roadmap, but see Messages)
+SELECT u.user_id, u.name, u.email, 'CAN_SEE_MESSAGES_ONLY' as permissions
+FROM users u 
+INNER JOIN seeker_profiles sp ON u.user_id = sp.seeker_id
+WHERE u.role = 'seeker' AND sp.purchased_package = 'basic';
+
+-- Seekers chưa mua gói (should NOT see MY CV + Roadmap + Messages)
+SELECT u.user_id, u.name, u.email, 'NO_PREMIUM_FEATURES' as permissions
+FROM users u 
+LEFT JOIN seeker_profiles sp ON u.user_id = sp.seeker_id
+WHERE u.role = 'seeker' AND (sp.purchased_package IS NULL OR sp.seeker_id IS NULL)
+LIMIT 5;
+
+-- Tạo bảng seeker_files
+CREATE TABLE IF NOT EXISTS seeker_files (
+    file_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    seeker_id VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size BIGINT,
+    file_type VARCHAR(100),
+    category ENUM('LANGUAGE_CERTS', 'PERSONAL_DOCS', 'ACADEMIC_DOCS') NOT NULL,
+    upload_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'active',
+    
+    -- Foreign key constraint
+    FOREIGN KEY (seeker_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    
+    -- Indexes for better performance
+    INDEX idx_seeker_id (seeker_id),
+    INDEX idx_category (category),
+    INDEX idx_status (status),
+    INDEX idx_upload_date (upload_date)
+);
