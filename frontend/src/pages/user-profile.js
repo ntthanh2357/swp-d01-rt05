@@ -80,8 +80,12 @@ function UserProfile() {
                 setProfile(response.data);
                 reset(response.data);
 
-                // Cập nhật purchased package trong UserContext nếu có
-                if (response.data.purchased_package && updatePurchasedPackage) {
+                // Cập nhật purchased package trong UserContext nếu có và chỉ khi giá trị thay đổi
+                if (
+                    response.data.purchased_package &&
+                    updatePurchasedPackage &&
+                    user.purchasedPackage !== response.data.purchased_package
+                ) {
                     updatePurchasedPackage(response.data.purchased_package);
                 }
 
@@ -103,7 +107,7 @@ function UserProfile() {
         };
 
         fetchProfile();
-    }, [user, reset, updatePurchasedPackage]);
+    }, [user]);
 
     if (loading) {
         return (

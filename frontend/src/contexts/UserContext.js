@@ -73,16 +73,16 @@ export function UserProvider({ children }) {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem("accessToken");
-        setUser({ isLoggedIn: false, userId: null, name: null, role: null, accessToken: null, purchasedPackage: null });
-    };
-
     const updatePurchasedPackage = (packageId) => {
         setUser(prevUser => ({
             ...prevUser,
             purchasedPackage: packageId
         }));
+    };
+
+    const logout = () => {
+        localStorage.removeItem("accessToken");
+        setUser({ isLoggedIn: false, userId: null, name: null, role: null, accessToken: null, purchasedPackage: null });
     };
 
     return (
