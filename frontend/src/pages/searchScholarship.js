@@ -216,7 +216,7 @@ const SearchScholarship = () => {
     useEffect(() => {
         applyFilter();
         // eslint-disable-next-line
-    }, [selectedFields, selectedCities, selectedAmount, selectedOrganization]);
+    }, [selectedFields, selectedCities, selectedAmount, selectedOrganization, scholarships]);
     
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
