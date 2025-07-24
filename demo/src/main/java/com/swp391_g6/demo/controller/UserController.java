@@ -127,10 +127,11 @@ public class UserController {
     // [POST] /api/users/ban-user - Khóa người dùng
     @PostMapping("/ban-user")
     public ResponseEntity<?> banUser(@RequestBody Map<String, String> body) {
-        String userId = body.get("user_id");
+        String userId = body.get("userId");
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body("User ID is required");
         }
+
         boolean isBanned = userService.banUser(userId);
         if (isBanned) {
             return ResponseEntity.ok("User banned successfully");

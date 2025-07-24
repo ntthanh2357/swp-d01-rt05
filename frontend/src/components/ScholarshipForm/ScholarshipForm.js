@@ -53,10 +53,14 @@ const ScholarshipForm = ({ onSubmit }) => {
         countries: "",
         applicationDeadline: "",
         eligibilityCriteria: "",
+        languageRequirements: "", // Thêm trường này
         educationLevels: [],
         fieldsOfStudy: [],
+        fundingType: "",
+        viewsCount: "0",
+        applicableIntake: ""
     });
-
+    
     const [categoryOptions, setCategoryOptions] = useState([
         { name: "Ireland", id: "SCHOLARCATE0001" },
         { name: "New Zealand", id: "SCHOLARCATE0002" },
@@ -80,7 +84,6 @@ const ScholarshipForm = ({ onSubmit }) => {
     ]);
     const [newEducationLevel, setNewEducationLevel] = useState("");
     const [newFieldOfStudy, setNewFieldOfStudy] = useState("");
-
     const [organizations, setOrganizations] = useState([]);
 
     useEffect(() => {
@@ -153,249 +156,295 @@ const ScholarshipForm = ({ onSubmit }) => {
     };
 
     return (
-        <div className="scholarship-form-container">
-            <div className="form-header">
-                <h2>Tạo học bổng mới</h2>
-                <p>Vui lòng điền đầy đủ thông tin để tạo học bổng</p>
+<div className="scholarship-form-container">
+    <div className="form-header">
+        <h2>Tạo học bổng mới</h2>
+        <p>Vui lòng điền đầy đủ thông tin để tạo học bổng</p>
+    </div>
+
+    <form onSubmit={handleSubmit} className="form-scroll-container">
+        {/* Thông tin cơ bản */}
+        <div className="form-section">
+            <h3 className="section-title">Thông tin cơ bản</h3>
+            <div className="row">
+                <div className="col-12 mb-3">
+                    <label className="form-label">Tên học bổng *</label>
+                    <input
+                        className="form-control"
+                        name="title"
+                        value={form.title}
+                        onChange={handleChange}
+                        placeholder="Nhập tên học bổng"
+                        required
+                    />
+                    {errors.title && <div className="text-danger small">{errors.title}</div>}
+                </div>
+                <div className="col-12 mb-3">
+                    <label className="form-label">Mô tả</label>
+                    <textarea
+                        className="form-control"
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="Mô tả chi tiết về học bổng"
+                    />
+                    {errors.description && <div className="text-danger small">{errors.description}</div>}
+                </div>
+                <div className="col-md-6 mb-3">
+                    <label className="form-label">Tổ chức *</label>
+                    <select
+                        className="form-select"
+                        name="organizationName"
+                        value={form.organizationName}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="">Chọn tổ chức</option>
+                        {organizations.map((org) => (
+                            <option key={org.id || org.name} value={org.name}>
+                                {org.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-md-6 mb-3">
+                    <label className="form-label">Mã danh mục</label>
+                    <select
+                        className="form-select"
+                        name="categoryId"
+                        value={form.categoryId}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="">Chọn danh mục</option>
+                        {categoryOptions.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-12 mb-3">
+                    <label className="form-label">Áp dụng cho kỳ nhập học</label>
+                    <input
+                        className="form-control"
+                        name="applicableIntake"
+                        value={form.applicableIntake}
+                        onChange={handleChange}
+                        placeholder="Ví dụ: Fall 2025, Spring 2026..."
+                    />
+                    {errors.applicableIntake && <div className="text-danger small">{errors.applicableIntake}</div>}
+                </div>
             </div>
-
-            <form onSubmit={handleSubmit} className="form-scroll-container">
-                {/* Thông tin cơ bản */}
-                <div className="form-section">
-                    <h3 className="section-title">Thông tin cơ bản</h3>
-                    <div className="row">
-                        <div className="col-12 mb-3">
-                            <label className="form-label">Tên học bổng *</label>
-                            <input
-                                className="form-control"
-                                name="title"
-                                value={form.title}
-                                onChange={handleChange}
-                                placeholder="Nhập tên học bổng"
-                                required
-                            />
-                            {errors.title && <div className="text-danger small">{errors.title}</div>}
-                        </div>
-                        <div className="col-12 mb-3">
-                            <label className="form-label">Mô tả</label>
-                            <textarea
-                                className="form-control"
-                                name="description"
-                                value={form.description}
-                                onChange={handleChange}
-                                rows={3}
-                                placeholder="Mô tả chi tiết về học bổng"
-                            />
-                            {errors.description && <div className="text-danger small">{errors.description}</div>}
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">Tổ chức *</label>
-                            <select
-                                className="form-select"
-                                name="organizationName"
-                                value={form.organizationName}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">Chọn tổ chức</option>
-                                {organizations.map((org) => (
-                                    <option key={org.id || org.name} value={org.name}>
-                                        {org.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">Mã danh mục</label>
-                            <select
-                                className="form-select"
-                                name="categoryId"
-                                value={form.categoryId}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">Chọn danh mục</option>
-                                {categoryOptions.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Thông tin tài chính */}
-                <div className="form-section">
-                    <h3 className="section-title">Thông tin tài chính & thời hạn</h3>
-                    <div className="row">
-                        <div className="col-md-4 mb-3">
-                            <label className="form-label">Số tiền</label>
-                            <input
-                                className="form-control"
-                                type="number"
-                                name="amount"
-                                value={form.amount}
-                                onChange={handleChange}
-                                placeholder="0"
-                            />
-                            {errors.amount && <div className="text-danger small">{errors.amount}</div>}
-                        </div>
-                        <div className="col-md-4 mb-3">
-                            <label className="form-label">Đơn vị tiền tệ</label>
-                            <input
-                                className="form-control"
-                                name="currency"
-                                value={form.currency}
-                                onChange={handleChange}
-                                placeholder="VND, USD, EUR..."
-                            />
-                            {errors.currency && <div className="text-danger small">{errors.currency}</div>}
-                        </div>
-                        <div className="col-md-4 mb-3">
-                            <label className="form-label">Thời hạn (tháng)</label>
-                            <input
-                                className="form-control"
-                                type="number"
-                                name="duration"
-                                value={form.duration}
-                                onChange={handleChange}
-                                placeholder="12"
-                            />
-                            {errors.duration && <div className="text-danger small">{errors.duration}</div>}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Điều kiện và hạn chế */}
-                <div className="form-section">
-                    <h3 className="section-title">Điều kiện & hạn chế</h3>
-                    <div className="row">
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">Hạn nộp hồ sơ</label>
-                            <input
-                                className="form-control"
-                                type="date"
-                                name="applicationDeadline"
-                                value={formatDateToYYYYMMDD(form.applicationDeadline)}
-                                onChange={handleChange}
-                            />
-                            {form.applicationDeadline && (
-                                <div className="small text-muted mt-1">
-                                    Định dạng: {form.applicationDeadline}
-                                </div>
-                            )}
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">Tiêu chí đủ điều kiện</label>
-                            <input
-                                className="form-control"
-                                name="eligibilityCriteria"
-                                value={form.eligibilityCriteria}
-                                onChange={handleChange}
-                                placeholder="GPA >= 3.0, IELTS >= 6.5..."
-                            />
-                            {errors.eligibilityCriteria && <div className="text-danger small">{errors.eligibilityCriteria}</div>}
-                        </div>
-                        <div className="col-12 mb-3">
-                            <label className="form-label">Địa điểm</label>
-                            <input
-                                className="form-control"
-                                name="countries"
-                                value={form.countries}
-                                onChange={handleChange}
-                                placeholder="Địa điểm"
-                            />
-                            {errors.countries && <div className="text-danger small">{errors.countries}</div>}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bậc học và ngành học */}
-                <div className="form-section">
-                    <h3 className="section-title">Bậc học & ngành học</h3>
-                    <div className="row">
-                        <div className="col-md-6 mb-3">
-                            <div className="checkbox-group">
-                                <div className="checkbox-group-header">Bậc học</div>
-                                <div className="checkbox-container">
-                                    {educationLevelOptions.map((level) => (
-                                        <label key={level} className="checkbox-item">
-                                            <input
-                                                type="checkbox"
-                                                checked={form.educationLevels.includes(level)}
-                                                onChange={() => handleCheckboxChange('educationLevels', level)}
-                                            />
-                                            <span className="checkbox-label">
-                                                {level.charAt(0).toUpperCase() + level.slice(1)}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                                <div className="add-item-container">
-                                    <input
-                                        className="form-control add-item-input"
-                                        type="text"
-                                        placeholder="Thêm bậc học mới"
-                                        value={newEducationLevel}
-                                        onChange={(e) => setNewEducationLevel(e.target.value)}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="btn btn-add"
-                                        onClick={() => addNewOption('education')}
-                                    >
-                                        Thêm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <div className="checkbox-group">
-                                <div className="checkbox-group-header">Ngành học</div>
-                                <div className="checkbox-container">
-                                    {fieldsOfStudyOptions.map((field) => (
-                                        <label key={field} className="checkbox-item">
-                                            <input
-                                                type="checkbox"
-                                                checked={form.fieldsOfStudy.includes(field)}
-                                                onChange={() => handleCheckboxChange('fieldsOfStudy', field)}
-                                            />
-                                            <span className="checkbox-label">
-                                                {field.charAt(0).toUpperCase() + field.slice(1)}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-                                <div className="add-item-container">
-                                    <input
-                                        className="form-control add-item-input"
-                                        type="text"
-                                        placeholder="Thêm ngành học mới"
-                                        value={newFieldOfStudy}
-                                        onChange={(e) => setNewFieldOfStudy(e.target.value)}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="btn btn-add"
-                                        onClick={() => addNewOption('field')}
-                                    >
-                                        Thêm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Submit button */}
-                <div className="text-center">
-                    <button type="submit" className="btn btn-submit">
-                        Lưu học bổng
-                    </button>
-                </div>
-            </form>
         </div>
+
+        {/* Thông tin tài chính & thời hạn */}
+        <div className="form-section">
+            <h3 className="section-title">Thông tin tài chính & thời hạn</h3>
+            <div className="row">
+                <div className="col-md-4 mb-3">
+                    <label className="form-label">Số tiền</label>
+                    <input
+                        className="form-control"
+                        type="number"
+                        name="amount"
+                        value={form.amount}
+                        onChange={handleChange}
+                        placeholder="0"
+                    />
+                    {errors.amount && <div className="text-danger small">{errors.amount}</div>}
+                </div>
+                <div className="col-md-4 mb-3">
+                    <label className="form-label">Đơn vị tiền tệ</label>
+                    <input
+                        className="form-control"
+                        name="currency"
+                        value={form.currency}
+                        onChange={handleChange}
+                        placeholder="VND, USD, EUR..."
+                    />
+                    {errors.currency && <div className="text-danger small">{errors.currency}</div>}
+                </div>
+                <div className="col-md-4 mb-3">
+                    <label className="form-label">Thời hạn (tháng)</label>
+                    <input
+                        className="form-control"
+                        type="number"
+                        name="duration"
+                        value={form.duration}
+                        onChange={handleChange}
+                        placeholder="12"
+                    />
+                    {errors.duration && <div className="text-danger small">{errors.duration}</div>}
+                </div>
+                <div className="col-md-6 mb-3">
+                    <label className="form-label">Hình thức tài trợ</label>
+                    <input
+                        className="form-control"
+                        name="fundingType"
+                        value={form.fundingType}
+                        onChange={handleChange}
+                        placeholder="Toàn phần, bán phần, hỗ trợ phí sinh hoạt..."
+                    />
+                    {errors.fundingType && <div className="text-danger small">{errors.fundingType}</div>}
+                </div>
+                <div className="col-md-6 mb-3">
+                    <label className="form-label">Số lượng học bổng có sẵn</label>
+                    <input
+                        className="form-control"
+                        type="number"
+                        name="viewsCount"
+                        value={form.viewsCount}
+                        onChange={handleChange}
+                        placeholder="Nhập số lượng học bổng"
+                    />
+                    {errors.viewsCount && <div className="text-danger small">{errors.viewsCount}</div>}
+                </div>
+            </div>
+        </div>
+
+        {/* Điều kiện & hạn chế */}
+        <div className="form-section">
+            <h3 className="section-title">Điều kiện & hạn chế</h3>
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <label className="form-label">Hạn nộp hồ sơ</label>
+                    <input
+                        className="form-control"
+                        type="date"
+                        name="applicationDeadline"
+                        value={formatDateToYYYYMMDD(form.applicationDeadline)}
+                        onChange={handleChange}
+                    />
+                    {form.applicationDeadline && (
+                        <div className="small text-muted mt-1">
+                            Định dạng: {form.applicationDeadline}
+                        </div>
+                    )}
+                </div>
+                <div className="col-md-6 mb-3">
+                    <label className="form-label">Tiêu chí đủ điều kiện</label>
+                    <input
+                        className="form-control"
+                        name="eligibilityCriteria"
+                        value={form.eligibilityCriteria}
+                        onChange={handleChange}
+                        placeholder="GPA >= 3.0, IELTS >= 6.5..."
+                    />
+                    {errors.eligibilityCriteria && <div className="text-danger small">{errors.eligibilityCriteria}</div>}
+                </div>
+                <div className="col-12 mb-3">
+                    <label className="form-label">Địa điểm</label>
+                    <input
+                        className="form-control"
+                        name="countries"
+                        value={form.countries}
+                        onChange={handleChange}
+                        placeholder="Địa điểm"
+                    />
+                    {errors.countries && <div className="text-danger small">{errors.countries}</div>}
+                </div>
+                <div className="col-12 mb-3">
+                    <label className="form-label">Yêu cầu ngôn ngữ</label>
+                    <input
+                        className="form-control"
+                        name="languageRequirements"
+                        value={form.languageRequirements}
+                        onChange={handleChange}
+                        placeholder="Ví dụ: IELTS >= 6.5, TOEFL iBT >= 80..."
+                    />
+                    {errors.languageRequirements && <div className="text-danger small">{errors.languageRequirements}</div>}
+                </div>
+            </div>
+        </div>
+
+        {/* Bậc học và ngành học */}
+        <div className="form-section">
+            <h3 className="section-title">Bậc học & ngành học</h3>
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <div className="checkbox-group">
+                        <div className="checkbox-group-header">Bậc học</div>
+                        <div className="checkbox-container">
+                            {educationLevelOptions.map((level) => (
+                                <label key={level} className="checkbox-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.educationLevels.includes(level)}
+                                        onChange={() => handleCheckboxChange('educationLevels', level)}
+                                    />
+                                    <span className="checkbox-label">
+                                        {level.charAt(0).toUpperCase() + level.slice(1)}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="add-item-container">
+                            <input
+                                className="form-control add-item-input"
+                                type="text"
+                                placeholder="Thêm bậc học mới"
+                                value={newEducationLevel}
+                                onChange={(e) => setNewEducationLevel(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-add"
+                                onClick={() => addNewOption('education')}
+                            >
+                                Thêm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-md-6 mb-3">
+                    <div className="checkbox-group">
+                        <div className="checkbox-group-header">Ngành học</div>
+                        <div className="checkbox-container">
+                            {fieldsOfStudyOptions.map((field) => (
+                                <label key={field} className="checkbox-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.fieldsOfStudy.includes(field)}
+                                        onChange={() => handleCheckboxChange('fieldsOfStudy', field)}
+                                    />
+                                    <span className="checkbox-label">
+                                        {field.charAt(0).toUpperCase() + field.slice(1)}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="add-item-container">
+                            <input
+                                className="form-control add-item-input"
+                                type="text"
+                                placeholder="Thêm ngành học mới"
+                                value={newFieldOfStudy}
+                                onChange={(e) => setNewFieldOfStudy(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-add"
+                                onClick={() => addNewOption('field')}
+                            >
+                                Thêm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {/* Submit button */}
+        <div className="text-center">
+            <button type="submit" className="btn btn-submit">
+                Lưu học bổng
+            </button>
+        </div>
+    </form>
+</div>
+
     );
 };
 

@@ -1,24 +1,26 @@
 package com.swp391_g6.demo.controller;
 
-import com.swp391_g6.demo.service.OrganizationService;
-import com.swp391_g6.demo.service.ScholarshipScarper;
-import com.swp391_g6.demo.service.ScholarshipService;
-import com.swp391_g6.demo.entity.Scholarship;
-import com.swp391_g6.demo.entity.User;
-import com.swp391_g6.demo.dto.ScholarshipDTO;
-import com.swp391_g6.demo.util.JwtUtil;
+import java.sql.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.sql.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.swp391_g6.demo.dto.ScholarshipDTO;
+import com.swp391_g6.demo.entity.Scholarship;
+import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.service.OrganizationService;
+import com.swp391_g6.demo.service.ScholarshipService;
+import com.swp391_g6.demo.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/scholarships")
@@ -32,9 +34,6 @@ public class ScholarshipController {
 
     @Autowired
     private ScholarshipService scholarshipService;
-
-    @Autowired
-    private ScholarshipScarper scholarshipScarper;
 
     // [POST] /api/scholarships/get-active - Get active scholarships
     @PostMapping("/get-active")
@@ -86,11 +85,27 @@ public class ScholarshipController {
             System.out.println("Organization Name: " + organizationName);
             String categoryId = body.get("categoryId");
             System.out.println("Category ID: " + categoryId);
-            Double amount = Double.valueOf(body.get("amount"));
+            Double amount = null;
+            if (body.get("amount") != null && !body.get("amount").isEmpty()) {
+                try {
+                    amount = Double.valueOf(body.get("amount"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Số tiền không hợp lệ");
+                }
+            }
             System.out.println("Amount: " + amount);
             String currency = body.get("currency");
             System.out.println("Currency: " + currency);
-            Integer duration = Integer.valueOf(body.get("duration"));
+            Integer duration = null;
+            if (body.get("duration") != null && !body.get("duration").isEmpty()) {
+                try {
+                    duration = Integer.valueOf(body.get("duration"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Thời hạn không hợp lệ");
+                }
+            }
             System.out.println("Duration: " + duration);
             String deadlineStr = body.get("applicationDeadline");
             System.out.println("Application Deadline: " + deadlineStr);
@@ -115,13 +130,38 @@ public class ScholarshipController {
             System.out.println("Fields of Study: " + fieldsOfStudy);
             String createdBy = user.getUserId();
             System.out.println("Creating scholarship with ID: " + createdBy);
+            String applicableIntake = body.get("applicableIntake");
+            System.out.println("Applicable Intake: " + applicableIntake);
 
-            scholarshipService.addScholarship(title, description, organizationName, categoryId, amount, currency,
-                    duration, applicationDeadline, eligibilityCriteria, countries, educationLevels, fieldsOfStudy,
-                    createdBy);
+            String fundingType = body.get("fundingType");
+            System.out.println("Funding Type: " + fundingType);
+
+            Integer viewsCount = null;
+            if (body.get("viewsCount") != null && !body.get("viewsCount").isEmpty()) {
+                try {
+                    viewsCount = Integer.valueOf(body.get("viewsCount"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Số lượng học bổng không hợp lệ");
+                }
+            }
+            System.out.println("Views Count: " + viewsCount);
+
+            String languageRequirements = body.get("languageRequirements");
+            System.out.println("Language Requirements: " + languageRequirements);
+
+            scholarshipService.addScholarship(
+        title, description, organizationName, categoryId, amount, currency,
+        duration, applicationDeadline, eligibilityCriteria, countries,
+        educationLevels, fieldsOfStudy, createdBy,
+        applicableIntake, fundingType, viewsCount, languageRequirements
+);
+
+
             return ResponseEntity.ok("Scholarship added successfully");
         } catch (Exception e) {
             System.out.println("Error adding scholarship: " + e.getMessage());
+            e.printStackTrace(); // Thêm stack trace để debug
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error adding scholarship: " + e.getMessage());
         }
@@ -160,9 +200,31 @@ public class ScholarshipController {
 
     // [POST] /api/scholarships/delete - Delete a scholarship
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteScholarship(String scholarshipId) {
-        scholarshipService.deleteScholarship(scholarshipId);
-        return ResponseEntity.ok("Scholarship deleted successfully");
+    public ResponseEntity<?> deleteScholarship(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+        }
+
+        User user = jwtUtil.extractUserFromToken(token);
+        if (user == null || !user.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+
+        String scholarshipId = body.get("scholarshipId");
+        if (scholarshipId == null || scholarshipId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scholarship ID is required");
+        }
+
+        try {
+            scholarshipService.deleteScholarship(scholarshipId);
+            return ResponseEntity.ok("Scholarship deleted successfully");
+        } catch (Exception e) {
+            System.out.println("Error deleting scholarship: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting scholarship: " + e.getMessage());
+        }
     }
 
     // [POST] /api/scholarships/count-new - Count new scholarships

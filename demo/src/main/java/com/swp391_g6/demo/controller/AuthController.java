@@ -19,6 +19,7 @@ import com.swp391_g6.demo.service.AuthService;
 import com.swp391_g6.demo.service.GoogleAuthService;
 import com.swp391_g6.demo.service.StaffService;
 import com.swp391_g6.demo.util.JwtUtil;
+import com.swp391_g6.demo.service.SeekerService;
 
 @RestController
 @RequestMapping("/api/auth")

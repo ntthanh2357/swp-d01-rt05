@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -89,7 +91,7 @@ function ScholarshipManage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Xử lý thêm học bổng mới từ ScholarshipForm
+    // Sửa hàm handleAddScholarshipForm
     const handleAddScholarshipForm = async (form) => {
         if (!user?.accessToken || !user?.isLoggedIn) {
             toast.error("Bạn chưa đăng nhập!");
@@ -102,17 +104,35 @@ function ScholarshipManage() {
         }
         try {
             console.log('Thêm học bổng:', form);
-            const res = await addScholarship({
+            
+            // Đảm bảo các trường JSON được định dạng đúng
+            const dataToSend = {
                 ...form,
                 token: user.accessToken,
-                educationLevels: JSON.stringify(form.educationLevels),
-                fieldsOfStudy: JSON.stringify(form.fieldsOfStudy),
-            });
+                educationLevels: JSON.stringify(form.educationLevels || []),
+                fieldsOfStudy: JSON.stringify(form.fieldsOfStudy || []),
+                // Thêm JSON.stringify cho languageRequirements
+                languageRequirements: JSON.stringify(form.languageRequirements || ""),
+                // Đảm bảo các trường còn lại có giá trị
+                countries: form.countries || "",
+                eligibilityCriteria: form.eligibilityCriteria || "",
+                amount: form.amount || "0",
+                duration: form.duration || "0", 
+                viewsCount: form.viewsCount || "0",
+                fundingType: form.fundingType || ""
+            };
+            
+            console.log('Dữ liệu gửi đi:', dataToSend);
+            const res = await addScholarship(dataToSend);
+            
             setScholarships(prev => [res.data, ...prev]);
             setShowAddForm(false);
             toast.success('Thêm học bổng thành công!');
         } catch (err) {
-            toast.error('Thêm học bổng thất bại!');
+            console.error('Chi tiết lỗi:', err);
+            console.error('Response data:', err.response?.data);
+            console.error('Status code:', err.response?.status);
+            toast.error(`Thêm học bổng thất bại: ${err.response?.data || err.message}`);
         }
     };
 
@@ -146,6 +166,48 @@ function ScholarshipManage() {
             console.error('Cập nhật hạn nộp thất bại!', err.message);
             toast.error('Cập nhật hạn nộp thất bại!');
         }
+    };
+
+    // Thêm hàm xử lý xóa
+    const handleDelete = async (scholarship) => {
+        if (!user?.accessToken || !user?.isLoggedIn) {
+            toast.error("Bạn chưa đăng nhập!");
+            window.location.href = "/login";
+            return;
+        }
+        if (user.role !== 'admin') {
+            toast.error("Bạn không có quyền truy cập!");
+            return;
+        }
+
+        confirmAlert({
+            title: 'Xác nhận xóa',
+            message: `Bạn có chắc chắn muốn xóa học bổng "${scholarship.title}"?`,
+            buttons: [
+                {
+                    label: 'Xóa',
+                    onClick: async () => {
+                        try {
+                            await deleteScholarship({
+                                scholarshipId: scholarship.scholarshipId,
+                                token: user.accessToken
+                            });
+                            setScholarships(prev => 
+                                prev.filter(s => s.scholarshipId !== scholarship.scholarshipId)
+                            );
+                            toast.success('Xóa học bổng thành công!');
+                        } catch (err) {
+                            console.error('Xóa học bổng thất bại!', err.message);
+                            toast.error('Xóa học bổng thất bại!');
+                        }
+                    }
+                },
+                {
+                    label: 'Hủy',
+                    onClick: () => {}
+                }
+            ]
+        });
     };
 
     // Khi lọc hoặc tìm kiếm thay đổi, về trang 1
@@ -201,6 +263,7 @@ function ScholarshipManage() {
                                 <ScholarshipCard1
                                     scholarship={scholarship}
                                     onEdit={handleEdit}
+                                    onDelete={handleDelete}
                                 />
                             </div>
                         ))

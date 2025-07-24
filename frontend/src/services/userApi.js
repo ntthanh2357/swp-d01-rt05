@@ -25,5 +25,5 @@ export const userProfileUpdate = async (data) => {
 }
 
 export const banUser = async (userId) => {
-    return await axiosInstance.post("/users/ban-user", { user_id: userId });
+    return await axiosInstance.post("/users/ban-user", { userId });
 };

@@ -52,7 +52,6 @@ function App() {
                                 <Route path="/search-staff" element={<SearchStaff />} />
                                 <Route path="/detail-staff/:staffId" element={<DetailStaff />} />
                                 <Route path="/*" element={<ScholarshipRoute />} />
-                                <Route path="/admin-dashboard" element={<AdminDashboard />} />
                             </Routes>
                         </Router>
                     </FavoriteProvider>
