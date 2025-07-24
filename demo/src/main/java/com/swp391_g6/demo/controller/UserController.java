@@ -124,26 +124,13 @@ public class UserController {
         }
     }
 
-
-    @PostMapping("/{id}/ban")
-    public ResponseEntity<?> banUser(@PathVariable("id") String userId) {
-    User user = userService.getUserById(userId);
-    if (user == null) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-    }
-    user.setBanned(true);
-    userService.save(user);
-    return ResponseEntity.ok("Đã khóa tài khoản.");
-}
-
     // [POST] /api/users/ban-user - Khóa người dùng
     @PostMapping("/ban-user")
     public ResponseEntity<?> banUser(@RequestBody Map<String, String> body) {
-        String userId = body.get("userId");
+        String userId = body.get("user_id");
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body("User ID is required");
         }
-
         boolean isBanned = userService.banUser(userId);
         if (isBanned) {
             return ResponseEntity.ok("User banned successfully");

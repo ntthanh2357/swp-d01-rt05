@@ -91,16 +91,14 @@ function UserManage() {
 
     const handleBan = async (userId) => {
         try {
-            console.log('Banning user:', userId); // Để debug
+            console.log('Banning user:', userId);
             const response = await banUser(userId);
-            console.log('Ban response:', response); // Kiểm tra response
-
+            
             if (response.status === 200) {
                 toast.success("Đã cấm người dùng!");
                 setUserData(prev =>
                     prev.map(u => {
                         if (u.userId === userId || u.user_id === userId) {
-                            console.log('Updating user:', u); // Kiểm tra user được update
                             return { ...u, isBanned: true };
                         }
                         return u;
@@ -108,7 +106,7 @@ function UserManage() {
                 );
             }
         } catch (err) {
-            console.error('Ban error:', err); // Log lỗi chi tiết
+            console.error('Ban error:', err);
             toast.error("Cấm thất bại: " + (err.response?.data || err.message));
         }
     };

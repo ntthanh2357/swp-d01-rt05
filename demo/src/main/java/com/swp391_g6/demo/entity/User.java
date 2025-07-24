@@ -50,7 +50,7 @@ public class User {
     private Timestamp updatedAt;
 
     @Column(name = "is_banned")
-    private boolean isBanned = false; 
+    private boolean isBanned;
 
     public User() {
     }
@@ -185,8 +185,8 @@ public class User {
         return isBanned;
     }
 
-    public void setBanned(boolean banned) {
-        this.isBanned = banned;
+    public void setBanned(boolean isBanned) {
+        this.isBanned = isBanned;
     }
 
 }

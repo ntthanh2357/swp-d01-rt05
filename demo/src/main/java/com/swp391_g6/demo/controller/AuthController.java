@@ -3,13 +3,12 @@ package com.swp391_g6.demo.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.swp391_g6.demo.dto.EmailRequest;
@@ -17,8 +16,8 @@ import com.swp391_g6.demo.dto.LoginRequest;
 import com.swp391_g6.demo.dto.OtpVerificationRequest;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.AuthService;
-import com.swp391_g6.demo.service.SeekerService;
 import com.swp391_g6.demo.service.GoogleAuthService;
+import com.swp391_g6.demo.service.SeekerService;
 import com.swp391_g6.demo.util.JwtUtil;
 
 @RestController

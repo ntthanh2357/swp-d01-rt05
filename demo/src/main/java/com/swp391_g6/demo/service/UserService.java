@@ -11,6 +11,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.entity.VerificationToken;
@@ -99,6 +100,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public boolean banUser(String userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {

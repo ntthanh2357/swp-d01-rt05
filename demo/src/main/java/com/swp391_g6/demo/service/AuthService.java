@@ -3,18 +3,18 @@ package com.swp391_g6.demo.service;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Random;
 import java.util.Optional;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.VerificationToken;
 import com.swp391_g6.demo.repository.UserRepository;
 import com.swp391_g6.demo.repository.VerificationTokenRepository;
 import com.swp391_g6.demo.util.EmailUtil;
-import com.swp391_g6.demo.entity.User;
-import com.swp391_g6.demo.entity.VerificationToken;
 
 @Service
 public class AuthService {
@@ -121,12 +121,9 @@ public class AuthService {
 
     public User authenticate(String email, String password) {
         User user = userRepository.findByEmail(email);
-        System.out.println("User isBanned status: " + (user != null ? user.isBanned() : "user not found")); // Debug log
         
         if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
-            // Kiểm tra isBanned trước khi cho đăng nhập
             if (user.isBanned()) {
-                System.out.println("User is banned: " + email); // Debug log
                 throw new RuntimeException("Tài khoản của bạn đã bị khóa.");
             }
             return user;
