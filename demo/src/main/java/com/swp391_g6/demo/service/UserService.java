@@ -96,8 +96,25 @@ public class UserService {
     }
 
     public void save(User user) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'save'");
+        userRepository.save(user);
     }
 
+    public boolean banUser(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setBanned(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean deleteUser(String userId) {
+        if (userRepository.existsById(userId)) {
+            userRepository.deleteById(userId);
+            return true;
+        }
+        return false;
+    }
 }

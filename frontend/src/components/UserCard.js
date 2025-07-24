@@ -1,8 +1,7 @@
-import { User as UserIcon, Phone, Mail, Calendar, ShieldBan } from "lucide-react";
+import { User as UserIcon, Phone, Mail, Calendar } from "lucide-react";
 import moment from "moment";
 
 function UserCard({ user, onBan }) {
-    // Định dạng ngày sinh
     const dob = user.dateOfBirth
         ? moment(user.dateOfBirth).format("DD-MM-YYYY")
         : <span className="fst-italic">Chưa cập nhật</span>;
@@ -38,10 +37,11 @@ function UserCard({ user, onBan }) {
             </div>
             <div className="d-grid mt-3">
                 <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => onBan && onBan(user)}
+                    className="btn btn-danger"
+                    onClick={() => onBan(user.user_id)}
+                    disabled={user.isBanned}
                 >
-                    <ShieldBan size={16} className="me-2" /> Ban
+                    {user.isBanned ? "Đã bị cấm" : "Ban"}
                 </button>
             </div>
         </div>
