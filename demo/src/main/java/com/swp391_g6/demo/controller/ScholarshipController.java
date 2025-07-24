@@ -1,8 +1,8 @@
 package com.swp391_g6.demo.controller;
 
 import com.swp391_g6.demo.service.OrganizationService;
-import com.swp391_g6.demo.service.ScholarshipService;
 import com.swp391_g6.demo.service.ScholarshipScarper;
+import com.swp391_g6.demo.service.ScholarshipService;
 import com.swp391_g6.demo.entity.Scholarship;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.dto.ScholarshipDTO;
@@ -180,74 +180,6 @@ public class ScholarshipController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scholarship not found");
         }
         return ResponseEntity.ok(new ScholarshipDTO(scholarship));
-    }
-
-    // [POST] /api/scholarships/scrape - Admin dùng scraper để lấy và lưu học bổng tự động
-    @PostMapping("/scrape")
-    public ResponseEntity<?> scrapeAndSaveScholarships(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
-        }
-        User user = jwtUtil.extractUserFromToken(token);
-        if (user == null || !"admin".equals(user.getRole())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not admin");
-        }
-        try {
-            // Lấy danh sách học bổng từ scraper
-            List<Scholarship> scraped = scholarshipScarper.scrape();
-            // Lưu vào DB
-            for (Scholarship s : scraped) {
-                scholarshipService.addScholarship(
-                    s.getTitle(), s.getDescription(), s.getOrganizationName(), s.getCategoryId(),
-                    s.getAmount(), s.getCurrency(), s.getDuration(), s.getApplicationDeadline(),
-                    s.getEligibilityCriteria(), s.getCountries(), s.getEducationLevels(),
-                    s.getFieldsOfStudy(), user.getUserId()
-                );
-            }
-            return ResponseEntity.ok("Đã lấy và lưu " + scraped.size() + " học bổng thành công!");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi scrape học bổng: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/scrape-and-save")
-    public Map<String, Object> scrapeAndSave(@RequestBody Map<String, String> body) {
-        String url = body.get("url");
-        String token = body.get("token");
-        Map<String, Object> result = new HashMap<>();
-
-        User user = jwtUtil.extractUserFromToken(token);
-        if (user == null || !"admin".equals(user.getRole())) {
-            result.put("error", "Access denied");
-            return result;
-        }
-
-        try {
-            Scholarship scholarship = scholarshipScarper.scrapeFromUrl(url);
-            scholarship.setCreatedBy(user.getUserId());
-            Scholarship saved = scholarshipService.addScholarship(
-                scholarship.getTitle(),
-                scholarship.getDescription(),
-                scholarship.getOrganization() != null ? scholarship.getOrganization().getName() : null,
-                scholarship.getCategoryId(),
-                scholarship.getAmount(),
-                scholarship.getCurrency(),
-                scholarship.getDuration(),
-                scholarship.getApplicationDeadline(),
-                scholarship.getEligibilityCriteria(),
-                scholarship.getCountries(),
-                scholarship.getEducationLevels(),
-                scholarship.getFieldsOfStudy(),
-                scholarship.getCreatedBy()
-            );
-            result.put("scholarship", saved);
-            result.put("success", true);
-        } catch (IOException e) {
-            result.put("error", "Failed to fetch or parse the page.");
-        }
-        return result;
     }
 
 }

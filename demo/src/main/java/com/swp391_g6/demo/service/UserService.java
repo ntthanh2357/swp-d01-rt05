@@ -12,7 +12,6 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.entity.VerificationToken;
 import com.swp391_g6.demo.repository.UserRepository;
@@ -94,6 +93,11 @@ public class UserService {
         }
 
         return token.getOtp_code().equals(otp);
+    }
+
+    public void save(User user) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'save'");
     }
 
 }

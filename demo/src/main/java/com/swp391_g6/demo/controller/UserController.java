@@ -5,7 +5,9 @@ import java.util.List;
 import java.sql.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -123,5 +125,13 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching stats");
         }
     }
+    @PutMapping("/users/{id}/ban")
+    public ResponseEntity<?> banUser(@PathVariable String id) {
+    User user = userService.findByEmail(id);
+    user.setBanned(true);
+    userService.save(user);
+    return ResponseEntity.ok("Đã khóa tài khoản.");
+}
+
 
 }

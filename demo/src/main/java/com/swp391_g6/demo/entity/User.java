@@ -49,6 +49,9 @@ public class User {
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
+    @Column(name = "is_banned")
+    private boolean isBanned = false;
+
     public User() {
     }
 
@@ -58,7 +61,7 @@ public class User {
     }
 
     public User(String name, String email, String passwordHash, String role, String phone, Date dateOfBirth,
-            String gender) {
+            String gender, boolean isBanned) {
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -66,10 +69,11 @@ public class User {
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
+        this.isBanned = isBanned;
     }
 
     public User(String userId, String name, String email, String passwordHash, String role, String phone,
-            Date dateOfBirth, String gender) {
+            Date dateOfBirth, String gender, boolean isBanned) {
         this.userId = userId;
         this.name = name;
         this.email = email;
@@ -78,6 +82,7 @@ public class User {
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
+        this.isBanned = isBanned;
     }
 
     public String getUserId() {
@@ -174,6 +179,14 @@ public class User {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isBanned() {
+        return isBanned;
+    }
+
+    public void setBanned(boolean isBanned) {
+        this.isBanned = isBanned;
     }
 
 }

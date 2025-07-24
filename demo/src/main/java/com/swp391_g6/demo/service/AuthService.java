@@ -122,6 +122,10 @@ public class AuthService {
     public User authenticate(String email, String password) {
         User user = userRepository.findByEmail(email);
         if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
+            if (user.isBanned()) {
+        throw new RuntimeException("Tài khoản của bạn đã bị khóa.");
+}
+
             return user;
         }
         return null;
