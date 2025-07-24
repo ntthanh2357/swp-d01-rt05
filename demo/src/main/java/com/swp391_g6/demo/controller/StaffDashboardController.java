@@ -5,16 +5,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.swp391_g6.demo.entity.StaffReview;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.util.JwtUtil;
 import com.swp391_g6.demo.service.DashboardService;
 import com.swp391_g6.demo.repository.SeekerRepository;
+import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
 import com.swp391_g6.demo.entity.Seeker;
 import com.swp391_g6.demo.dto.SeekerDTO;
 
 import java.util.*;
-
 
 @RestController
 @RequestMapping("/api/staff-dashboard")
@@ -28,6 +27,9 @@ public class StaffDashboardController {
 
     @Autowired
     private SeekerRepository seekerRepository;
+
+    @Autowired
+    private SeekerStaffMappingRepository seekerStaffMappingRepo;
 
     // Tổng quan số liệu
     @PostMapping("/overview")
@@ -43,7 +45,8 @@ public class StaffDashboardController {
             Map<String, Object> overview = dashboardService.getOverview(staffId);
             return ResponseEntity.ok(overview);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching overview data");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while fetching overview data");
         }
     }
 
@@ -62,7 +65,8 @@ public class StaffDashboardController {
             Map<String, Object> chartData = dashboardService.getActivityChart(staffId, period);
             return ResponseEntity.ok(chartData);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching activity chart data");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while fetching activity chart data");
         }
     }
 
@@ -81,7 +85,8 @@ public class StaffDashboardController {
             var feedback = dashboardService.getFeedbackWithSeekerName(staffId);
             return ResponseEntity.ok(feedback);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching feedback");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while fetching feedback");
         }
     }
 
@@ -108,7 +113,8 @@ public class StaffDashboardController {
             dto.setPhone(user.getPhone());
             dto.setGender(user.getGender());
             dto.setBio(seeker.getBio());
-            dto.setCurrentEducationLevel(seeker.getCurrentEducationLevel() != null ? seeker.getCurrentEducationLevel().name() : null);
+            dto.setCurrentEducationLevel(
+                    seeker.getCurrentEducationLevel() != null ? seeker.getCurrentEducationLevel().name() : null);
             dto.setCity(seeker.getCity());
             dto.setGpa(seeker.getGpa());
             dto.setMajor(seeker.getMajor());
@@ -128,6 +134,47 @@ public class StaffDashboardController {
             return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Seeker not found");
+        }
+    }
+
+    // THÊM: API để lấy seekers premium cho lộ trình tư vấn
+    @GetMapping("/premium-seekers")
+    public ResponseEntity<?> getPremiumSeekers(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            User user = jwtUtil.extractUserFromToken(token);
+
+            if (user == null || !"staff".equals(user.getRole())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Access denied", "message",
+                                "Only staff members can access this resource"));
+            }
+
+            // Lấy danh sách premium seekers với thông tin đầy đủ
+            List<com.swp391_g6.demo.entity.SeekerStaffMapping> mappings = seekerStaffMappingRepo
+                    .findPremiumSeekersByStaff(user.getUserId());
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (com.swp391_g6.demo.entity.SeekerStaffMapping mapping : mappings) {
+                Optional<com.swp391_g6.demo.entity.User> seekerUserOpt = seekerRepository.findById(mapping.getSeekerId())
+                        .map(Seeker::getUser);
+                if (seekerUserOpt.isPresent()) {
+                    com.swp391_g6.demo.entity.User seekerUser = seekerUserOpt.get();
+                    Map<String, Object> seekerData = new HashMap<>();
+                    seekerData.put("seekerId", mapping.getSeekerId());
+                    seekerData.put("name", seekerUser.getName());
+                    seekerData.put("email", seekerUser.getEmail());
+                    seekerData.put("phone", seekerUser.getPhone());
+                    seekerData.put("assignedAt", mapping.getAssignedAt());
+                    result.add(seekerData);
+                }
+            }
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Internal server error", "message", "Failed to retrieve premium seekers"));
         }
     }
 }

@@ -2,11 +2,12 @@ import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChatContext } from "../contexts/ChatContext";
 import { UserContext } from "../contexts/UserContext";
+import Notification from "./Notification/Notification";
 import '../css/header.css';
 
 export default function Header() {
     const { user, logout } = useContext(UserContext);
-    const { unreadCount } = useContext(ChatContext);
+    const { unreadCount, notifications } = useContext(ChatContext);
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     return (
@@ -40,7 +41,7 @@ export default function Header() {
                     {/* Menu chính giữa - desktop */}
                     <div className="mx-auto d-none d-lg-block">
                         <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                            
+
                             <li className="nav-item custom-dropdown mx-3">
                                 <a className="nav-link text-dark">FIND SCHOLARSHIPS</a>
                                 <ul className="dropdown-content">
@@ -74,7 +75,7 @@ export default function Header() {
                                             <li className="nav-item mx-3">
                                                 <Link to="/library" className="nav-link text-dark">LIBRARY</Link>
                                             </li>
-                                            
+
                                         </>
                                     )}
                                 </>
@@ -129,7 +130,7 @@ export default function Header() {
                                             </>
                                         )}
                                         {user.role === 'seeker' && (
-                                        <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
+                                            <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
                                         )}
                                         <li>
                                             <Link
@@ -149,26 +150,16 @@ export default function Header() {
                             </ul>
                         </div>
                         {/* Notification bell button */}
-                        <button
-                            className="btn btn-light position-relative ms-2"
-                            style={{ border: 'none' }}
-                            aria-label="Notifications"
-                        >
-                            <i className="fas fa-bell fs-4"></i>
-                            {/* Badge số lượng thông báo, tạm thời hardcode 0 */}
-                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
-                                0
-                            </span>
-                        </button>
+                        <Notification />
                     </div>
 
                     {/* Drawer menu for mobile */}
                     <div className={`header-drawer ${drawerOpen ? 'open' : ''}`}>
                         <div className="drawer-overlay" onClick={() => setDrawerOpen(false)}></div>
                         <div className="drawer-content">
-                            
+
                             <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                                
+
                                 <li className="nav-item custom-dropdown mb-3">
                                     <span className="nav-link text-dark">FIND SCHOLARSHIPS</span>
                                     <ul className="dropdown-content">

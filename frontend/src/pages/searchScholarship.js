@@ -61,7 +61,7 @@ const SearchScholarship = () => {
                 // setFilteredScholarships(data);
                 const fieldsSet = new Set();
                 const citiesSet = new Set();
-                data.forEach((sch) => {
+                validScholarships.forEach((sch) => {
                     try {
                         const fs = JSON.parse(sch.fieldsOfStudy);
                         if (Array.isArray(fs)) fs.forEach((f) => fieldsSet.add(f));

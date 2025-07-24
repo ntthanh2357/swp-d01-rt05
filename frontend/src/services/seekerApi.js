@@ -57,3 +57,19 @@ export const removeFavoriteScholarship = async (token, scholarshipId) => {
     console.log('Remove favorite response:', response);
     return response;
 };
+
+// Thêm API cho consultation
+export const registerConsultation = async (token, data) => {
+    return await axiosInstance.post(
+        "/consultation/register",
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+};
+
+export const getConsultationStatus = async (token) => {
+    return await axiosInstance.get(
+        "/consultation/status",
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+};
