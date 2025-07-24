@@ -83,18 +83,20 @@ function StaffProfile() {
                     setLoading(false);
                     return;
                 }
+                // Gọi API lấy thông tin profile
                 const response = await getStaffProfile({ token: user.accessToken });
                 if (response.status !== 200) {
                     throw new Error("Failed to fetch profile");
                 }
                 setProfile(response.data);
+
                 // Map dateOfBirthString to date_of_birth for form
                 const formData = {
                     ...response.data,
                     date_of_birth: response.data.dateOfBirthString
                 };
                 reset(formData);
-                
+
                 // Reset professional form
                 const professionalFormData = {
                     education_level: response.data.educationLevel,
@@ -104,13 +106,14 @@ function StaffProfile() {
                 resetProfessional(professionalFormData);
             } catch (error) {
                 console.error("Error fetching profile:", error);
+                toast.error("Không thể tải thông tin profile. Vui lòng thử lại sau.");
             } finally {
                 setLoading(false);
             }
         };
 
         fetchProfile();
-    }, [user, reset]);
+    }, [user, reset, resetProfessional]);
 
     if (loading) {
         return (
@@ -148,6 +151,7 @@ function StaffProfile() {
         setOtpError("");
         setOtpLoading(true);
         try {
+            // Gửi OTP
             await sendUpdateStaffProfileOtp({ email: data.email || profile.email });
             setShowOtpModal(true);
             setPendingUpdateType(type);
@@ -171,61 +175,57 @@ function StaffProfile() {
         setOtpError("");
         try {
             const data = formData || getValues();
-            const res = await verifyUpdateStaffProfileOtp({ email: data.email || profile.email, otp });
 
-            if (res.status !== 200) throw new Error();
+            // Xác thực OTP
+            const verifyRes = await verifyUpdateStaffProfileOtp({
+                email: data.email || profile.email,
+                otp: otp
+            });
 
-            if (pendingUpdateType === "personal") {
-                await updateStaffProfile({
-                    education_level: profile.educationLevel,
-                    experience_years: profile.experienceYears,
-                    specialization: profile.specialization,
-                    name: data.name,
-                    phone: data.phone,
-                    date_of_birth: data.date_of_birth,
-                    gender: data.gender,
-                    email: data.email,
-                    token: user.accessToken
-                });
-            } else if (pendingUpdateType === "professional") {
-                await updateStaffProfile({
-                    education_level: data.education_level,
-                    experience_years: data.experience_years,
-                    specialization: data.specialization,
-                    name: profile.name,
-                    phone: profile.phone,
-                    date_of_birth: profile.dateOfBirthString,
-                    gender: profile.gender,
-                    email: profile.email,
-                    token: user.accessToken
-                });
+            if (verifyRes.status === 200) {
+                // Cập nhật thông tin cá nhân hoặc chuyên môn
+                if (pendingUpdateType === "personal") {
+                    await updateStaffProfile({
+                        token: user.accessToken, // Truyền token
+                        name: data.name,
+                        phone: data.phone,
+                        date_of_birth: data.date_of_birth,
+                        gender: data.gender,
+                        email: data.email
+                    });
+                } else if (pendingUpdateType === "professional") {
+                    await updateStaffProfile({
+                        token: user.accessToken, // Truyền token
+                        education_level: data.education_level,
+                        experience_years: data.experience_years,
+                        specialization: data.specialization
+                    });
+                }
+
+                toast.success("Cập nhật thông tin thành công!");
+                setShowOtpModal(false);
+                setEditPersonal(false);
+                setEditProfessional(false);
+                setFormData(null);
+
+                // Reload profile
+                const response = await getStaffProfile({ token: user.accessToken });
+                if (response.status === 200) {
+                    setProfile(response.data);
+                    reset({
+                        ...response.data,
+                        date_of_birth: response.data.dateOfBirthString
+                    });
+                    resetProfessional({
+                        education_level: response.data.educationLevel,
+                        experience_years: response.data.experienceYears,
+                        specialization: response.data.specialization
+                    });
+                }
             }
-
-            toast.success("Cập nhật thông tin thành công!");
-
-            setShowOtpModal(false);
-            setEditPersonal(false);
-            setEditProfessional(false);
-            setFormData(null);
-
-            const response = await getStaffProfile({ token: user.accessToken });
-            setProfile(response.data);
-            // Map dateOfBirthString to date_of_birth for form
-            const formData = {
-                ...response.data,
-                date_of_birth: response.data.dateOfBirthString
-            };
-            reset(formData);
-            
-            // Reset professional form
-            const professionalFormData = {
-                education_level: response.data.educationLevel,
-                experience_years: response.data.experienceYears,
-                specialization: response.data.specialization
-            };
-            resetProfessional(professionalFormData);
         } catch (err) {
-            setOtpError("OTP không đúng hoặc đã hết hạn.");
+            console.error("Error updating profile:", err);
+            setOtpError("Cập nhật thông tin thất bại. Vui lòng thử lại.");
         }
         setOtpLoading(false);
     };
