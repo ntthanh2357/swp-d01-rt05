@@ -76,6 +76,10 @@ function ConsultationRoadmap() {
                 setProgressData(progressResponse.data.progress || {});
             }
 
+            console.log("Roadmap data:", roadmapResponse.data);
+            console.log("Progress data:", progressResponse.data);
+            console.log("Profile data:", profileResponse.data);
+
         } catch (error) {
             console.error("Error fetching data:", error);
             if (error.response?.status === 403) {
@@ -92,13 +96,49 @@ function ConsultationRoadmap() {
     // SỬA: Khởi tạo trạng thái cho từng bước chi tiết
     const initializeStepStatuses = (roadmap) => {
         const initialStatuses = {};
-        roadmap.forEach(stage => {
-            // Khởi tạo với trạng thái pending cho tất cả steps
-            initialStatuses[stage.stepNumber] = {
-                1: stage.stepNumber === 1 ? 'in_progress' : 'pending', // Step đầu tiên của stage 1 sẽ là in_progress
-                2: 'pending',
-                3: 'pending'
-            };
+        roadmap.forEach((stage, idx) => {
+            if (stage.stepStatus === 'completed') {
+                initialStatuses[stage.stepNumber] = {
+                    1: 'completed',
+                    2: 'completed',
+                    3: 'completed',
+                    stageStatus: 'completed'
+                };
+            } else if (stage.stepStatus === 'in_progress') {
+                // Nếu backend trả về đang thực hiện thì giữ nguyên
+                initialStatuses[stage.stepNumber] = {
+                    1: 'in_progress',
+                    2: 'pending',
+                    3: 'pending',
+                    stageStatus: 'in_progress'
+                };
+            } else {
+                if (stage.stepNumber === 1) {
+                    initialStatuses[stage.stepNumber] = {
+                        1: 'in_progress',
+                        2: 'pending',
+                        3: 'pending',
+                        stageStatus: 'in_progress'
+                    };
+                } else {
+                    const prevStage = roadmap[idx - 1];
+                    if (prevStage && prevStage.stepStatus === 'completed') {
+                        initialStatuses[stage.stepNumber] = {
+                            1: 'in_progress',
+                            2: 'pending',
+                            3: 'pending',
+                            stageStatus: 'in_progress'
+                        };
+                    } else {
+                        initialStatuses[stage.stepNumber] = {
+                            1: 'pending',
+                            2: 'pending',
+                            3: 'pending',
+                            stageStatus: 'pending'
+                        };
+                    }
+                }
+            }
         });
         setStepStatuses(initialStatuses);
     };
@@ -167,22 +207,15 @@ function ConsultationRoadmap() {
         // Chỉ cho phép đánh dấu completed nếu bước đang in_progress
         if (currentStage?.stepStatus === 'in_progress' && currentStatus === 'in_progress') {
             try {
-                console.log("Marking step detail as completed:", {
-                    stageNumber: stageNumber,
-                    stepIndex: stepIndex,
-                    status: 'completed'
-                });
-
-                // SỬA: Gọi API updateStepDetailStatus để chỉ update bước cụ thể
                 const response = await updateStepDetailStatus(user.accessToken, {
                     stageNumber: stageNumber,
                     stepIndex: stepIndex,
                     status: 'completed',
                     notes: `Seeker đã xác nhận hoàn thành bước ${stepIndex} trong giai đoạn ${stageNumber}`
                 });
-
                 if (response.data && response.data.success) {
-                    // Cập nhật trạng thái bước cụ thể
+                    toast.success("Đã hoàn thành bước thành công!");
+                    // Cập nhật UI tạm thời
                     setStepStatuses(prev => ({
                         ...prev,
                         [stageNumber]: {
@@ -190,12 +223,8 @@ function ConsultationRoadmap() {
                             [stepIndex]: 'completed'
                         }
                     }));
-
-                    toast.success("Đã hoàn thành bước thành công!");
-
-                    // Kiểm tra xem có bước tiếp theo trong cùng stage không
                     const nextStepIndex = stepIndex + 1;
-                    if (nextStepIndex <= 3) { // Giả sử mỗi stage có tối đa 3 steps
+                    if (nextStepIndex <= 3) {
                         setStepStatuses(prev => ({
                             ...prev,
                             [stageNumber]: {
@@ -204,12 +233,8 @@ function ConsultationRoadmap() {
                             }
                         }));
                     }
-
-                    // Kiểm tra và cập nhật trạng thái stage nếu tất cả steps đã completed
-                    checkStageCompletion(stageNumber);
-
-                    // Refresh toàn bộ roadmap data để đảm bảo sync
-                    await fetchData();
+                    // Kiểm tra hoàn thành giai đoạn, nếu hoàn thành thì gọi fetchData để đồng bộ backend
+                    checkStageCompletion(stageNumber, true);
                 } else {
                     throw new Error(response.data?.error || "Cập nhật thất bại");
                 }
@@ -221,51 +246,67 @@ function ConsultationRoadmap() {
         }
     };
 
-    // SỬA: Kiểm tra và cập nhật trạng thái giai đoạn
-    const checkStageCompletion = (stageNumber) => {
+    const checkStageCompletion = (stageNumber, isSyncBackend = false) => {
         const stageSteps = stepStatuses[stageNumber] || {};
         const totalSteps = stageDetails[stageNumber]?.length || 3;
 
-        // Kiểm tra tất cả bước đã hoàn thành chưa
-        let allCompleted = true;
+        let completedCount = 0;
         for (let i = 1; i <= totalSteps; i++) {
-            if (stageSteps[i] !== 'completed') {
-                allCompleted = false;
-                break;
+            if (stageSteps[i] === 'completed') {
+                completedCount++;
             }
         }
 
-        if (allCompleted) {
-            // Cập nhật stage status thành completed sẽ được xử lý bởi backend
-            // Và cập nhật stage tiếp theo thành in_progress
-            const nextStageNumber = stageNumber + 1;
-            if (nextStageNumber <= 4) { // Giả sử có 4 stages
-                setStepStatuses(prev => ({
+        if (completedCount === totalSteps) {
+            setStepStatuses(prev => {
+                const updated = {
                     ...prev,
-                    [nextStageNumber]: {
-                        ...prev[nextStageNumber],
-                        1: 'in_progress' // Bắt đầu step đầu tiên của stage tiếp theo
+                    [stageNumber]: {
+                        ...prev[stageNumber],
+                        stageStatus: 'completed'
                     }
-                }));
-            }
+                };
+                const nextStageNumber = stageNumber + 1;
+                if (nextStageNumber <= 4) {
+                    updated[nextStageNumber] = {
+                        ...prev[nextStageNumber],
+                        1: 'in_progress',
+                        2: prev[nextStageNumber]?.[2] || 'pending',
+                        3: prev[nextStageNumber]?.[3] || 'pending',
+                        stageStatus: 'in_progress'
+                    };
+                }
+                return updated;
+            });
         }
-    };
+    }
+    // Theo dõi trạng thái hoàn thành của các giai đoạn để tự động reload roadmap
+    useEffect(() => {
+        // Kiểm tra nếu bất kỳ giai đoạn nào vừa chuyển sang 'completed'
+        if (!roadmapData || roadmapData.length === 0) return;
+        roadmapData.forEach((stage) => {
+            const localStatus = stepStatuses[stage.stepNumber]?.stageStatus;
+            // Nếu localStatus là 'completed' mà backend chưa cập nhật (stage.stepStatus !== 'completed')
+            if (localStatus === 'completed' && stage.stepStatus !== 'completed') {
+                fetchData();
+            }
+        });
+    }, [stepStatuses, roadmapData]);
 
     const getStepButtonText = (stageStatus, stepStatus) => {
-        if (stageStatus === 'completed') return 'Đã hoàn thành';
         if (stepStatus === 'completed') return 'Đã hoàn thành';
+        if (stageStatus === 'completed') return 'Đã hoàn thành';
         if (stageStatus === 'in_progress' && stepStatus === 'in_progress') return 'Xác nhận hoàn thành';
         if (stageStatus === 'pending') return 'Đang chờ';
         return 'Đang chờ';
     };
 
     const isStepButtonClickable = (stageStatus, stepStatus) => {
-        // Chỉ cho phép click khi giai đoạn đang in_progress và bước đang in_progress
         return stageStatus === 'in_progress' && stepStatus === 'in_progress';
     };
     // SỬA: Lấy class CSS cho nút
     const getStepButtonClass = (stageStatus, stepStatus) => {
-        if (stepStatus === 'completed') return 'btn btn-success btn-sm';
+        if (stepStatus === 'completed' || stageStatus === 'completed') return 'btn btn-success btn-sm';
         if (stageStatus === 'in_progress' && stepStatus === 'in_progress') {
             return 'btn btn-primary btn-sm';
         }
@@ -501,6 +542,7 @@ function ConsultationRoadmap() {
                                                 {stageDetails[stage.stepNumber].map((step, stepIndex) => {
                                                     const stepNumber = stepIndex + 1;
                                                     const stepStatus = stepStatuses[stage.stepNumber]?.[stepNumber] || 'pending';
+                                                    const stageStatus = stepStatuses[stage.stepNumber]?.stageStatus || stage.stepStatus;
 
                                                     return (
                                                         <div key={stepIndex} className="detail-step-card">
@@ -523,17 +565,17 @@ function ConsultationRoadmap() {
                                                             {/* SỬA: Nút xác nhận hoàn thành cho từng bước */}
                                                             <div className="step-action">
                                                                 <button
-                                                                    className={getStepButtonClass(stage.stepStatus, stepStatus)}
+                                                                    className={getStepButtonClass(stageStatus, stepStatus)}
                                                                     onClick={() => handleStepStatusClick(stage.stepNumber, stepNumber)}
-                                                                    disabled={!isStepButtonClickable(stage.stepStatus, stepStatus)}
-                                                                    title={isStepButtonClickable(stage.stepStatus, stepStatus)
+                                                                    disabled={!isStepButtonClickable(stageStatus, stepStatus)}
+                                                                    title={isStepButtonClickable(stageStatus, stepStatus)
                                                                         ? "Click để đánh dấu bước này đã hoàn thành"
                                                                         : "Bước này chưa thể hoàn thành"}
                                                                 >
                                                                     {stepStatus === 'completed' && <i className="fas fa-check me-1"></i>}
                                                                     {stepStatus === 'in_progress' && <i className="fas fa-play me-1"></i>}
                                                                     {stepStatus === 'pending' && <i className="fas fa-clock me-1"></i>}
-                                                                    {getStepButtonText(stage.stepStatus, stepStatus)}
+                                                                    {getStepButtonText(stageStatus, stepStatus)}
                                                                 </button>
                                                             </div>
                                                         </div>

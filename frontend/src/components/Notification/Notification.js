@@ -22,16 +22,26 @@ function Notification() {
         setNotifications((prevNotifications) => {
             const updatedNotifications = [...prevNotifications];
             chatNotifications.forEach((chatNoti) => {
-                const index = updatedNotifications.findIndex((n) => n.id === chatNoti.id);
+                // Đảm bảo mỗi thông báo đều có trường id
+                const notiId = chatNoti.id || chatNoti._id || chatNoti.notificationId;
+                if (!notiId) return; // Bỏ qua nếu không có id
+                const index = updatedNotifications.findIndex((n) => n.id === notiId);
+                const newNoti = { ...chatNoti, id: notiId }; // Đảm bảo có trường id
                 if (index === -1) {
-                    updatedNotifications.push(chatNoti);
+                    updatedNotifications.push(newNoti);
                 } else {
-                    updatedNotifications[index] = chatNoti;
+                    updatedNotifications[index] = newNoti;
                 }
             });
             return updatedNotifications;
         });
     }, [chatNotifications]);
+
+    // Cập nhật số thông báo chưa đọc realtime khi notifications thay đổi
+    useEffect(() => {
+        const unread = notifications.filter(n => !n.isRead).length;
+        setUnreadCount(unread);
+    }, [notifications]);
 
     const fetchNotifications = async () => {
         try {
@@ -46,8 +56,22 @@ function Notification() {
     };
 
     const handleMarkAsRead = async (id) => {
-        await markNotificationAsRead(id, user.accessToken);
-        fetchNotifications();
+        // Kiểm tra id và accessToken trước khi gọi API
+        if (!id || !user?.accessToken) {
+            console.error("Thiếu id hoặc accessToken khi đánh dấu đã đọc", { id, accessToken: user?.accessToken });
+            return;
+        }
+        try {
+            await markNotificationAsRead(id, user.accessToken);
+            // Cập nhật trạng thái đã đọc cho thông báo trong local state
+            setNotifications((prev) =>
+                prev.map((noti) =>
+                    noti.id === id ? { ...noti, isRead: true } : noti
+                )
+            );
+        } catch (err) {
+            console.error("Lỗi khi đánh dấu đã đọc:", err);
+        }
     };
 
     return (
