@@ -1,6 +1,7 @@
 package com.swp391_g6.demo.controller;
 
 import com.swp391_g6.demo.service.OrganizationService;
+import com.swp391_g6.demo.service.ScholarshipScarper;
 import com.swp391_g6.demo.service.ScholarshipService;
 import com.swp391_g6.demo.entity.Scholarship;
 import com.swp391_g6.demo.entity.User;
@@ -12,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,6 +32,9 @@ public class ScholarshipController {
 
     @Autowired
     private ScholarshipService scholarshipService;
+
+    @Autowired
+    private ScholarshipScarper scholarshipScarper;
 
     // [POST] /api/scholarships/get-active - Get active scholarships
     @PostMapping("/get-active")

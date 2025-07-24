@@ -1,17 +1,17 @@
 package com.swp391_g6.demo.controller;
 
-import java.util.Map;
-import java.util.List;
 import java.sql.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.UserService;
@@ -124,4 +124,31 @@ public class UserController {
         }
     }
 
+
+    @PostMapping("/{id}/ban")
+    public ResponseEntity<?> banUser(@PathVariable("id") String userId) {
+    User user = userService.getUserById(userId);
+    if (user == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    }
+    user.setBanned(true);
+    userService.save(user);
+    return ResponseEntity.ok("Đã khóa tài khoản.");
+}
+
+    // [POST] /api/users/ban-user - Khóa người dùng
+    @PostMapping("/ban-user")
+    public ResponseEntity<?> banUser(@RequestBody Map<String, String> body) {
+        String userId = body.get("userId");
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body("User ID is required");
+        }
+
+        boolean isBanned = userService.banUser(userId);
+        if (isBanned) {
+            return ResponseEntity.ok("User banned successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found or already banned");
+        }
+    }
 }

@@ -12,7 +12,6 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.entity.VerificationToken;
 import com.swp391_g6.demo.repository.UserRepository;
@@ -96,4 +95,26 @@ public class UserService {
         return token.getOtp_code().equals(otp);
     }
 
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    public boolean banUser(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setBanned(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean deleteUser(String userId) {
+        if (userRepository.existsById(userId)) {
+            userRepository.deleteById(userId);
+            return true;
+        }
+        return false;
+    }
 }

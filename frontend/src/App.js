@@ -23,7 +23,6 @@ import Library from "./pages/library";
 import SearchStaff from './pages/searchStaff';
 import DetailStaff from './pages/detailStaff';
 
-import AdminDashboard from "./pages/admin-dashboard";
 function App() {
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>

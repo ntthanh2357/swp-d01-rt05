@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../contexts/UserContext";
-import { userManage } from "../services/userApi";
+import { userManage, banUser } from "../services/userApi";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UserCard from '../components/UserCard';
@@ -88,6 +88,30 @@ function UserManage() {
 
     // Lấy danh sách role duy nhất từ userData
     const uniqueRoles = Array.from(new Set(userData.map(u => u.role))).filter(Boolean);
+
+    const handleBan = async (userId) => {
+        try {
+            console.log('Banning user:', userId); // Để debug
+            const response = await banUser(userId);
+            console.log('Ban response:', response); // Kiểm tra response
+
+            if (response.status === 200) {
+                toast.success("Đã cấm người dùng!");
+                setUserData(prev =>
+                    prev.map(u => {
+                        if (u.userId === userId || u.user_id === userId) {
+                            console.log('Updating user:', u); // Kiểm tra user được update
+                            return { ...u, isBanned: true };
+                        }
+                        return u;
+                    })
+                );
+            }
+        } catch (err) {
+            console.error('Ban error:', err); // Log lỗi chi tiết
+            toast.error("Cấm thất bại: " + (err.response?.data || err.message));
+        }
+    };
 
     return (
         <>
@@ -195,7 +219,7 @@ function UserManage() {
                                             <div className="row g-4">
                                                 {paginatedUsers.map(user => (
                                                     <div className="col-12 col-sm-6 col-md-4" key={user.user_id}>
-                                                        <UserCard user={user} />
+                                                        <UserCard user={user} onBan={handleBan} />
                                                     </div>
                                                 ))}
                                             </div>

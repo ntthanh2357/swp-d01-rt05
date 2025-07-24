@@ -128,7 +128,14 @@ public class AuthService {
 
     public User authenticate(String email, String password) {
         User user = userRepository.findByEmail(email);
+        System.out.println("User isBanned status: " + (user != null ? user.isBanned() : "user not found")); // Debug log
+        
         if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
+            // Kiểm tra isBanned trước khi cho đăng nhập
+            if (user.isBanned()) {
+                System.out.println("User is banned: " + email); // Debug log
+                throw new RuntimeException("Tài khoản của bạn đã bị khóa.");
+            }
             return user;
         }
         return null;

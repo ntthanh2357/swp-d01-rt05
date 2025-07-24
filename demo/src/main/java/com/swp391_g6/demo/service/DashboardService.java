@@ -1,22 +1,30 @@
 package com.swp391_g6.demo.service;
 
-import org.springframework.stereotype.Service;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
+import com.swp391_g6.demo.repository.MessageRepository;
 import com.swp391_g6.demo.entity.StaffReview;
+import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.repository.CounselingCaseRepository;
+import com.swp391_g6.demo.repository.MessageRepository;
 import com.swp391_g6.demo.repository.ScholarshipRepository;
-import com.swp391_g6.demo.repository.StaffStatisticsRepository;
+import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
 import com.swp391_g6.demo.repository.StaffReviewRepository;
+import com.swp391_g6.demo.repository.StaffStatisticsRepository;
 import com.swp391_g6.demo.repository.UserRepository;
 import com.swp391_g6.demo.entity.SeekerStaffMapping;
 import com.swp391_g6.demo.entity.User;
-import com.swp391_g6.demo.entity.StaffStatistics;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import org.springframework.cache.annotation.Cacheable;
 
 @Service
 public class DashboardService {
