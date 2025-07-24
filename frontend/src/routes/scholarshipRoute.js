@@ -11,7 +11,6 @@ function ScholarshipRoute() {
             <Route path="/manage-scholarships" element={<ScholarshipManage />} />
             <Route path="/search-scholarships" element={<SearchScholarship />} />
             <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Home />} />
         </Routes>
     );
 }

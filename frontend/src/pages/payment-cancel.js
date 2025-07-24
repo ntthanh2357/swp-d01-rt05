@@ -1,49 +1,48 @@
-import React from 'react';
+// Import React hooks cần thiết
+import { useEffect } from 'react';
+// Import React Router hook để điều hướng
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Component PaymentCancel - Trang xử lý hủy thanh toán
+ * Chức năng:
+ * - Hiển thị thông báo thanh toán bị hủy
+ * - Tự động chuyển hướng về trang thanh toán sau 2 giây
+ * - Dọn dẹp các thông tin thanh toán tạm thời (nếu có)
+ */
 export default function PaymentCancel() {
-  const navigate = useNavigate();
-
-  const handleBackToPayment = () => {
-    navigate('/payment');
-  };
-
-  const handleBackToHome = () => {
-    navigate('/');
-  };
-
+  const navigate = useNavigate(); // Hook để điều hướng
+  
+  // Effect để tự động chuyển hướng
+  useEffect(() => {
+    // Dọn dẹp localStorage nếu có thông tin thanh toán pending
+    localStorage.removeItem('pendingPayment');
+    
+    // Tự động chuyển về trang thanh toán sau 2 giây
+    const timer = setTimeout(() => {
+      navigate('/payment');
+    }, 2000);
+    
+    // Cleanup timer khi component unmount
+    return () => clearTimeout(timer);
+  }, [navigate]);
+  
+  // Render giao diện trang hủy thanh toán
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card text-center">
-            <div className="card-body">
-              <div className="text-warning mb-3">
-                <i className="fas fa-exclamation-triangle fa-4x"></i>
-              </div>
-              <h2 className="text-warning">Thanh toán đã bị hủy</h2>
-              <p className="text-muted">
-                Giao dịch thanh toán của bạn đã bị hủy. Bạn có thể thử lại hoặc liên hệ với chúng tôi nếu cần hỗ trợ.
-              </p>
-              
-              <div className="mt-4">
-                <button 
-                  className="btn btn-primary me-3"
-                  onClick={handleBackToPayment}
-                >
-                  Thử lại thanh toán
-                </button>
-                <button 
-                  className="btn btn-secondary"
-                  onClick={handleBackToHome}
-                >
-                  Về trang chủ
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div style={{ 
+      minHeight: '60vh', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center' 
+    }}>
+      {/* Thông báo thanh toán bị hủy */}
+      <h2 style={{ color: 'red', marginBottom: 16 }}>
+        Thanh toán đã bị hủy!
+      </h2>
+      
+      {/* Thông báo chuyển hướng */}
+      <p>Bạn sẽ được chuyển về trang thanh toán trong giây lát...</p>
     </div>
   );
 }

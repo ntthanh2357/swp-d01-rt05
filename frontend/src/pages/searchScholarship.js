@@ -47,11 +47,21 @@ const SearchScholarship = () => {
             try {
                 const res = await getAllScholarships();
                 const data = res.data;
-                setScholarships(data);
-                setFilteredScholarships(data);
+
+                const now = new Date();
+                const validScholarships = data.filter(sch => {
+                    if (!sch.applicationDeadline) return true;
+                    const deadlineDate = new Date(sch.applicationDeadline);
+                    return deadlineDate >= now ;
+                }  );
+                setScholarships(validScholarships);
+                setFilteredScholarships(validScholarships);
+
+                // setScholarships(data);
+                // setFilteredScholarships(data);
                 const fieldsSet = new Set();
                 const citiesSet = new Set();
-                data.forEach((sch) => {
+                validScholarships.forEach((sch) => {
                     try {
                         const fs = JSON.parse(sch.fieldsOfStudy);
                         if (Array.isArray(fs)) fs.forEach((f) => fieldsSet.add(f));
@@ -65,7 +75,7 @@ const SearchScholarship = () => {
                         else citiesSet.add(cs);
                     } catch {
                         if (sch.countries) citiesSet.add(sch.countries);
-                    }
+                    }  
                 });
                 setFields(Array.from(fieldsSet).sort());
                 setCities(Array.from(citiesSet).sort());
@@ -206,7 +216,7 @@ const SearchScholarship = () => {
     useEffect(() => {
         applyFilter();
         // eslint-disable-next-line
-    }, [selectedFields, selectedCities, selectedAmount, selectedOrganization]);
+    }, [selectedFields, selectedCities, selectedAmount, selectedOrganization, scholarships]);
     
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;

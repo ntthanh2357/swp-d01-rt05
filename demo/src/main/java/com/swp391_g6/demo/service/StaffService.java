@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -53,8 +51,8 @@ public class StaffService {
         List<StaffReview> reviews = staffReviewRepository.findByStaffId(user.getUserId());
         int totalReviews = reviews.size();
         double avgRating = totalReviews > 0
-            ? reviews.stream().mapToInt(StaffReview::getRating).average().orElse(0)
-            : 0;
+                ? reviews.stream().mapToInt(StaffReview::getRating).average().orElse(0)
+                : 0;
 
         dto.setTotalReviews(totalReviews);
         dto.setRating(avgRating);
@@ -125,5 +123,43 @@ public class StaffService {
         staff.setSpecialization(dto.getSpecialization());
 
         staffRepository.save(staff);
+    }
+
+    public List<Staff> getAllStaff() {
+        return staffRepository.findAll();
+    }
+
+    public List<StaffDTO> getAllStaffDTOs() {
+        List<Staff> staffList = staffRepository.findAll();
+        List<StaffDTO> result = new java.util.ArrayList<>();
+        for (Staff staff : staffList) {
+            User user = userRepository.findByUserId(staff.getStaffId());
+            StaffDTO dto = new StaffDTO(staff, user);
+            // Lấy danh sách review cho staff này
+            List<StaffReview> reviews = staffReviewRepository.findByStaffId(staff.getStaffId());
+            int totalReviews = reviews.size();
+            double avgRating = totalReviews > 0
+                    ? reviews.stream().mapToInt(StaffReview::getRating).average().orElse(0)
+                    : 0;
+            dto.setTotalReviews(totalReviews);
+            dto.setRating(avgRating);
+            result.add(dto);
+        }
+        return result;
+    }
+
+    public void saveStaffReview(StaffReview review) {
+        staffReviewRepository.save(review);
+    }
+
+    public void createStaffProfile(User user) {
+        if (user == null || !"staff".equals(user.getRole())) {
+            throw new RuntimeException("User must have role 'staff' to create staff profile");
+        }
+        if (staffRepository.findByStaffId(user.getUserId()) == null) {
+            Staff staff = new Staff();
+            staff.setUser(user);
+            staffRepository.save(staff);
+        }
     }
 }

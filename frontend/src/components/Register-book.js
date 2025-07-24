@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { UserContext } from "../contexts/UserContext";
 import "../css/register-book.css";
 
 const defaultCityOptionsByCountry = {
@@ -15,10 +16,11 @@ const defaultCityOptionsByCountry = {
 };
 
 const RegisterForm = ({ countryList }) => {
+  const { user } = useContext(UserContext);
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
+    fullName: user ? user.name || "" : "",
+    email: user ? user.email || "" : "",
+    phone: user ? user.phone || "" : "",
     country: "",
     studyTime: "",
     city: "",
@@ -64,13 +66,59 @@ const RegisterForm = ({ countryList }) => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const foundErrors = validate();
     setErrors(foundErrors);
+    
     if (Object.keys(foundErrors).length === 0) {
-      alert("Đăng ký thành công!");
-      console.log(formData);
+      // Kiểm tra user đã đăng nhập chưa
+      if (!user || !user.accessToken) {
+        alert("Vui lòng đăng nhập để đăng ký tư vấn!");
+        return;
+      }
+
+      try {
+        const requestData = {
+          ...formData,
+          token: user.accessToken
+        };
+
+        const response = await fetch('/api/consultation/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("Đăng ký tư vấn thành công! Bạn đã được phân công tư vấn viên.");
+          console.log('Consultation registered:', result);
+          // Reset form
+          setFormData({
+            fullName: "",
+            email: "",
+            phone: "",
+            country: "",
+            studyTime: "",
+            city: "",
+            educationLevel: "",
+            adviceType: "",
+            scholarshipGoal: "",
+            major: "",
+            note: "",
+            agree: false,
+          });
+        } else {
+          alert(`Lỗi: ${result.error || result.message || 'Có lỗi xảy ra'}`);
+        }
+      } catch (error) {
+        console.error('Error registering consultation:', error);
+        alert('Có lỗi xảy ra khi đăng ký tư vấn. Vui lòng thử lại!');
+      }
     }
   };
 
@@ -92,6 +140,7 @@ const RegisterForm = ({ countryList }) => {
             placeholder="Họ và tên*"
             value={formData.fullName}
             onChange={handleChange}
+            disabled={user && user.name}
           />
           {errors.fullName && <span className="error-msg">{errors.fullName}</span>}
         </div>
@@ -103,6 +152,7 @@ const RegisterForm = ({ countryList }) => {
             placeholder="Email*"
             value={formData.email}
             onChange={handleChange}
+            disabled={user && user.email}
           />
           {errors.email && <span className="error-msg">{errors.email}</span>}
         </div>
@@ -120,6 +170,7 @@ const RegisterForm = ({ countryList }) => {
               placeholder="Số điện thoại*"
               value={formData.phone}
               onChange={handleChange}
+              disabled={user && user.phone}
             />
             {errors.phone && <span className="error-msg">{errors.phone}</span>}
           </div>
@@ -233,9 +284,6 @@ const RegisterForm = ({ countryList }) => {
             Tôi đồng ý với <a href="/terms" target="_blank" rel="noopener noreferrer">Điều khoản</a> và{" "}
             <a href="/privacy" target="_blank" rel="noopener noreferrer">chính sách bảo mật</a>
             {errors.agree && <span className="error-msg">{errors.agree}</span>}
-          </label>
-          <label>
-            <input type="checkbox" /> Liên hệ với tôi qua Zalo / Facebook
           </label>
           <label>
             <input type="checkbox" /> Tôi muốn nhận tin khuyến mãi / học bổng

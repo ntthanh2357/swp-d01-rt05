@@ -1,7 +1,6 @@
 package com.swp391_g6.demo.repository;
 
 import com.swp391_g6.demo.entity.FavoriteScholarship;
-import com.swp391_g6.demo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

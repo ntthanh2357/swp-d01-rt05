@@ -17,7 +17,7 @@ import com.swp391_g6.demo.dto.OtpVerificationRequest;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.AuthService;
 import com.swp391_g6.demo.service.GoogleAuthService;
-import com.swp391_g6.demo.service.SeekerService;
+import com.swp391_g6.demo.service.StaffService;
 import com.swp391_g6.demo.util.JwtUtil;
 
 @RestController
@@ -35,6 +35,9 @@ public class AuthController {
 
     @Autowired
     private GoogleAuthService googleAuthService;
+
+    @Autowired
+    private StaffService staffService;
 
     // [POST] /api/auth/send-otp - Gửi mã OTP đến email
     @PostMapping("/send-otp")
@@ -60,6 +63,10 @@ public class AuthController {
         authService.createStaff(
                 user.getEmail(),
                 user.getPasswordHash());
+        // Lấy lại user vừa tạo và tạo staff profile liên kết (phòng trường hợp logic
+        // thay đổi)
+        User createdUser = authService.findByEmail(user.getEmail());
+        staffService.createStaffProfile(createdUser);
         return ResponseEntity.status(HttpStatus.CREATED).body("Staff created successfully");
     }
 
@@ -143,14 +150,28 @@ public class AuthController {
     }
 
     // [POST] /api/auth/change-password - Đổi mật khẩu
+    // [POST] /api/auth/change-password - Đổi mật khẩu
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String oldPassword = request.get("oldPassword");
         String newPassword = request.get("newPassword");
 
-        authService.changePassword(email, oldPassword, newPassword);
-        return ResponseEntity.status(HttpStatus.OK).body("Mật khẩu đã được cập nhật thành công");
+        int result = authService.changePassword(email, oldPassword, newPassword);
+
+        switch (result) {
+            case 0:
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Người dùng không tồn tại");
+            case 1:
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mật khẩu cũ không đúng");
+            case 2:
+                return ResponseEntity.status(HttpStatus.OK).body("Mật khẩu đã được cập nhật thành công");
+            case 3:
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Mật khẩu mới không được trùng với mật khẩu cũ");
+            default:
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi không xác định");
+        }
     }
 
     @PostMapping("/refresh-token")

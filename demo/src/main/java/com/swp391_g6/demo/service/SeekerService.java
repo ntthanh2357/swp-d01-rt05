@@ -18,6 +18,10 @@ import com.swp391_g6.demo.repository.VerificationTokenRepository;
 import com.swp391_g6.demo.repository.FavoriteScholarshipRepository;
 import com.swp391_g6.demo.util.EmailUtil;
 import com.swp391_g6.demo.entity.Scholarship;
+import com.swp391_g6.demo.dto.ConsultationRequestDTO;
+import com.swp391_g6.demo.entity.SeekerStaffMapping;
+import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
+import com.swp391_g6.demo.repository.UserRepository;
 
 @Service
 public class SeekerService {
@@ -34,6 +38,12 @@ public class SeekerService {
     @Autowired
     private FavoriteScholarshipRepository favoriteScholarshipRepository;
 
+    @Autowired
+    private SeekerStaffMappingRepository seekerStaffMappingRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     public void createSeekerProfile(User user) {
         if (seekerRepository.findByUser(user) == null) {
             Seeker seeker = new Seeker();
@@ -44,6 +54,10 @@ public class SeekerService {
 
     public Seeker findByUser(User user) {
         return seekerRepository.findByUser(user);
+    }
+
+    public Seeker findBySeekerId(String seekerId) {
+        return seekerRepository.findByUser_UserId(seekerId);
     }
 
     public void updateSeekerProfile(Seeker seeker) {
@@ -129,5 +143,136 @@ public class SeekerService {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    // Phương thức đăng ký tư vấn
+    public Seeker registerConsultation(ConsultationRequestDTO request, User user) {
+        // Tìm hoặc tạo seeker profile
+        Seeker seeker = seekerRepository.findByUser(user);
+        if (seeker == null) {
+            seeker = new Seeker();
+            seeker.setUser(user);
+        }
+
+        // Cập nhật thông tin từ form
+        seeker.setStudyTime(request.getStudyTime());
+        seeker.setCity(request.getCity());
+        seeker.setAdviceType(request.getAdviceType());
+        seeker.setScholarshipGoal(request.getScholarshipGoal());
+        seeker.setMajor(request.getMajor());
+        seeker.setNote(request.getNote());
+        seeker.setReceivePromotions(request.getReceivePromotions());
+        seeker.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        seeker.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+        // Map education level
+        if (request.getEducationLevel() != null) {
+            switch (request.getEducationLevel()) {
+                case "Cao đẳng":
+                    seeker.setCurrentEducationLevel(Seeker.EducationLevel.undergraduate);
+                    break;
+                case "Đại học":
+                    seeker.setCurrentEducationLevel(Seeker.EducationLevel.undergraduate);
+                    break;
+                case "Thạc sĩ":
+                    seeker.setCurrentEducationLevel(Seeker.EducationLevel.graduate);
+                    break;
+                case "Tiến sĩ":
+                    seeker.setCurrentEducationLevel(Seeker.EducationLevel.postgraduate);
+                    break;
+                default:
+                    seeker.setCurrentEducationLevel(Seeker.EducationLevel.undergraduate);
+            }
+        }
+
+        // Map field of study
+        seeker.setFieldOfStudy(request.getMajor());
+
+        // Map target countries
+        if (request.getCountry() != null) {
+            seeker.setTargetCountries("[\"" + request.getCountry() + "\"]");
+        }
+
+        // Lưu seeker profile
+        seeker = seekerRepository.save(seeker);
+
+        // Tự động phân công staff (nếu chưa có)
+        if (seeker.getAssignedStaff() == null) {
+            assignStaffToSeeker(seeker);
+        }
+
+        return seeker;
+    }
+
+    // Phương thức phân công staff cho seeker
+    private void assignStaffToSeeker(Seeker seeker) {
+        try {
+            // Kiểm tra xem seeker đã có mapping chưa
+            SeekerStaffMapping existingMapping = seekerStaffMappingRepository.findBySeekerId(seeker.getSeekerId());
+            if (existingMapping != null) {
+                System.out.println("Seeker " + seeker.getSeekerId() + " already has staff assigned: "
+                        + existingMapping.getStaffId());
+                return;
+            }
+
+            // Lấy danh sách tất cả staff
+            List<User> staffList = userRepository.findByRole("staff");
+            if (staffList.isEmpty()) {
+                System.out.println("No staff available for assignment");
+                return;
+            }
+
+            // Logic phân công: tìm staff có ít seeker nhất
+            User selectedStaff = null;
+            int minSeekers = Integer.MAX_VALUE;
+
+            for (User staff : staffList) {
+                int currentSeekers = seekerStaffMappingRepository.countActiveSeekersByStaff(staff.getUserId());
+                if (currentSeekers < minSeekers) {
+                    minSeekers = currentSeekers;
+                    selectedStaff = staff;
+                }
+            }
+
+            if (selectedStaff != null) {
+                // Tạo mapping mới
+                SeekerStaffMapping mapping = new SeekerStaffMapping();
+                mapping.setSeekerId(seeker.getSeekerId());
+                mapping.setStaffId(selectedStaff.getUserId());
+                mapping.setAssignedAt(new Timestamp(System.currentTimeMillis()));
+                mapping.setStatus(SeekerStaffMapping.Status.active);
+
+                // Lưu mapping
+                seekerStaffMappingRepository.save(mapping);
+
+                // Cập nhật assignedStaff cho seeker
+                seeker.setAssignedStaff(selectedStaff);
+                seekerRepository.save(seeker);
+
+                System.out.println("Successfully assigned staff " + selectedStaff.getUserId() +
+                        " to seeker " + seeker.getSeekerId());
+            } else {
+                System.out.println("Failed to assign staff to seeker " + seeker.getSeekerId());
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error assigning staff to seeker: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Phương thức lấy danh sách seeker được phân công cho một staff
+    public List<SeekerStaffMapping> getSeekersByStaff(String staffId) {
+        return seekerStaffMappingRepository.findByStaffIdAndStatus(staffId, SeekerStaffMapping.Status.active);
+    }
+
+    // Phương thức lấy thông tin mapping của một seeker
+    public SeekerStaffMapping getMappingBySeeker(String seekerId) {
+        return seekerStaffMappingRepository.findBySeekerId(seekerId);
+    }
+
+    // Phương thức đếm số seeker active của một staff
+    public int countActiveSeekersByStaff(String staffId) {
+        return seekerStaffMappingRepository.countActiveSeekersByStaff(staffId);
     }
 }

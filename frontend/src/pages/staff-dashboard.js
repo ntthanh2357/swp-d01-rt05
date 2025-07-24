@@ -1,26 +1,34 @@
 import React, { useContext, useEffect, useState } from "react";
 import StaffActivityChart from "../components/StaffActivityChart";
 import ActiveSeekersModal from "../components/ActiveSeekersModal";
-import { getStaffOverview, getStaffFeedback, getActiveSeekers } from "../services/staffApi";
+import SeekerDetailModal from "../components/SeekerDetailModal";
+import { getStaffOverview, getStaffFeedback, getActiveSeekers, getSeekerDetail } from "../services/staffApi";
 import { UserContext } from "../contexts/UserContext";
 import { Card, Row, Col, Spinner, Table, Container, Button } from "react-bootstrap";
-import { User, Mail, Clock, Award } from "lucide-react";
+import { User, Mail, Clock, Award, Route } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from '../components/Header';
 import "../css/staff-dashboard.css"; // import CSS hiệu ứng
 
 function StaffDashboard({ staffId }) {
     const { user: contextUser, logout } = useContext(UserContext);
+    const navigate = useNavigate();
     const [overview, setOverview] = useState(null);
     const [chartData, setChartData] = useState(null);
     const [feedback, setFeedback] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [ratingFilter, setRatingFilter] = useState('all');
-    
+
     // State cho modal active seekers
     const [showActiveSeekersModal, setShowActiveSeekersModal] = useState(false);
     const [activeSeekers, setActiveSeekers] = useState([]);
     const [loadingSeekers, setLoadingSeekers] = useState(false);
+
+    // State cho modal seeker detail
+    const [showSeekerDetailModal, setShowSeekerDetailModal] = useState(false);
+    const [selectedSeeker, setSelectedSeeker] = useState(null);
+    const [loadingSeekerDetail, setLoadingSeekerDetail] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -63,21 +71,21 @@ function StaffDashboard({ staffId }) {
     // Tính toán thống kê đánh giá
     const getRatingStats = () => {
         if (feedback.length === 0) return { avgRating: 0, totalReviews: 0, ratingDistribution: {} };
-        
+
         const avgRating = (feedback.reduce((sum, fb) => sum + fb.rating, 0) / feedback.length).toFixed(1);
         const totalReviews = feedback.length;
-        
+
         const ratingDistribution = {};
         for (let i = 1; i <= 5; i++) {
             ratingDistribution[i] = feedback.filter(fb => fb.rating === i).length;
         }
-        
+
         return { avgRating, totalReviews, ratingDistribution };
     };
 
     // Lọc đánh giá theo rating
-    const filteredFeedback = ratingFilter === 'all' 
-        ? feedback 
+    const filteredFeedback = ratingFilter === 'all'
+        ? feedback
         : feedback.filter(fb => fb.rating === parseInt(ratingFilter));
 
     const ratingStats = getRatingStats();
@@ -87,9 +95,9 @@ function StaffDashboard({ staffId }) {
         setShowActiveSeekersModal(true);
         setLoadingSeekers(true);
         try {
-            const response = await getActiveSeekers({ 
-                staffId, 
-                token: contextUser.accessToken 
+            const response = await getActiveSeekers({
+                staffId,
+                token: contextUser.accessToken
             });
             setActiveSeekers(response.data || []);
         } catch (error) {
@@ -98,6 +106,31 @@ function StaffDashboard({ staffId }) {
         } finally {
             setLoadingSeekers(false);
         }
+    };
+
+    // Function để xem chi tiết seeker
+    const handleSeekerClick = async (seeker) => {
+        // Lấy đúng seekerId (ưu tiên các trường phổ biến)
+        const seekerId = seeker.seeker_id || seeker.user_id || seeker.id;
+        setSelectedSeeker(seeker);
+        setShowSeekerDetailModal(true);
+        setLoadingSeekerDetail(true);
+
+        try {
+            // SỬA: chỉ truyền seekerId (string) vào getSeekerDetail
+            const response = await getSeekerDetail(seekerId);
+            setSelectedSeeker(response.data || response || seeker);
+        } catch (error) {
+            console.error('Error fetching seeker detail:', error);
+            // Nếu không lấy được chi tiết, vẫn hiển thị thông tin cơ bản
+        } finally {
+            setLoadingSeekerDetail(false);
+        }
+    };
+
+    // Function để chuyển đến trang consultation roadmap staff
+    const handleConsultationRoadmap = () => {
+        navigate('/staff/consultation-roadmap');
     };
 
     if (loading || !overview) return (
@@ -124,24 +157,28 @@ function StaffDashboard({ staffId }) {
                 <h2 className="mb-4 fade-in text-center mb-5">Staff Dashboard</h2>
                 <Row className="mb-4 fade-in">
                     <Col md={3} xs={6} className="mb-3">
-                        <Card 
-                            className="text-center border-0 shadow-sm cursor-pointer" 
+                        <Card
+                            className="text-center border-0 shadow-sm cursor-pointer"
                             style={{ cursor: 'pointer' }}
                             onClick={handleShowActiveSeekers}
                         >
                             <Card.Body>
                                 <User size={22} className="mb-2 text-primary" />
-                                <div className="fw-semibold">Seeker đang tư vấn</div>
+                                <div className="fw-semibold">Seeker đang chờ phản hồi</div>
                                 <div className="fs-4">{overview.activeSeekers}</div>
                             </Card.Body>
                         </Card>
                     </Col>
                     <Col md={3} xs={6} className="mb-3">
-                        <Card className="text-center border-0 shadow-sm">
+                        <Card
+                            className="text-center border-0 shadow-sm cursor-pointer"
+                            style={{ cursor: 'pointer' }}
+                            onClick={handleConsultationRoadmap}
+                        >
                             <Card.Body>
-                                <Mail size={22} className="mb-2 text-primary" />
-                                <div className="fw-semibold">Tin nhắn chưa đọc</div>
-                                <div className="fs-4">{overview.unreadMessages}</div>
+                                <Route size={22} className="mb-2 text-success" />
+                                <div className="fw-semibold">Lộ trình tư vấn</div>
+                                <div className="fs-4">{overview.premiumSeekers || 0}</div>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -218,10 +255,10 @@ function StaffDashboard({ staffId }) {
                                             </div>
                                             <div className="flex-grow-1 me-2">
                                                 <div className="progress" style={{ height: '8px' }}>
-                                                    <div 
-                                                        className="progress-bar bg-warning" 
-                                                        style={{ 
-                                                            width: `${ratingStats.totalReviews > 0 ? (ratingStats.ratingDistribution[rating] / ratingStats.totalReviews) * 100 : 0}%` 
+                                                    <div
+                                                        className="progress-bar bg-warning"
+                                                        style={{
+                                                            width: `${ratingStats.totalReviews > 0 ? (ratingStats.ratingDistribution[rating] / ratingStats.totalReviews) * 100 : 0}%`
                                                         }}
                                                     ></div>
                                                 </div>
@@ -253,8 +290,8 @@ function StaffDashboard({ staffId }) {
                         {feedback.length > 0 && (
                             <div className="d-flex align-items-center">
                                 <label className="me-2 small text-muted">Lọc theo đánh giá:</label>
-                                <select 
-                                    className="form-select form-select-sm" 
+                                <select
+                                    className="form-select form-select-sm"
                                     style={{ width: 'auto' }}
                                     value={ratingFilter}
                                     onChange={(e) => setRatingFilter(e.target.value)}
@@ -275,7 +312,7 @@ function StaffDashboard({ staffId }) {
                                 <div className="mb-2">📝</div>
                                 <div>{feedback.length === 0 ? 'Chưa có đánh giá nào' : 'Không có đánh giá phù hợp với bộ lọc'}</div>
                                 <small>
-                                    {feedback.length === 0 
+                                    {feedback.length === 0
                                         ? 'Đánh giá sẽ xuất hiện khi người dùng đánh giá dịch vụ của bạn'
                                         : 'Thử thay đổi bộ lọc để xem thêm đánh giá'
                                     }
@@ -289,8 +326,8 @@ function StaffDashboard({ staffId }) {
                                             <div className="card-body">
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <div className="d-flex align-items-center">
-                                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
-                                                             style={{ width: '32px', height: '32px', fontSize: '14px' }}>
+                                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                                                            style={{ width: '32px', height: '32px', fontSize: '14px' }}>
                                                             {fb.isAnonymous ? 'A' : fb.seekerId?.slice(-2) || 'U'}
                                                         </div>
                                                         <div>
@@ -335,6 +372,15 @@ function StaffDashboard({ staffId }) {
                 onHide={() => setShowActiveSeekersModal(false)}
                 seekers={activeSeekers}
                 loading={loadingSeekers}
+                onSeekerClick={handleSeekerClick}
+            />
+
+            {/* Modal hiển thị chi tiết seeker */}
+            <SeekerDetailModal
+                show={showSeekerDetailModal}
+                onHide={() => setShowSeekerDetailModal(false)}
+                seeker={selectedSeeker}
+                loading={loadingSeekerDetail}
             />
         </>
     );

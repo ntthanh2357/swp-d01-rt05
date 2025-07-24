@@ -1,12 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChatContext } from "../contexts/ChatContext";
 import { UserContext } from "../contexts/UserContext";
+import Notification from "./Notification/Notification";
 import '../css/header.css';
 
 export default function Header() {
-  const { user, logout } = useContext(UserContext);
-  const { unreadCount } = useContext(ChatContext);
+    const { user, logout } = useContext(UserContext);
+    const { unreadCount, notifications } = useContext(ChatContext);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     return (
         <header className="sticky-header">
@@ -25,50 +27,67 @@ export default function Header() {
                         />
                     </Link>
 
-                    {/* Menu chính giữa */}
-                    <div className="mx-auto">
+                    {/* Hamburger button for mobile */}
+                    {!drawerOpen && (
+                        <button
+                            className="header-hamburger d-lg-none"
+                            onClick={() => setDrawerOpen(true)}
+                            aria-label="Open menu"
+                        >
+                            <span className="hamburger-icon"></span>
+                        </button>
+                    )}
+
+                    {/* Menu chính giữa - desktop */}
+                    <div className="mx-auto d-none d-lg-block">
                         <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                            <li className="nav-item mx-3">
-                                <Link className="nav-link text-dark" to="/about">ABOUT</Link>
-                            </li>
+
                             <li className="nav-item custom-dropdown mx-3">
                                 <a className="nav-link text-dark">FIND SCHOLARSHIPS</a>
                                 <ul className="dropdown-content">
                                     <li><Link to="/search-scholarships">Find Scholarships</Link></li>
                                     <li><Link to="/search-university">Find a University</Link></li>
+                                    <li><Link to="/search-staff">Find a Staff</Link></li>
                                 </ul>
                             </li>
-                            <li className="nav-item mx-3">
-                                <Link className="nav-link text-dark" to="/services">SERVICES</Link>
-                            </li>
+
 
                             {user.isLoggedIn && (
                                 <>
-                                    <li className="nav-item mx-3">
-                                        <Link to="/payment" className="nav-link text-dark">PAYMENT</Link>
-                                    </li>
-                                    <li className="nav-item mx-3">
-                                        <Link to="/messages" className="nav-link text-dark position-relative">
-                                            MESSAGES
-                                            {unreadCount > 0 && (
-                                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                    {unreadCount}
-                                                </span>
-                                            )}
-                                        </Link>
-                                    </li>
-                                    {user.role === 'seeker' && (
+                                    {/* Chỉ hiển thị Messages cho seeker đã mua gói hoặc non-seeker */}
+                                    {(user.role !== 'seeker' || user.purchasedPackage) && (
                                         <li className="nav-item mx-3">
-                                            <Link to="/library" className="nav-link text-dark">LIBRARY</Link>
+                                            <Link to="/messages" className="nav-link text-dark position-relative">
+                                                MESSAGES
+                                                {unreadCount > 0 && (
+                                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                        {unreadCount}
+                                                    </span>
+                                                )}
+                                            </Link>
                                         </li>
+                                    )}
+                                    {user.role === 'seeker' && (
+                                        <>
+                                            <li className="nav-item mx-3">
+                                                <Link to="/payment" className="nav-link text-dark">PAYMENT</Link>
+                                            </li>
+                                            <li className="nav-item mx-3">
+                                                <Link to="/library" className="nav-link text-dark">LIBRARY</Link>
+                                            </li>
+
+                                        </>
                                     )}
                                 </>
                             )}
+                            <li className="nav-item mx-3">
+                                <Link className="nav-link text-dark" to="/about">ABOUT</Link>
+                            </li>
                         </ul>
                     </div>
 
-                    {/* Dropdown user menu */}
-                    <div className="ms-auto">
+                    {/* User menu */}
+                    <div className="ms-auto d-flex align-items-center">
                         <div className="dropdown">
                             <button
                                 className="btn btn-light dropdown-toggle d-flex align-items-center"
@@ -110,7 +129,9 @@ export default function Header() {
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
-                                        <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
+                                        {user.role === 'seeker' && (
+                                            <li><Link className="dropdown-item" to="/seeker/user-profile">Profile</Link></li>
+                                        )}
                                         <li>
                                             <Link
                                                 className="dropdown-item text-danger"
@@ -126,6 +147,60 @@ export default function Header() {
                                         </li>
                                     </>
                                 )}
+                            </ul>
+                        </div>
+                        {/* Notification bell button */}
+                        <Notification />
+                    </div>
+
+                    {/* Drawer menu for mobile */}
+                    <div className={`header-drawer ${drawerOpen ? 'open' : ''}`}>
+                        <div className="drawer-overlay" onClick={() => setDrawerOpen(false)}></div>
+                        <div className="drawer-content">
+
+                            <ul className="navbar-nav" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
+
+                                <li className="nav-item custom-dropdown mb-3">
+                                    <span className="nav-link text-dark">FIND SCHOLARSHIPS</span>
+                                    <ul className="dropdown-content">
+                                        <li><Link to="/search-scholarships" onClick={() => setDrawerOpen(false)}>Find Scholarships</Link></li>
+                                        <li><Link to="/search-university" onClick={() => setDrawerOpen(false)}>Find a University</Link></li>
+                                        <li><Link to="/search-staff" onClick={() => setDrawerOpen(false)}>Find a Staff</Link></li>
+                                    </ul>
+                                </li>
+                                <li className="nav-item mb-3">
+                                    <Link className="nav-link text-dark" to="/services" onClick={() => setDrawerOpen(false)}>SERVICES</Link>
+                                </li>
+                                {user.isLoggedIn && (
+                                    <>
+                                        {/* Chỉ hiển thị Messages cho seeker đã mua gói hoặc non-seeker */}
+                                        {(user.role !== 'seeker' || user.purchasedPackage) && (
+                                            <li className="nav-item mb-3">
+                                                <Link to="/messages" className="nav-link text-dark position-relative" onClick={() => setDrawerOpen(false)}>
+                                                    MESSAGES
+                                                    {unreadCount > 0 && (
+                                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                            {unreadCount}
+                                                        </span>
+                                                    )}
+                                                </Link>
+                                            </li>
+                                        )}
+                                        {user.role === 'seeker' && (
+                                            <>
+                                                <li className="nav-item mb-3">
+                                                    <Link to="/payment" className="nav-link text-dark" onClick={() => setDrawerOpen(false)}>PAYMENT</Link>
+                                                </li>
+                                                <li className="nav-item mb-3">
+                                                    <Link to="/library" className="nav-link text-dark" onClick={() => setDrawerOpen(false)}>LIBRARY</Link>
+                                                </li>
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                                <li className="nav-item mb-3">
+                                    <Link className="nav-link text-dark" to="/about" onClick={() => setDrawerOpen(false)}>ABOUT</Link>
+                                </li>
                             </ul>
                         </div>
                     </div>

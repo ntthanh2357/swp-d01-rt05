@@ -31,6 +31,11 @@ public class Staff {
     @Column(name = "current_seeker_count")
     private Integer currentSeekerCount;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "staff_id", referencedColumnName = "user_id", nullable = false)
+    private User user;
+
     // Getters and setters
 
     public String getStaffId() {
@@ -97,4 +102,11 @@ public class Staff {
         this.currentSeekerCount = currentSeekerCount;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

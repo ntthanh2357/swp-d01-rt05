@@ -1,12 +1,14 @@
 import { useEffect, useState, useContext } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { UserContext } from "../contexts/UserContext";
-import { seekerProfile, sendUpdateSeekerProfileOtp, verifyUpdateSeekerProfileOtp, seekerProfileUpdate } from "../services/seekerApi";
+import { seekerProfile, sendUpdateSeekerProfileOtp, verifyUpdateSeekerProfileOtp } from "../services/seekerApi";
 import { sendUpdateUserProfileOtp, verifyUpdateUserProfileOtp, userProfileUpdate } from "../services/userApi";
+import { getRoadmap } from "../services/consultationRoadmapApi";
 import { changePassword } from "../services/authApi";
 
 import Header from "../components/Header";
@@ -35,9 +37,10 @@ const profileSchema = yup.object().shape({
 });
 
 function UserProfile() {
-    const { user } = useContext(UserContext);
+    const { user, updatePurchasedPackage } = useContext(UserContext);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [hasRoadmap, setHasRoadmap] = useState(false);
     const [editPersonal, setEditPersonal] = useState(false);
     const [showOtpModal, setShowOtpModal] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
@@ -47,6 +50,7 @@ function UserProfile() {
     const [changePasswordLoading, setChangePasswordLoading] = useState(false);
     const [changePasswordError, setChangePasswordError] = useState("");
     const [formData, setFormData] = useState(null);
+    const navigate = useNavigate();
 
     const {
         register,
@@ -75,6 +79,22 @@ function UserProfile() {
                 }
                 setProfile(response.data);
                 reset(response.data);
+
+                // Cập nhật purchased package trong UserContext nếu có
+                if (response.data.purchased_package && updatePurchasedPackage) {
+                    updatePurchasedPackage(response.data.purchased_package);
+                }
+
+                // Kiểm tra xem có roadmap chưa
+                if (response.data.purchased_package) {
+                    try {
+                        const roadmapResponse = await getRoadmap(user.accessToken);
+                        setHasRoadmap(roadmapResponse.status === 200 && roadmapResponse.data.success);
+                    } catch (error) {
+                        console.log("No roadmap found or error:", error);
+                        setHasRoadmap(false);
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching profile:", error);
             } finally {
@@ -83,7 +103,7 @@ function UserProfile() {
         };
 
         fetchProfile();
-    }, [user, reset]);
+    }, [user, reset, updatePurchasedPackage]);
 
     if (loading) {
         return (
@@ -189,14 +209,51 @@ function UserProfile() {
                 newPassword: data.new_password,
                 token: user.accessToken
             });
+
             if (res.status === 200) {
-                toast.success("Đổi mật khẩu thành công!");
                 setShowChangePasswordModal(false);
+                setTimeout(() => {
+                    toast.success("Đổi mật khẩu thành công!", { autoClose: 3000 });
+                }, 300);
             }
         } catch (err) {
-            setChangePasswordError("Đổi mật khẩu thất bại. Vui lòng thử lại.");
+            let errorMessage = "Đổi mật khẩu thất bại. Vui lòng thử lại.";
+
+            if (err.response) {
+                switch (err.response.status) {
+                    case 400:
+                        // Kiểm tra message cụ thể để phân biệt 2 loại lỗi 400
+                        if (err.response.data.includes("trùng")) {
+                            errorMessage = "Mật khẩu mới không được trùng với mật khẩu cũ";
+                        } else {
+                            errorMessage = "Mật khẩu cũ không đúng";
+                        }
+                        break;
+                    case 404:
+                        errorMessage = "Người dùng không tồn tại";
+                        break;
+                    case 500:
+                        errorMessage = "Lỗi server. Vui lòng thử lại sau";
+                        break;
+                    default:
+                        errorMessage = err.response.data || "Đổi mật khẩu thất bại";
+                }
+            }
+
+            setChangePasswordError(errorMessage);
+            setTimeout(() => {
+                toast.error(errorMessage, { autoClose: 3000 });
+            }, 300);
         }
         setChangePasswordLoading(false);
+    };
+
+    const handleConsultationRoadmap = () => {
+        if (hasRoadmap) {
+            navigate('/seeker/consultation-roadmap');
+        } else {
+            toast.info("Lộ trình tư vấn đang được chuẩn bị. Vui lòng liên hệ tư vấn viên!");
+        }
     };
 
     return (
@@ -384,6 +441,39 @@ function UserProfile() {
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>Gói dịch vụ đã mua</td>
+                                        <td>
+                                            <div className="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    {profile.purchased_package ? (
+                                                        <span className="badge bg-success">
+                                                            {profile.purchased_package === 'basic'
+                                                                ? 'Gói Hỗ trợ Đơn giản'
+                                                                : profile.purchased_package === 'premium'
+                                                                    ? 'Gói Toàn diện'
+                                                                    : profile.purchased_package}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-muted">Chưa mua gói nào</span>
+                                                    )}
+                                                </div>
+                                                {profile.purchased_package && (
+                                                    <div>
+                                                        <button
+                                                            type="button"
+                                                            className={`btn btn-sm ${hasRoadmap ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                            onClick={handleConsultationRoadmap}
+                                                            title={hasRoadmap ? "Xem lộ trình tư vấn" : "Lộ trình đang được chuẩn bị"}
+                                                        >
+                                                            <i className={`fas ${hasRoadmap ? 'fa-route' : 'fa-clock'}`}></i>
+                                                            {hasRoadmap ? ' Lộ trình tư vấn' : ' Đang chuẩn bị'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>Mật khẩu</td>
                                         <td>
                                             <button
@@ -400,6 +490,7 @@ function UserProfile() {
                         )}
                     </div>
                 </div>
+                <ToastContainer />
             </div>
 
             <OtpModal

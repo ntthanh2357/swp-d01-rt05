@@ -15,6 +15,9 @@ import com.swp391_g6.demo.entity.VerificationToken;
 import com.swp391_g6.demo.repository.UserRepository;
 import com.swp391_g6.demo.repository.VerificationTokenRepository;
 import com.swp391_g6.demo.util.EmailUtil;
+import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.VerificationToken;
+import com.swp391_g6.demo.service.StaffService;
 
 @Service
 public class AuthService {
@@ -33,6 +36,9 @@ public class AuthService {
 
     @Autowired
     private IdGeneratorService idGeneratorService;
+
+    @Autowired
+    private StaffService staffService;
 
     public void sendOtp(String email) {
         String otp = String.format("%06d", new Random().nextInt(999999));
@@ -69,7 +75,8 @@ public class AuthService {
         return token.getOtp_code().equals(otp);
     }
 
-    public void createUser(String name, String email, Date date_of_birth, String phone, String gender, String password) {
+    public void createUser(String name, String email, Date date_of_birth, String phone, String gender,
+            String password) {
         String user_id = idGeneratorService.generateId("USER", false, 10);
         String password_hash = passwordEncoder.encode(password);
         User user = new User();
@@ -99,6 +106,8 @@ public class AuthService {
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
         userRepository.save(user);
+        // Tạo staff profile liên kết
+        staffService.createStaffProfile(user);
     }
 
     public void createAdmin(String email, String password) {
@@ -166,16 +175,25 @@ public class AuthService {
         }
     }
 
-    public void changePassword(String email, String oldPassword, String newPassword) {
+    public int changePassword(String email, String oldPassword, String newPassword) {
         User user = userRepository.findByEmail(email);
-        if (user != null && passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-            String password_hash = passwordEncoder.encode(newPassword);
-            user.setPasswordHash(password_hash);
-            Timestamp now = Timestamp
-                    .from(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Bangkok")).toInstant());
-            user.setUpdatedAt(now);
-            userRepository.save(user);
+        if (user == null) {
+            return 0;
         }
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            return 1;
+        }
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            return 3;
+        }
+
+        String password_hash = passwordEncoder.encode(newPassword);
+        user.setPasswordHash(password_hash);
+        Timestamp now = Timestamp
+                .from(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Bangkok")).toInstant());
+        user.setUpdatedAt(now);
+        userRepository.save(user);
+        return 2;
     }
 
 }

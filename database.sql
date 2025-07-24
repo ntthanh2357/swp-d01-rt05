@@ -155,6 +155,35 @@ CREATE TABLE staff_profiles (
     FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 
+-- Seeker profiles
+CREATE TABLE seeker_profiles (
+    seeker_id VARCHAR(15) NOT NULL,
+    bio TEXT,
+    current_education_level ENUM('graduate', 'high_school', 'postgraduate', 'undergraduate') DEFAULT NULL,
+    cv_url VARCHAR(500) DEFAULT NULL,
+    field_of_study VARCHAR(200) DEFAULT NULL,
+    financial_need_level ENUM('high', 'low', 'medium') DEFAULT NULL,
+    gpa DECIMAL(4,2) DEFAULT NULL,
+    preferred_languages JSON DEFAULT NULL,
+    target_countries JSON DEFAULT NULL,
+    target_degree VARCHAR(200) DEFAULT NULL,
+    assigned_staff_id VARCHAR(15) DEFAULT NULL,
+    -- Thêm các trường mới cho form đăng ký tư vấn
+    study_time VARCHAR(50) DEFAULT NULL,
+    city VARCHAR(200) DEFAULT NULL,
+    advice_type VARCHAR(100) DEFAULT NULL,
+    scholarship_goal TEXT DEFAULT NULL,
+    major VARCHAR(200) DEFAULT NULL,
+    note TEXT DEFAULT NULL,
+    receive_promotions BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (seeker_id),
+    KEY FKh25m2qmwcxtlo6k4f79r35lcu (assigned_staff_id),
+    CONSTRAINT FKh25m2qmwcxtlo6k4f79r35lcu FOREIGN KEY (assigned_staff_id) REFERENCES users (user_id),
+    CONSTRAINT FKjl63mwtngvl3ktjkgt8cxr00r FOREIGN KEY (seeker_id) REFERENCES users (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 DESC staff_profiles;
 
 CREATE TABLE seeker_staff_mapping (
@@ -1351,3 +1380,60 @@ VALUES
 
 -- Seeker7 -> Staff1 (active)
 ('USER0000000007', 'USER0000000001', NOW() - INTERVAL 3 DAY, 'active');
+-- update bảng staff_review
+ALTER TABLE staff_review 
+MODIFY created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6);
+-- trigger
+DELIMITER $$
+
+CREATE TRIGGER after_update_user_role_to_staff
+AFTER UPDATE ON users
+FOR EACH ROW
+BEGIN
+    IF NEW.role = 'staff' AND OLD.role <> 'staff' THEN
+        IF NOT EXISTS (SELECT 1 FROM staff_profiles WHERE staff_id = NEW.user_id) THEN
+            INSERT INTO staff_profiles (staff_id) VALUES (NEW.user_id);
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE TRIGGER after_update_user_role_remove_staff
+AFTER UPDATE ON users
+FOR EACH ROW
+BEGIN
+    IF OLD.role = 'staff' AND NEW.role <> 'staff' THEN
+        DELETE FROM staff_profiles WHERE staff_id = NEW.user_id;
+    END IF;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE TRIGGER check_staff_role_before_insert
+BEFORE INSERT ON staff_profiles
+FOR EACH ROW
+BEGIN
+    DECLARE user_role VARCHAR(20);
+    SELECT role INTO user_role FROM users WHERE user_id = NEW.staff_id;
+    IF user_role <> 'staff' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Only users with role=staff can have a staff profile!';
+    END IF;
+END$$
+
+CREATE TRIGGER check_staff_role_before_update
+BEFORE UPDATE ON staff_profiles
+FOR EACH ROW
+BEGIN
+    DECLARE user_role VARCHAR(20);
+    SELECT role INTO user_role FROM users WHERE user_id = NEW.staff_id;
+    IF user_role <> 'staff' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Only users with role=staff can have a staff profile!';
+    END IF;
+END$$
+
+DELIMITER ;

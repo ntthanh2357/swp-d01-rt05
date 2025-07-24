@@ -1,0 +1,122 @@
+/* Purchase Required Modal Styles */
+.purchase-required-modal {
+    z-index: 1050;
+}
+
+.purchase-required-modal .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.purchase-required-modal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+
+.purchase-required-modal .modal-title {
+    font-weight: 600;
+    margin: 0;
+}
+
+.purchase-required-modal .btn-close {
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    filter: invert(1);
+}
+
+.purchase-required-modal .btn-close:hover {
+    opacity: 1;
+}
+
+.purchase-required-modal .modal-body {
+    padding: 2rem;
+}
+
+.purchase-required-modal .purchase-icon {
+    margin-bottom: 1rem;
+}
+
+.purchase-required-modal .benefits-list {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.purchase-required-modal .benefits-list h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.purchase-required-modal .benefits-list li {
+    padding: 0.25rem 0;
+    color: #6c757d;
+}
+
+.purchase-required-modal .modal-footer {
+    border-top: 1px solid #f8f9fa;
+    padding: 1.5rem;
+}
+
+.purchase-required-modal .btn {
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.purchase-required-modal .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.purchase-required-modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.purchase-required-modal .btn-secondary {
+    background: #6c757d;
+    border: none;
+}
+
+.purchase-required-modal .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Backdrop */
+.purchase-required-modal::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .purchase-required-modal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .purchase-required-modal .modal-footer {
+        padding: 1rem;
+    }
+    
+    .purchase-required-modal .btn {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+}

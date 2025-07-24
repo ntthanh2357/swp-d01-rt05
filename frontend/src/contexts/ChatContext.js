@@ -35,6 +35,8 @@ export const ChatProvider = ({ children }) => {
     const [contacts, setContacts] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [activeConversation, setActiveConversation] = useState(null);
+    // State lưu notification
+    const [notifications, setNotifications] = useState([]);
 
     // Kết nối socket khi user đăng nhập
     useEffect(() => {
@@ -106,6 +108,11 @@ export const ChatProvider = ({ children }) => {
                 // Có thể xử lý trạng thái đã đọc ở đây nếu muốn
             });
 
+            // Lắng nghe notification
+            socketInstance.on('notification', (data) => {
+                setNotifications(prev => [...prev, data]);
+            });
+
             setSocket(socketInstance);
 
             return () => {
@@ -170,7 +177,7 @@ export const ChatProvider = ({ children }) => {
                     senderName: user.name || 'User',
                     senderRole: user.role,
                     receiverId: receiverId,
-                    message: uploadResult.data.fileName || 'File attachment', // Sửa uploadResult thành uploadResult.data
+                    message: uploadResult.data.fileName || 'File attachment',
                     messageType: uploadResult.data.messageType,
                     fileUrl: uploadResult.data.fileUrl,
                     fileName: uploadResult.data.fileName,
@@ -276,6 +283,7 @@ export const ChatProvider = ({ children }) => {
                 sendFileMessage,
                 fetchUnreadCount,
                 markAsRead,
+                notifications,
             }}
         >
             {children}
