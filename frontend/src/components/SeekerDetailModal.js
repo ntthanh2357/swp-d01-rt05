@@ -40,6 +40,11 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
         }
     };
 
+    const handleStartConsult = () => {
+        // Chuyển sang trang messages và chọn đoạn chat với seeker
+        window.location.href = `/messages?seekerId=${seeker.seekerId || seeker.seeker_id || seeker.userId || seeker.user_id}`;
+    };
+
     return (
         <Modal show={show} onHide={onHide} size="lg" centered>
             <Modal.Header closeButton>
@@ -208,7 +213,7 @@ const SeekerDetailModal = ({ show, onHide, seeker, loading }) => {
                 <button className="btn btn-secondary" onClick={onHide}>
                     Đóng
                 </button>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={handleStartConsult}>
                     <i className="fas fa-comments me-2"></i>
                     Bắt đầu tư vấn
                 </button>

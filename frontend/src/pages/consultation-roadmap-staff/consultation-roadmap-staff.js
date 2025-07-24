@@ -27,7 +27,7 @@ function ConsultationRoadmapStaff() {
     const [loadingDetails, setLoadingDetails] = useState({});
 
     // Auto-refresh cho staff
-    const [autoRefresh, setAutoRefresh] = useState(true);
+    const [autoRefresh, setAutoRefresh] = useState(false);
     const refreshIntervalRef = useRef(null);
 
     useEffect(() => {
@@ -574,13 +574,15 @@ function ConsultationRoadmapStaff() {
                                                                                         <h6 className="step-title mb-0 flex-grow-1">{step.title}</h6>
                                                                                     </div>
                                                                                     <div className="step-actions" style={{ marginLeft: "auto" }}>
-                                                                                        <button
-                                                                                            className="btn btn-sm btn-outline-info"
-                                                                                            onClick={() => handleSendNotification(stage.stepNumber, step.stepIndex, step.title)}
-                                                                                            title="Gửi thông báo cho seeker về bước này"
-                                                                                        >
-                                                                                            <i className="fas fa-paper-plane"></i> Thông báo
-                                                                                        </button>
+                                                                                        {step.status === 'in_progress' && (
+                                                                                            <button
+                                                                                                className="btn btn-sm btn-outline-info"
+                                                                                                onClick={() => handleSendNotification(stage.stepNumber, step.stepIndex, step.title)}
+                                                                                                title="Gửi thông báo cho seeker về bước này"
+                                                                                            >
+                                                                                                <i className="fas fa-paper-plane"></i> Thông báo
+                                                                                            </button>
+                                                                                        )}
                                                                                     </div>
                                                                                 </div>
                                                                                 <p className="step-description mb-2">{step.description}</p>
