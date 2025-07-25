@@ -171,30 +171,150 @@ public class ScholarshipController {
     @PostMapping("/update")
     public ResponseEntity<?> updateScholarship(@RequestBody Map<String, Object> body) {
         String token = (String) body.get("token");
-        String email = jwtUtil.extractEmail(token);
-        if (email == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
         }
 
-        Scholarship scholarship = scholarshipService.getScholarshipById((String) body.get("scholarshipId"));
+        User user = jwtUtil.extractUserFromToken(token);
+        if (user == null || !user.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not an admin");
+        }
+
+        String scholarshipId = (String) body.get("scholarshipId");
+        if (scholarshipId == null || scholarshipId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scholarship ID is required");
+        }
+
+        Scholarship scholarship = scholarshipService.getScholarshipById(scholarshipId);
         if (scholarship == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scholarship not found");
         }
 
         try {
-            Object deadlineObj = body.get("applicationDeadline");
-            if (deadlineObj != null) {
-                String deadlineStr = deadlineObj.toString();
-                Date deadlineDate = Date.valueOf(deadlineStr);
-                scholarship.setApplicationDeadline(deadlineDate);
+            System.out.println("Updating scholarship: " + scholarshipId);
+            
+            // Cập nhật các trường cơ bản
+            if (body.containsKey("title")) scholarship.setTitle((String) body.get("title"));
+            if (body.containsKey("description")) scholarship.setDescription((String) body.get("description"));
+            if (body.containsKey("organizationName")) {
+                String orgName = (String) body.get("organizationName");
+                if (orgName != null && !orgName.isEmpty()) {
+                    try {
+                        // Kiểm tra tổ chức tồn tại
+                        var organization = organizationService.getOrganizationByName(orgName);
+                        // Thay vì setOrganizationId, sử dụng setOrganization
+                        scholarship.setOrganization(organization);
+                    } catch (Exception ex) {
+                        System.out.println("Organization not found but continuing: " + orgName);
+                    }
+                }
+            }
+            
+            // Cập nhật trường số
+            if (body.containsKey("amount")) {
+                Object amountObj = body.get("amount");
+                if (amountObj != null) {
+                    try {
+                        String amountStr = amountObj.toString();
+                        if (!amountStr.isEmpty()) {
+                            scholarship.setAmount(Double.valueOf(amountStr));
+                        }
+                    } catch (NumberFormatException e) {
+                        // Bỏ qua nếu không phải số hợp lệ
+                    }
+                }
+            }
+            
+            if (body.containsKey("duration")) {
+                Object durationObj = body.get("duration");
+                if (durationObj != null) {
+                    try {
+                        String durationStr = durationObj.toString();
+                        if (!durationStr.isEmpty()) {
+                            scholarship.setDuration(Integer.valueOf(durationStr));
+                        }
+                    } catch (NumberFormatException e) {
+                        // Bỏ qua nếu không phải số hợp lệ
+                    }
+                }
+            }
+            
+            // Cập nhật deadline
+            if (body.containsKey("applicationDeadline")) {
+                Object deadlineObj = body.get("applicationDeadline");
+                if (deadlineObj != null) {
+                    String deadlineStr = deadlineObj.toString();
+                    if (!deadlineStr.trim().isEmpty()) {
+                        try {
+                            Date deadlineDate = Date.valueOf(deadlineStr);
+                            scholarship.setApplicationDeadline(deadlineDate);
+                        } catch (IllegalArgumentException ex) {
+                            System.out.println("Invalid date format: " + deadlineStr);
+                        }
+                    }
+                }
+            }
+            
+            // Cập nhật các trường khác với xử lý kiểu dữ liệu an toàn
+            if (body.containsKey("currency")) {
+                Object currencyObj = body.get("currency");
+                scholarship.setCurrency(currencyObj != null ? currencyObj.toString() : null);
             }
 
+            if (body.containsKey("countries")) {
+                Object countriesObj = body.get("countries");
+                scholarship.setCountries(countriesObj != null ? countriesObj.toString() : null);
+            }
+
+            if (body.containsKey("eligibilityCriteria")) {
+                Object criteriaObj = body.get("eligibilityCriteria");
+                scholarship.setEligibilityCriteria(criteriaObj != null ? criteriaObj.toString() : null);
+            }
+
+            if (body.containsKey("applicableIntake")) {
+                Object intakeObj = body.get("applicableIntake");
+                scholarship.setApplicableIntake(intakeObj != null ? intakeObj.toString() : null);
+            }
+
+            if (body.containsKey("fundingType")) {
+                Object fundingTypeObj = body.get("fundingType");
+                scholarship.setFundingType(fundingTypeObj != null ? fundingTypeObj.toString() : null);
+            }
+
+            if (body.containsKey("languageRequirements")) {
+                Object langReqObj = body.get("languageRequirements");
+                scholarship.setLanguageRequirements(langReqObj != null ? langReqObj.toString() : null);
+            }
+
+            if (body.containsKey("educationLevels")) {
+                Object eduLevelsObj = body.get("educationLevels");
+                scholarship.setEducationLevels(eduLevelsObj != null ? eduLevelsObj.toString() : null);
+            }
+
+            if (body.containsKey("fieldsOfStudy")) {
+                Object fieldsObj = body.get("fieldsOfStudy");
+                scholarship.setFieldsOfStudy(fieldsObj != null ? fieldsObj.toString() : null);
+            }
+
+            // Xử lý các trường title và description
+            if (body.containsKey("title")) scholarship.setTitle((String) body.get("title"));
+
+            if (body.containsKey("description")) {
+                Object descObj = body.get("description");
+                scholarship.setDescription(descObj != null ? descObj.toString() : null);
+            }
+            
+            // Cập nhật thời gian
+            scholarship.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            
+            // Lưu thay đổi
             scholarshipService.updateScholarship(scholarship);
             return ResponseEntity.ok("Scholarship updated successfully");
         } catch (Exception e) {
             System.out.println("Error updating scholarship: " + e.getMessage());
+            e.printStackTrace(); // Thêm stack trace để debug
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating scholarship: " + e.getMessage());
+                    .body("Error updating scholarship: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 
