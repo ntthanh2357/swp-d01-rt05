@@ -2,11 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../contexts/UserContext";
-import { userManage, banUser, unbanUser } from "../services/userApi"; // Thêm import unbanUser
+import { userManage, banUser, unbanUser } from "../services/userApi";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UserCard from '../components/UserCard';
 import UserChart from "../components/UserChart";
+import { axiosInstance } from "../services/api"; // Import axiosInstance từ api service
 
 import "../css/user-manage.css";
 
@@ -16,18 +17,10 @@ function UserManage() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Thêm state để lưu trang hiện tại
     const [currentPage, setCurrentPage] = useState(1);
-    const usersPerPage = 20; // Giới hạn 20 người dùng mỗi trang
+    const usersPerPage = 21;
 
-    // Tính toán danh sách người dùng cho trang hiện tại
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentUsers = userData.slice(indexOfFirstUser, indexOfLastUser);
-
-    // Hàm chuyển trang
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
+    // Thêm state cho filter và search
     const [roleFilter, setRoleFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -49,13 +42,13 @@ function UserManage() {
         const fetchUser = async () => {
             try {
                 const response = await userManage({ token: contextUser.accessToken });
-                // Kiểm tra cấu trúc dữ liệu
                 console.log("User data structure:", response.data[0]);
                 
-                // Chuẩn hóa dữ liệu
+                // Chuẩn hóa dữ liệu, đảm bảo trường isBanned tồn tại
                 const normalizedData = response.data.map(user => ({
                     ...user,
                     userId: user.userId || user.user_id,  // Đảm bảo luôn có trường userId
+                    isBanned: user.isBanned === true,    // Đảm bảo isBanned là boolean
                 }));
 
                 setUserData(normalizedData);
@@ -77,7 +70,30 @@ function UserManage() {
                 setLoading(false);
             }
         };
-        fetchUser();
+
+        // Trong useEffect để fetch dữ liệu ban đầu
+        const fetchBannedUsers = async () => {
+            try {
+                // Giả sử bạn có API endpoint để lấy danh sách userId bị khóa
+                const response = await axiosInstance.post("/users/get-banned-users", {
+                    token: contextUser.accessToken
+                });
+                
+                const bannedUserIds = response.data;
+                
+                // Cập nhật userData với thông tin ban
+                setUserData(prevData => 
+                    prevData.map(user => ({
+                        ...user,
+                        isBanned: bannedUserIds.includes(user.userId)
+                    }))
+                );
+            } catch (error) {
+                console.error("Không thể lấy danh sách người dùng bị khóa:", error);
+            }
+        };
+
+        fetchUser().then(fetchBannedUsers);
     }, [contextUser]);
 
     // Lọc và tìm kiếm
@@ -158,6 +174,8 @@ function UserManage() {
         }
     };
 
+    // Thêm sau hàm handleBan
+
     const handleUnban = async (userId) => {
         try {
             // Thêm validation để đảm bảo có userId
@@ -203,6 +221,22 @@ function UserManage() {
             toast.error("Mở khóa người dùng thất bại: " + errorMessage);
         }
     };
+
+    // Thêm vào useEffect sau khi nhận dữ liệu
+    useEffect(() => {
+        if (userData.length > 0) {
+            const bannedUsers = userData.filter(user => user.isBanned);
+            console.log(`Tổng số người dùng: ${userData.length}, Số người dùng bị khóa: ${bannedUsers.length}`);
+            console.log("Danh sách người dùng bị khóa:", bannedUsers);
+        }
+    }, [userData]);
+
+    // Thêm vào trước return để debug
+    console.log("Rendering users with ban status:", userData.map(u => ({
+        userId: u.userId,
+        name: u.name,
+        isBanned: u.isBanned
+    })));
 
     return (
         <>
@@ -308,56 +342,49 @@ function UserManage() {
                                     filteredUsers.length > 0 ? (
                                         <>
                                             <div className="row g-4">
-                                                {currentUsers.map((user) => (
-                                                    <div className="col-md-6 mb-4" key={user.userId || user.user_id}>
+                                                {paginatedUsers.map(user => (
+                                                    <div className="col-12 col-sm-6 col-md-4" key={user.user_id}>
                                                         <UserCard 
                                                             user={user} 
                                                             onBan={handleBan} 
-                                                            onUnban={handleUnban} 
+                                                            onUnban={handleUnban}
                                                         />
                                                     </div>
                                                 ))}
                                             </div>
                                             {/* Pagination */}
-                                            {userData.length > usersPerPage && (
-                                                <nav aria-label="User pagination" className="mt-4">
-                                                    <ul className="pagination justify-content-center">
-                                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                                            <button 
-                                                                className="page-link" 
-                                                                onClick={() => paginate(currentPage - 1)}
-                                                                disabled={currentPage === 1}
+                                            <nav className="mt-4">
+                                                <ul className="pagination justify-content-center">
+                                                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                                                        <button
+                                                            className="page-link"
+                                                            onClick={() => handlePageChange(currentPage - 1)}
+                                                            disabled={currentPage === 1}
+                                                        >
+                                                            &laquo;
+                                                        </button>
+                                                    </li>
+                                                    {Array.from({ length: totalPages }, (_, i) => (
+                                                        <li key={i + 1} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
+                                                            <button
+                                                                className="page-link"
+                                                                onClick={() => handlePageChange(i + 1)}
                                                             >
-                                                                &laquo;
+                                                                {i + 1}
                                                             </button>
                                                         </li>
-                                                        
-                                                        {Array.from({ length: Math.ceil(userData.length / usersPerPage) }).map((_, index) => (
-                                                            <li 
-                                                                key={index} 
-                                                                className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                                                            >
-                                                                <button 
-                                                                    className="page-link" 
-                                                                    onClick={() => paginate(index + 1)}
-                                                                >
-                                                                    {index + 1}
-                                                                </button>
-                                                            </li>
-                                                        ))}
-                                                        
-                                                        <li className={`page-item ${currentPage === Math.ceil(userData.length / usersPerPage) ? 'disabled' : ''}`}>
-                                                            <button 
-                                                                className="page-link" 
-                                                                onClick={() => paginate(currentPage + 1)}
-                                                                disabled={currentPage === Math.ceil(userData.length / usersPerPage)}
-                                                            >
-                                                                &raquo;
-                                                            </button>
-                                                        </li>
-                                                    </ul>
-                                                </nav>
-                                            )}
+                                                    ))}
+                                                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                                                        <button
+                                                            className="page-link"
+                                                            onClick={() => handlePageChange(currentPage + 1)}
+                                                            disabled={currentPage === totalPages}
+                                                        >
+                                                            &raquo;
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </nav>
                                         </>
                                     ) : (
                                         <div className="alert alert-info text-center">Không có người dùng nào.</div>

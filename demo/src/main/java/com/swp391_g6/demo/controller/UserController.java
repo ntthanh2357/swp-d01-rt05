@@ -1,6 +1,8 @@
 package com.swp391_g6.demo.controller;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ public class UserController {
 
     // [POST] /api/users/user-manage - Quản lý người dùng
     @PostMapping("/user-manage")
-    public ResponseEntity<?> userManage(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> getUserManage(@RequestBody Map<String, String> body) {
         String token = body.get("token");
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
@@ -44,7 +46,23 @@ public class UserController {
 
         try {
             List<User> users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (User u : users) {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("userId", u.getUserId());
+                userMap.put("name", u.getName());
+                userMap.put("email", u.getEmail());
+                userMap.put("phone", u.getPhone());
+                userMap.put("dateOfBirth", u.getDateOfBirth());
+                userMap.put("gender", u.getGender());
+                userMap.put("role", u.getRole());
+                // Đảm bảo trả về trạng thái ban chính xác
+                userMap.put("isBanned", u.isBanned());
+
+                result.add(userMap);
+            }
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while fetching users");

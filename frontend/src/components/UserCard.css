@@ -92,3 +92,35 @@
         padding: 1rem 0;
     }
 }
+
+/* Thêm style cho card của user đã bị ban */
+.banned-card {
+    position: relative;
+    background-color: #fff5f5;
+    border-color: #dc3545 !important;
+    border-width: 2px !important;
+}
+
+.banned-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(220, 53, 69, 0.05);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.banned-status-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+}
+
+/* Thêm hiệu ứng mờ đối với avatar của tài khoản bị khóa */
+.banned-card .user-avatar {
+    filter: grayscale(50%);
+}

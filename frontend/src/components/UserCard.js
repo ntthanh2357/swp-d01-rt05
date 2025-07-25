@@ -39,7 +39,7 @@ function UserCard({ user, onBan, onUnban, onAvatarChange }) {
     const avatarUrl = user.avatar || getDefaultAvatar(user.name || user.username);
     
     return (
-        <Card className={`user-card shadow-sm ${user.isBanned ? 'border-danger' : 'border-primary'}`}>
+        <Card className={`user-card shadow-sm ${user.isBanned ? 'border-danger banned-card' : 'border-primary'}`}>
             <Card.Body className="p-0">
                 <Row className="g-0">
                     {/* Avatar column */}
@@ -129,6 +129,14 @@ function UserCard({ user, onBan, onUnban, onAvatarChange }) {
                     </Col>
                 </Row>
             </Card.Body>
+            
+            {user.isBanned && (
+                <div className="banned-status-badge">
+                    <Badge bg="danger" className="position-absolute top-0 end-0 m-2">
+                        <FaBan className="me-1" /> Đã khóa
+                    </Badge>
+                </div>
+            )}
         </Card>
     );
 }

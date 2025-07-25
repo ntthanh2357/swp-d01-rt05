@@ -32,7 +32,9 @@ public class UserService {
     private EmailUtil emailUtil;
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+        // Đảm bảo mỗi user object có trạng thái isBanned
+        return users;
     }
 
     public User getUserById(String userId) {
