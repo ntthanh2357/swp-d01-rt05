@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Card, Badge, Button, Row, Col, Image } from 'react-bootstrap';
-import { FaBan, FaUnlock, FaUser, FaEnvelope, FaCalendarAlt, FaCamera } from 'react-icons/fa';
+import { FaBan, FaUnlock, FaUser, FaEnvelope, FaCalendarAlt, FaCamera, FaCrown } from 'react-icons/fa';
 import './UserCard.css';
 
 function UserCard({ user, onBan, onUnban, onAvatarChange }) {
@@ -38,6 +38,26 @@ function UserCard({ user, onBan, onUnban, onAvatarChange }) {
     // Sử dụng avatar từ user, nếu không có thì dùng avatar mặc định
     const avatarUrl = user.avatar || getDefaultAvatar(user.name || user.username);
     
+    // Hàm xác định màu sắc cho badge package
+    const getPackageBadgeColor = (packageName) => {
+        switch (packageName) {
+            case 'basic': return 'info';
+            case 'premium': return 'warning';
+            case 'vip': return 'danger';
+            default: return 'secondary';
+        }
+    };
+
+    // Hàm chuyển đổi tên gói thành tên hiển thị
+    const getPackageDisplayName = (packageName) => {
+        switch (packageName) {
+            case 'basic': return 'Cơ bản';
+            case 'premium': return 'Nâng cao';
+            case 'vip': return 'VIP';
+            default: return packageName || 'Chưa có';
+        }
+    };
+
     return (
         <Card className={`user-card shadow-sm ${user.isBanned ? 'border-danger banned-card' : 'border-primary'}`}>
             <Card.Body className="p-0">
@@ -76,10 +96,20 @@ function UserCard({ user, onBan, onUnban, onAvatarChange }) {
                             <Badge bg={user.isBanned ? 'danger' : user.role === 'admin' ? 'primary' : 'success'}>
                                 {user.isBanned ? 'Đã khóa' : user.role || 'Người dùng'}
                             </Badge>
+                            
+                            {/* Hiển thị gói đã mua nếu là seeker */}
+                            {user.role === 'seeker' && (
+                                <div className="mt-2">
+                                    <Badge bg={getPackageBadgeColor(user.purchasedPackage)} className="d-flex align-items-center mx-auto">
+                                        <FaCrown className="me-1" /> 
+                                        Gói: {getPackageDisplayName(user.purchasedPackage)}
+                                    </Badge>
+                                </div>
+                            )}
                         </div>
                     </Col>
                     
-                    {/* Phần còn lại của component giữ nguyên */}
+                    {/* User info column */}
                     <Col md={8} className="p-3">
                         <h5 className="fw-bold mb-3">{user.name || user.username}</h5>
                         
@@ -101,6 +131,22 @@ function UserCard({ user, onBan, onUnban, onAvatarChange }) {
                                 </div>
                             )}
                         </div>
+                        
+                        {/* Thêm thông tin gói đã mua nếu là seeker */}
+                        {user.role === 'seeker' && (
+                            <div className="d-flex align-items-center mb-2">
+                                <FaCrown className="text-warning me-2" />
+                                <span>
+                                    Gói dịch vụ: {
+                                        user.purchasedPackage 
+                                        ? <Badge bg={getPackageBadgeColor(user.purchasedPackage)} className="ms-1">
+                                            {getPackageDisplayName(user.purchasedPackage)}
+                                          </Badge> 
+                                        : 'Chưa mua gói nào'
+                                    }
+                                </span>
+                            </div>
+                        )}
                         
                         {/* Action buttons */}
                         <div className="mt-auto d-flex gap-2">

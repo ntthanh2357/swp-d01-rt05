@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.Seeker;
 import com.swp391_g6.demo.service.UserService;
 import com.swp391_g6.demo.util.JwtUtil;
+import com.swp391_g6.demo.repository.SeekerRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,6 +30,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private SeekerRepository seekerRepository;
 
     // [POST] /api/users/user-manage - Quản lý người dùng
     @PostMapping("/user-manage")
@@ -58,7 +63,15 @@ public class UserController {
                 userMap.put("role", u.getRole());
                 // Đảm bảo trả về trạng thái ban chính xác
                 userMap.put("isBanned", u.isBanned());
-
+                
+                // Thêm thông tin purchasedPackage cho seeker
+                if ("seeker".equals(u.getRole())) {
+                    Seeker seeker = seekerRepository.findByUser(u);
+                    if (seeker != null) {
+                        userMap.put("purchasedPackage", seeker.getPurchasedPackage());
+                    }
+                }
+                
                 result.add(userMap);
             }
 

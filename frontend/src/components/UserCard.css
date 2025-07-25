@@ -124,3 +124,24 @@
 .banned-card .user-avatar {
     filter: grayscale(50%);
 }
+
+/* Thêm style cho badge gói dịch vụ */
+.package-badge {
+    font-size: 0.8rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Style cho các loại gói */
+.package-badge.basic {
+    background-color: #17a2b8;
+}
+
+.package-badge.premium {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.package-badge.vip {
+    background-color: #dc3545;
+    background-image: linear-gradient(45deg, #dc3545, #fd7e14);
+}
