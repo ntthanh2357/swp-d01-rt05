@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../contexts/UserContext";
-import { userManage, banUser } from "../services/userApi";
+import { userManage, banUser, unbanUser } from "../services/userApi"; // Thêm import unbanUser
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UserCard from '../components/UserCard';
@@ -16,10 +16,18 @@ function UserManage() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Thêm state để lưu trang hiện tại
     const [currentPage, setCurrentPage] = useState(1);
-    const usersPerPage = 21;
+    const usersPerPage = 20; // Giới hạn 20 người dùng mỗi trang
 
-    // Thêm state cho filter và search
+    // Tính toán danh sách người dùng cho trang hiện tại
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = userData.slice(indexOfFirstUser, indexOfLastUser);
+
+    // Hàm chuyển trang
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     const [roleFilter, setRoleFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -150,6 +158,52 @@ function UserManage() {
         }
     };
 
+    const handleUnban = async (userId) => {
+        try {
+            // Thêm validation để đảm bảo có userId
+            if (!userId) {
+                toast.error("Không tìm thấy ID người dùng!");
+                console.error("userId is undefined or null:", userId);
+                return;
+            }
+            
+            // Log để kiểm tra
+            console.log('Unbanning user with ID:', userId);
+            
+            const response = await unbanUser({
+                userId: userId,
+                token: contextUser.accessToken
+            });
+            
+            if (response.status === 200) {
+                toast.success("Đã mở khóa người dùng thành công!");
+                setUserData(prev =>
+                    prev.map(u => {
+                        if (u.userId === userId || u.user_id === userId) {
+                            return { ...u, isBanned: false };
+                        }
+                        return u;
+                    })
+                );
+            }
+        } catch (err) {
+            console.error('Unban error details:', err);
+            
+            let errorMessage = "Lỗi không xác định";
+            if (err.response?.data) {
+                if (typeof err.response.data === 'object') {
+                    errorMessage = err.response.data.error || JSON.stringify(err.response.data);
+                } else {
+                    errorMessage = err.response.data;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            toast.error("Mở khóa người dùng thất bại: " + errorMessage);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -254,45 +308,56 @@ function UserManage() {
                                     filteredUsers.length > 0 ? (
                                         <>
                                             <div className="row g-4">
-                                                {paginatedUsers.map(user => (
-                                                    <div className="col-12 col-sm-6 col-md-4" key={user.user_id}>
-                                                        <UserCard user={user} onBan={handleBan} />
+                                                {currentUsers.map((user) => (
+                                                    <div className="col-md-6 mb-4" key={user.userId || user.user_id}>
+                                                        <UserCard 
+                                                            user={user} 
+                                                            onBan={handleBan} 
+                                                            onUnban={handleUnban} 
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
                                             {/* Pagination */}
-                                            <nav className="mt-4">
-                                                <ul className="pagination justify-content-center">
-                                                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                                                        <button
-                                                            className="page-link"
-                                                            onClick={() => handlePageChange(currentPage - 1)}
-                                                            disabled={currentPage === 1}
-                                                        >
-                                                            &laquo;
-                                                        </button>
-                                                    </li>
-                                                    {Array.from({ length: totalPages }, (_, i) => (
-                                                        <li key={i + 1} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
-                                                            <button
-                                                                className="page-link"
-                                                                onClick={() => handlePageChange(i + 1)}
+                                            {userData.length > usersPerPage && (
+                                                <nav aria-label="User pagination" className="mt-4">
+                                                    <ul className="pagination justify-content-center">
+                                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                                            <button 
+                                                                className="page-link" 
+                                                                onClick={() => paginate(currentPage - 1)}
+                                                                disabled={currentPage === 1}
                                                             >
-                                                                {i + 1}
+                                                                &laquo;
                                                             </button>
                                                         </li>
-                                                    ))}
-                                                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                                                        <button
-                                                            className="page-link"
-                                                            onClick={() => handlePageChange(currentPage + 1)}
-                                                            disabled={currentPage === totalPages}
-                                                        >
-                                                            &raquo;
-                                                        </button>
-                                                    </li>
-                                                </ul>
-                                            </nav>
+                                                        
+                                                        {Array.from({ length: Math.ceil(userData.length / usersPerPage) }).map((_, index) => (
+                                                            <li 
+                                                                key={index} 
+                                                                className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                                                            >
+                                                                <button 
+                                                                    className="page-link" 
+                                                                    onClick={() => paginate(index + 1)}
+                                                                >
+                                                                    {index + 1}
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                        
+                                                        <li className={`page-item ${currentPage === Math.ceil(userData.length / usersPerPage) ? 'disabled' : ''}`}>
+                                                            <button 
+                                                                className="page-link" 
+                                                                onClick={() => paginate(currentPage + 1)}
+                                                                disabled={currentPage === Math.ceil(userData.length / usersPerPage)}
+                                                            >
+                                                                &raquo;
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </nav>
+                                            )}
                                         </>
                                     ) : (
                                         <div className="alert alert-info text-center">Không có người dùng nào.</div>

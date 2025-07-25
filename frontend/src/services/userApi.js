@@ -32,4 +32,15 @@ export const banUser = async (data) => {
         console.error("Error in banUser API:", error);
         throw error;
     }
+}
+
+// Hàm mở khóa người dùng
+export const unbanUser = async (data) => {
+    try {
+        const response = await axiosInstance.post("/users/unban-user", data);
+        return response;
+    } catch (error) {
+        console.error("Error in unbanUser API:", error);
+        throw error;
+    }
 };

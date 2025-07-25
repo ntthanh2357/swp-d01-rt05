@@ -112,6 +112,19 @@ public class UserService {
         return false;
     }
 
+    public boolean unbanUser(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.isBanned()) {
+                user.setBanned(false);
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean deleteUser(String userId) {
         if (userRepository.existsById(userId)) {
             userRepository.deleteById(userId);

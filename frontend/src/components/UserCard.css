@@ -1,0 +1,94 @@
+.user-card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.user-avatar-container {
+    background-color: #f8f9fa;
+    border-right: 1px solid #eee;
+}
+
+.banned-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(220, 53, 69, 0.5);
+    border-radius: 50%;
+    color: white;
+}
+
+.user-info {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* CSS cho avatar hình tròn */
+.user-avatar {
+    width: 100px !important;
+    height: 100px !important;
+    object-fit: cover;
+    border-radius: 50% !important;
+    border: 3px solid #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    aspect-ratio: 1/1;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
+}
+
+.avatar-container {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    margin-bottom: 15px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatar-edit {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    height: 30px;
+    background-color: #007bff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.avatar-edit:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+.avatar-input {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .user-avatar-container {
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding: 1rem 0;
+    }
+}

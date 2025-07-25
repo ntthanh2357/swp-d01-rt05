@@ -154,4 +154,30 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found or already banned");
         }
     }
+
+    // [POST] /api/users/unban-user - Mở khóa người dùng
+    @PostMapping("/unban-user")
+    public ResponseEntity<?> unbanUser(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+        }
+
+        User admin = jwtUtil.extractUserFromToken(token);
+        if (admin == null || !admin.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not an admin");
+        }
+
+        String userId = body.get("userId");
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is required");
+        }
+
+        boolean isUnbanned = userService.unbanUser(userId);
+        if (isUnbanned) {
+            return ResponseEntity.ok("User unbanned successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found or already unbanned");
+        }
+    }
 }
