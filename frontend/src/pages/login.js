@@ -62,9 +62,9 @@ function LoginForm() {
                 email: data.email,
                 password: data.password,
             });
-            console.log("API Response:", res); // Log phản hồi API
             
             if (res.status === 200) {
+                // Xử lý đăng nhập thành công
                 const accessToken = res.data.token;
                 console.log("Access Token:", accessToken); // Log token
                 
@@ -94,9 +94,21 @@ function LoginForm() {
                 }
             }
         } catch (error) {
-            console.error("Login Error:", error); // Log lỗi
-            toast.error("Đăng nhập thất bại.");
-            setErrorMessage("Email hoặc mật khẩu không đúng");
+            console.error("Login Error:", error);
+            
+            // Kiểm tra lỗi tài khoản bị khóa
+            if (error.response) {
+                if (error.response.status === 403) {
+                    toast.error("Tài khoản của bạn đã bị khóa.");
+                    setErrorMessage("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+                } else {
+                    toast.error("Đăng nhập thất bại.");
+                    setErrorMessage("Email hoặc mật khẩu không đúng");
+                }
+            } else {
+                toast.error("Đăng nhập thất bại.");
+                setErrorMessage("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.");
+            }
         } finally {
             setIsLoading(false); // Tắt trạng thái loading
         }

@@ -123,13 +123,24 @@ public class AuthController {
 
     // [POST] /api/auth/login - Đăng nhập người dùng
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        User user = authService.authenticate(request.getEmail(), request.getPassword());
-        if (user != null) {
-            String jwt = jwtUtil.generateToken(user);
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", jwt));
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            User user = authService.authenticate(request.getEmail(), request.getPassword());
+            if (user != null) {
+                String jwt = jwtUtil.generateToken(user);
+                return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", jwt));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                       .body(Map.of("error", "Email hoặc mật khẩu không đúng"));
+            }
+        } catch (RuntimeException e) {
+            // Xử lý riêng lỗi tài khoản bị khóa
+            if (e.getMessage().contains("bị khóa")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(Map.of("error", e.getMessage()));
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body(Map.of("error", e.getMessage()));
         }
     }
 

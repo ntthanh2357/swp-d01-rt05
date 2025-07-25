@@ -41,7 +41,16 @@ function UserManage() {
         const fetchUser = async () => {
             try {
                 const response = await userManage({ token: contextUser.accessToken });
-                setUserData(response.data);
+                // Kiểm tra cấu trúc dữ liệu
+                console.log("User data structure:", response.data[0]);
+                
+                // Chuẩn hóa dữ liệu
+                const normalizedData = response.data.map(user => ({
+                    ...user,
+                    userId: user.userId || user.user_id,  // Đảm bảo luôn có trường userId
+                }));
+
+                setUserData(normalizedData);
                 setError(null);
             } catch (err) {
                 let message = "Đã xảy ra lỗi!";
@@ -91,11 +100,28 @@ function UserManage() {
 
     const handleBan = async (userId) => {
         try {
-            console.log('Banning user:', userId);
-            const response = await banUser(userId);
+            // Thêm validation để đảm bảo có userId
+            if (!userId) {
+                toast.error("Không tìm thấy ID người dùng!");
+                console.error("userId is undefined or null:", userId);
+                return;
+            }
+            
+            // Log để kiểm tra
+            console.log('Banning user with ID:', userId);
+            
+            // Hiển thị dialog xác nhận trước khi ban
+            if (!window.confirm("Bạn có chắc chắn muốn khóa người dùng này?")) {
+                return;
+            }
+            
+            const response = await banUser({
+                userId: userId,
+                token: contextUser.accessToken
+            });
             
             if (response.status === 200) {
-                toast.success("Đã cấm người dùng!");
+                toast.success("Đã khóa người dùng thành công!");
                 setUserData(prev =>
                     prev.map(u => {
                         if (u.userId === userId || u.user_id === userId) {
@@ -106,8 +132,21 @@ function UserManage() {
                 );
             }
         } catch (err) {
-            console.error('Ban error:', err);
-            toast.error("Cấm thất bại: " + (err.response?.data || err.message));
+            console.error('Ban error details:', err);
+            console.error('Request data:', { userId, token: 'present' });
+            
+            let errorMessage = "Lỗi không xác định";
+            if (err.response?.data) {
+                if (typeof err.response.data === 'object') {
+                    errorMessage = err.response.data.error || JSON.stringify(err.response.data);
+                } else {
+                    errorMessage = err.response.data;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            toast.error("Khóa người dùng thất bại: " + errorMessage);
         }
     };
 

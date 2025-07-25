@@ -127,9 +127,24 @@ public class UserController {
     // [POST] /api/users/ban-user - Khóa người dùng
     @PostMapping("/ban-user")
     public ResponseEntity<?> banUser(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+        }
+
+        User admin = jwtUtil.extractUserFromToken(token);
+        if (admin == null || !admin.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not an admin");
+        }
+
         String userId = body.get("userId");
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("User ID is required");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is required");
+        }
+
+        // Không cho phép admin tự khóa chính mình
+        if (userId.equals(admin.getUserId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không thể khóa tài khoản của chính bạn");
         }
 
         boolean isBanned = userService.banUser(userId);

@@ -24,6 +24,12 @@ export const userProfileUpdate = async (data) => {
     return await axiosInstance.post("/users/update-user-profile", data);
 }
 
-export const banUser = async (userId) => {
-    return await axiosInstance.post("/users/ban-user", { userId });
+export const banUser = async (data) => {
+    try {
+        const response = await axiosInstance.post("/users/ban-user", data);
+        return response;
+    } catch (error) {
+        console.error("Error in banUser API:", error);
+        throw error;
+    }
 };

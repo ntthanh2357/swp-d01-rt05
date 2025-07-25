@@ -6,6 +6,10 @@ function UserCard({ user, onBan }) {
         ? moment(user.dateOfBirth).format("DD-MM-YYYY")
         : <span className="fst-italic">Chưa cập nhật</span>;
 
+    const handleBanClick = () => {
+        onBan(user.userId || user.user_id);
+    };
+
     return (
         <div className="card shadow-sm border-0 rounded-4 mb-4 px-2 py-3" style={{ maxWidth: 370 }}>
             <div className="d-flex align-items-center mb-3">
@@ -38,7 +42,7 @@ function UserCard({ user, onBan }) {
             <div className="d-grid mt-3">
                 <button
                     className="btn btn-danger"
-                    onClick={() => onBan(user.user_id)}
+                    onClick={handleBanClick}
                     disabled={user.isBanned}
                 >
                     {user.isBanned ? "Đã bị cấm" : "Ban"}
