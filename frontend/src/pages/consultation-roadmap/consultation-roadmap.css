@@ -707,4 +707,90 @@
         font-size: 0.75rem;
         padding: 6px 12px;
     }
+    
+    .roadmap-file-btn {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        min-width: 90px;
+    }
+}
+
+/* File Upload Button */
+.roadmap-file-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.roadmap-file-btn:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.roadmap-file-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.roadmap-file-btn i {
+    margin-right: 4px;
+}
+
+/* Uploaded Files Section */
+.uploaded-files-section {
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
+}
+
+.uploaded-files-section .files-title {
+    color: #495057;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.uploaded-files-section .files-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.uploaded-files-section .file-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef !important;
+    transition: all 0.2s ease;
+}
+
+.uploaded-files-section .file-item:hover {
+    background: #e9ecef;
+    border-color: #dee2e6 !important;
+}
+
+.uploaded-files-section .file-info {
+    flex: 1;
+}
+
+.uploaded-files-section .file-name {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.uploaded-files-section .file-actions .btn {
+    border: none;
+    background: transparent;
+    color: #dc3545;
+    padding: 4px 8px;
+}
+
+.uploaded-files-section .file-actions .btn:hover {
+    background: #dc3545;
+    color: white;
 }

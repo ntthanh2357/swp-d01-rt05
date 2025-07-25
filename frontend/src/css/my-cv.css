@@ -1,0 +1,495 @@
+/* MY CV Page Styles */
+.my-cv-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: calc(100vh - 200px);
+}
+
+.loading-container {
+    text-align: center;
+    padding: 50px 0;
+}
+
+.cv-header {
+    margin-bottom: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 5px 20px rgba(0, 123, 255, 0.3);
+}
+
+.cv-header .page-title {
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.cv-header .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.cv-content {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.cv-section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+/* Documents Management Styles */
+.documents-section {
+    margin-bottom: 20px;
+}
+
+.upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #0056b3;
+    background-color: #f8f9ff;
+}
+
+.upload-label {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #007bff;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.upload-label:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+.files-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 500;
+    margin-right: 10px;
+}
+
+.file-size {
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.file-actions {
+    display: flex;
+    gap: 5px;
+}
+
+/* File Preview Modal */
+.modal.show {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal iframe {
+    border: none;
+    border-radius: 5px;
+}
+
+/* File Upload Modal Styles */
+.upload-drop-zone {
+    border: 2px dashed #007bff;
+    border-radius: 10px;
+    background: #f8f9ff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-drop-zone.drag-active {
+    border-color: #0056b3;
+    background: #e7f3ff;
+    transform: scale(1.02);
+}
+
+.upload-drop-zone:hover {
+    border-color: #0056b3;
+    background: #f0f8ff;
+}
+
+.selected-files .file-item {
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.selected-files .file-item:hover {
+    background: #e9ecef;
+    border-color: #007bff !important;
+}
+
+.file-name {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Roadmap File Upload Button */
+.roadmap-file-btn {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.roadmap-file-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+    color: white;
+}
+
+.roadmap-file-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design for Documents */
+@media (max-width: 768px) {
+    .upload-area {
+        padding: 20px;
+    }
+    
+    .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .file-actions {
+        align-self: flex-end;
+    }
+    
+    .upload-drop-zone {
+        padding: 15px;
+    }
+    
+    .file-name {
+        max-width: 200px;
+    }
+}
+
+.section-header h4 {
+    color: #2c3e50;
+    margin: 0;
+    font-weight: 600;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.cv-form {
+    margin-top: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-display {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    color: #495057;
+}
+
+.form-display .text-muted {
+    font-style: italic;
+}
+
+/* CV Tips Section */
+.cv-tips {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 25px;
+    border-left: 4px solid #28a745;
+}
+
+.cv-tips h5 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #495057;
+}
+
+.tip-item i {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+.btn-outline-primary {
+    border: 2px solid #007bff;
+    color: #007bff;
+}
+
+.btn-outline-primary:hover {
+    background: #007bff;
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    transform: translateY(-2px);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Badge Styles */
+.badge.bg-success {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cv-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.cv-tips {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .my-cv-container {
+        padding: 15px;
+    }
+
+    .cv-header {
+        padding: 20px;
+    }
+
+    .cv-content {
+        padding: 20px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .action-buttons {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .cv-tips {
+        padding: 20px;
+    }
+
+    .tip-item {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 576px) {
+    .my-cv-container {
+        padding: 10px;
+    }
+
+    .cv-header {
+        padding: 15px;
+    }
+
+    .cv-content {
+        padding: 15px;
+    }
+
+    .section-header h4 {
+        font-size: 1.2rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+
+/* Loading States */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Form Validation */
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #28a745;
+}
+
+/* Hover Effects */
+.cv-section:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+
+.form-control:hover,
+.form-select:hover {
+    border-color: #007bff;
+}
+
+.form-display:hover {
+    background: #e9ecef;
+}
+
+/* Success States */
+.save-success {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

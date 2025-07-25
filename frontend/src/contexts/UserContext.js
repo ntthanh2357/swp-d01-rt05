@@ -44,11 +44,13 @@ export function UserProvider({ children }) {
     const loadSeekerProfile = async (accessToken) => {
         try {
             const response = await seekerProfile({ token: accessToken });
-            if (response.status === 200 && response.data.purchased_package) {
+            if (response.status === 200) {
+                // Always update purchasedPackage, even if it's null
                 setUser(prevUser => ({
                     ...prevUser,
-                    purchasedPackage: response.data.purchased_package
+                    purchasedPackage: response.data.purchased_package || null
                 }));
+                console.log("Loaded seeker profile, purchased_package:", response.data.purchased_package);
             }
         } catch (error) {
             console.error("Error loading seeker profile:", error);
@@ -69,7 +71,10 @@ export function UserProvider({ children }) {
 
         // Nếu là seeker, load thông tin purchased package
         if (decoded.role === 'seeker') {
+            console.log("User is seeker, loading profile for purchased_package...");
             loadSeekerProfile(accessToken);
+        } else {
+            console.log("User is not seeker, role:", decoded.role);
         }
     };
 
