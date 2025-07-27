@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { seekerProfile } from "../services/seekerApi";
+import { toast } from "react-toastify";
 
 export const UserContext = createContext();
 
@@ -60,13 +61,21 @@ export function UserProvider({ children }) {
     const login = (accessToken) => {
         localStorage.setItem("accessToken", accessToken);
         const decoded = jwtDecode(accessToken);
+        
+        // Kiểm tra nếu user bị banned (nếu có thông tin này trong token)
+        if (decoded.isBanned) {
+            toast.error("Tài khoản của bạn đã bị khóa.");
+            logout();
+            return;
+        }
+        
         setUser({
             isLoggedIn: true,
             userId: decoded.userId || null,
             name: decoded.name || null,
             role: decoded.role,
             accessToken,
-            purchasedPackage: null, // Will be loaded separately if seeker
+            purchasedPackage: null,
         });
 
         // Nếu là seeker, load thông tin purchased package

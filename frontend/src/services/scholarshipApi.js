@@ -16,8 +16,8 @@ export const updateScholarship = async (data) => {
     return await axiosInstance.post("/scholarships/update", data);
 }
 
-export const deleteScholarship = async (id) => {
-    return await axiosInstance.post("/scholarships/delete", { id });
+export const deleteScholarship = async (data) => {
+    return await axiosInstance.post("/scholarships/delete", data);
 }
 
 export const getScholarshipById = async (id) => {

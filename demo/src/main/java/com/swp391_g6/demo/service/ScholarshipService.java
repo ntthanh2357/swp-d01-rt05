@@ -36,7 +36,10 @@ public class ScholarshipService {
 
     public Scholarship addScholarship(String title, String description, String organizationName, String categoryId,
             Double amount, String currency, Integer duration, Date applicationDeadline,
-            String eligibilityCriteria, String countries, String educationLevels, String fieldsOfStudy, String createdBy) {
+            String eligibilityCriteria, String countries, String educationLevels, String fieldsOfStudy,
+            String createdBy, String applicableIntake, String fundingType, Integer viewsCount,
+            String languageRequirements) {
+
         String scholarshipId = idGeneratorService.generateScholarshipId();
         Scholarship scholarship = new Scholarship();
         scholarship.setScholarshipId(scholarshipId);
@@ -53,8 +56,14 @@ public class ScholarshipService {
         scholarship.setEducationLevels(educationLevels);
         scholarship.setFieldsOfStudy(fieldsOfStudy);
         scholarship.setCreatedBy(createdBy);
-        Scholarship savedScholarship = scholarshipRepository.save(scholarship);
-        return savedScholarship;
+
+        // ✅ Gán các trường mới
+        scholarship.setApplicableIntake(applicableIntake);
+        scholarship.setFundingType(fundingType);
+        scholarship.setViewsCount(viewsCount);
+        scholarship.setLanguageRequirements(languageRequirements);
+
+        return scholarshipRepository.save(scholarship);
     }
 
     public void updateScholarship(Scholarship scholarship) {
@@ -68,5 +77,4 @@ public class ScholarshipService {
     public int countNewScholarships() {
         return scholarshipRepository.countNewScholarships();
     }
-
 }

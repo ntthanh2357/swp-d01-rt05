@@ -122,7 +122,7 @@ export default function Header() {
                                             <>
                                                 <li><Link className="dropdown-item" to="/admin/manage-users">Manage Users</Link></li>
                                                 <li><Link className="dropdown-item" to="/manage-scholarships">Manage Scholarships</Link></li>
-                                                <li><Link className="dropdown-item" to="/admin/dashboard">Admin Dashboard</Link></li>
+                                                <li><Link className="dropdown-item" to="/admin/admin-profile">Profile</Link></li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}

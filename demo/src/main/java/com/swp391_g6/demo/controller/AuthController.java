@@ -3,13 +3,12 @@ package com.swp391_g6.demo.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.swp391_g6.demo.dto.EmailRequest;
@@ -17,10 +16,10 @@ import com.swp391_g6.demo.dto.LoginRequest;
 import com.swp391_g6.demo.dto.OtpVerificationRequest;
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.service.AuthService;
-import com.swp391_g6.demo.service.SeekerService;
 import com.swp391_g6.demo.service.GoogleAuthService;
 import com.swp391_g6.demo.service.StaffService;
 import com.swp391_g6.demo.util.JwtUtil;
+import com.swp391_g6.demo.service.SeekerService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -124,13 +123,24 @@ public class AuthController {
 
     // [POST] /api/auth/login - Đăng nhập người dùng
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        User user = authService.authenticate(request.getEmail(), request.getPassword());
-        if (user != null) {
-            String jwt = jwtUtil.generateToken(user);
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", jwt));
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            User user = authService.authenticate(request.getEmail(), request.getPassword());
+            if (user != null) {
+                String jwt = jwtUtil.generateToken(user);
+                return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", jwt));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                       .body(Map.of("error", "Email hoặc mật khẩu không đúng"));
+            }
+        } catch (RuntimeException e) {
+            // Xử lý riêng lỗi tài khoản bị khóa
+            if (e.getMessage().contains("bị khóa")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                       .body(Map.of("error", e.getMessage()));
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body(Map.of("error", e.getMessage()));
         }
     }
 

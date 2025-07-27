@@ -1,14 +1,14 @@
 package com.swp391_g6.demo.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 
 @Service
 public class GoogleAuthService {
@@ -22,7 +22,6 @@ public class GoogleAuthService {
                 JacksonFactory.getDefaultInstance())
                 .setAudience(Collections.singletonList(client_id))
                 .build();
-
         GoogleIdToken idToken = verifier.verify(idTokenString);
         if (idToken != null) {
             return idToken.getPayload();

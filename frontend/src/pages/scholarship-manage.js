@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -25,6 +27,10 @@ function ScholarshipManage() {
     const [countryFilter, setCountryFilter] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
+
+    // Thêm state cho sửa học bổng
+    const [showEditForm, setShowEditForm] = useState(false);
+    const [scholarshipToEdit, setScholarshipToEdit] = useState(null);
 
     const filterCountries = [
         "Ireland",
@@ -89,7 +95,7 @@ function ScholarshipManage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Xử lý thêm học bổng mới từ ScholarshipForm
+    // Sửa hàm handleAddScholarshipForm
     const handleAddScholarshipForm = async (form) => {
         if (!user?.accessToken || !user?.isLoggedIn) {
             toast.error("Bạn chưa đăng nhập!");
@@ -102,22 +108,40 @@ function ScholarshipManage() {
         }
         try {
             console.log('Thêm học bổng:', form);
-            const res = await addScholarship({
+            
+            // Đảm bảo các trường JSON được định dạng đúng
+            const dataToSend = {
                 ...form,
                 token: user.accessToken,
-                educationLevels: JSON.stringify(form.educationLevels),
-                fieldsOfStudy: JSON.stringify(form.fieldsOfStudy),
-            });
+                educationLevels: JSON.stringify(form.educationLevels || []),
+                fieldsOfStudy: JSON.stringify(form.fieldsOfStudy || []),
+                // Thêm JSON.stringify cho languageRequirements
+                languageRequirements: JSON.stringify(form.languageRequirements || ""),
+                // Đảm bảo các trường còn lại có giá trị
+                countries: form.countries || "",
+                eligibilityCriteria: form.eligibilityCriteria || "",
+                amount: form.amount || "0",
+                duration: form.duration || "0", 
+                viewsCount: form.viewsCount || "0",
+                fundingType: form.fundingType || ""
+            };
+            
+            console.log('Dữ liệu gửi đi:', dataToSend);
+            const res = await addScholarship(dataToSend);
+            
             setScholarships(prev => [res.data, ...prev]);
             setShowAddForm(false);
             toast.success('Thêm học bổng thành công!');
         } catch (err) {
-            toast.error('Thêm học bổng thất bại!');
+            console.error('Chi tiết lỗi:', err);
+            console.error('Response data:', err.response?.data);
+            console.error('Status code:', err.response?.status);
+            toast.error(`Thêm học bổng thất bại: ${err.response?.data || err.message}`);
         }
     };
 
-    // Sửa hàm handleEdit để cập nhật hạn nộp mới
-    const handleEdit = async (updatedScholarship) => {
+    // Sửa lại hàm handleEdit hiện tại
+    const handleEdit = (scholarship) => {
         if (!user?.accessToken || !user?.isLoggedIn) {
             toast.error("Bạn chưa đăng nhập!");
             window.location.href = "/login";
@@ -127,25 +151,122 @@ function ScholarshipManage() {
             toast.error("Bạn không có quyền truy cập!");
             return;
         }
+        
+        // Format dữ liệu trước khi điền vào form
+        let formattedScholarship = { ...scholarship };
+        
+        // Parse các trường JSON nếu cần
         try {
-            await updateScholarship({
-                scholarshipId: updatedScholarship.scholarshipId,
-                applicationDeadline: updatedScholarship.applicationDeadline,
-                token: user.accessToken
-            });
+            // Xử lý trường hợp JSON string
+            if (typeof scholarship.educationLevels === 'string') {
+                formattedScholarship.educationLevels = JSON.parse(scholarship.educationLevels);
+            }
+            if (typeof scholarship.fieldsOfStudy === 'string') {
+                formattedScholarship.fieldsOfStudy = JSON.parse(scholarship.fieldsOfStudy);
+            }
+            if (typeof scholarship.languageRequirements === 'string' && scholarship.languageRequirements) {
+                try {
+                    formattedScholarship.languageRequirements = JSON.parse(scholarship.languageRequirements);
+                } catch (e) {
+                    // Nếu không phải JSON hợp lệ, giữ nguyên giá trị
+                    formattedScholarship.languageRequirements = scholarship.languageRequirements;
+                }
+            }
+        } catch (err) {
+            console.error("Lỗi parse JSON:", err);
+        }
+        
+        // Hiển thị form với dữ liệu đã có
+        setScholarshipToEdit(formattedScholarship);
+        setShowEditForm(true);
+    };
 
+    // Thêm hàm xử lý submit form chỉnh sửa
+    const handleEditScholarshipSubmit = async (updatedData) => {
+        try {
+            console.log('Dữ liệu cập nhật:', updatedData);
+            
+            // Chuẩn bị dữ liệu để gửi API
+            const dataToUpdate = {
+                scholarshipId: scholarshipToEdit.scholarshipId,
+                token: user.accessToken,
+                ...updatedData,
+                
+                // Đảm bảo các trường số là chuỗi
+                amount: updatedData.amount?.toString() || "",
+                duration: updatedData.duration?.toString() || "",
+                viewsCount: updatedData.viewsCount?.toString() || "",
+                
+                // Đảm bảo JSON cho các trường array
+                educationLevels: JSON.stringify(updatedData.educationLevels || []),
+                fieldsOfStudy: JSON.stringify(updatedData.fieldsOfStudy || []),
+                languageRequirements: JSON.stringify(updatedData.languageRequirements || "")
+            };
+            
+            // Gọi API cập nhật
+            await updateScholarship(dataToUpdate);
+            
+            // Cập nhật state học bổng
             setScholarships(prev =>
                 prev.map(s =>
-                    s.scholarshipId === updatedScholarship.scholarshipId
-                        ? { ...s, applicationDeadline: updatedScholarship.applicationDeadline }
+                    s.scholarshipId === scholarshipToEdit.scholarshipId
+                        ? { ...s, ...updatedData }
                         : s
                 )
             );
-            toast.success('Cập nhật hạn nộp thành công!');
+            
+            // Đóng form và reset state
+            setShowEditForm(false);
+            setScholarshipToEdit(null);
+            
+            toast.success('Cập nhật học bổng thành công!');
         } catch (err) {
-            console.error('Cập nhật hạn nộp thất bại!', err.message);
-            toast.error('Cập nhật hạn nộp thất bại!');
+            console.error('Cập nhật học bổng thất bại!', err);
+            console.error('Chi tiết lỗi:', err.response?.data);
+            toast.error(`Cập nhật học bổng thất bại: ${err.response?.data || err.message}`);
         }
+    };
+
+    // Thêm hàm xử lý xóa
+    const handleDelete = async (scholarship) => {
+        if (!user?.accessToken || !user?.isLoggedIn) {
+            toast.error("Bạn chưa đăng nhập!");
+            window.location.href = "/login";
+            return;
+        }
+        if (user.role !== 'admin') {
+            toast.error("Bạn không có quyền truy cập!");
+            return;
+        }
+
+        confirmAlert({
+            title: 'Xác nhận xóa',
+            message: `Bạn có chắc chắn muốn xóa học bổng "${scholarship.title}"?`,
+            buttons: [
+                {
+                    label: 'Xóa',
+                    onClick: async () => {
+                        try {
+                            await deleteScholarship({
+                                scholarshipId: scholarship.scholarshipId,
+                                token: user.accessToken
+                            });
+                            setScholarships(prev => 
+                                prev.filter(s => s.scholarshipId !== scholarship.scholarshipId)
+                            );
+                            toast.success('Xóa học bổng thành công!');
+                        } catch (err) {
+                            console.error('Xóa học bổng thất bại!', err.message);
+                            toast.error('Xóa học bổng thất bại!');
+                        }
+                    }
+                },
+                {
+                    label: 'Hủy',
+                    onClick: () => {}
+                }
+            ]
+        });
     };
 
     // Khi lọc hoặc tìm kiếm thay đổi, về trang 1
@@ -201,6 +322,7 @@ function ScholarshipManage() {
                                 <ScholarshipCard1
                                     scholarship={scholarship}
                                     onEdit={handleEdit}
+                                    onDelete={handleDelete}
                                 />
                             </div>
                         ))
@@ -242,6 +364,25 @@ function ScholarshipManage() {
                     />
                     <div className="scholarship-modal">
                         <ScholarshipForm onSubmit={handleAddScholarshipForm} />
+                    </div>
+                </>
+            )}
+
+            {/* Thêm vào phía dưới form thêm mới, trước Footer */}
+            {showEditForm && scholarshipToEdit && (
+                <>
+                    <div
+                        className="scholarship-modal-overlay"
+                        onClick={() => {
+                            setShowEditForm(false);
+                            setScholarshipToEdit(null);
+                        }}
+                    />
+                    <div className="scholarship-modal">
+                        <ScholarshipForm 
+                            onSubmit={handleEditScholarshipSubmit} 
+                            initialData={scholarshipToEdit}
+                        />
                     </div>
                 </>
             )}
