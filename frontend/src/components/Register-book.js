@@ -83,55 +83,61 @@ const RegisterForm = ({ countryList }) => {
     e.preventDefault();
     const foundErrors = validate();
     setErrors(foundErrors);
-    
+
     if (Object.keys(foundErrors).length === 0) {
-      if (!user || !user.accessToken) {
-        alert("Vui lòng đăng nhập để đăng ký tư vấn!");
-        return;
-      }
-
-      try {
-        const requestData = {
-          ...formData,
-          country: formData.country.map(c => c.value),
-          city: formData.city.map(c => c.value),
-          token: user.accessToken
-        };
-
-        const response = await fetch('/api/consultation/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          alert("Đăng ký tư vấn thành công! Bạn đã được phân công tư vấn viên.");
-          console.log('Consultation registered:', result);
-          setFormData({
-            fullName: "",
-            email: "",
-            phone: "",
-            country: [],
-            studyTime: "",
-            city: [],
-            educationLevel: "",
-            adviceType: "",
-            scholarshipGoal: "",
-            major: "",
-            note: "",
-            agree: false,
-          });
-        } else {
-          alert(`Lỗi: ${result.error || result.message || 'Có lỗi xảy ra'}`);
+        if (!user || !user.accessToken) {
+            alert("Vui lòng đăng nhập để đăng ký tư vấn!");
+            return;
         }
-      } catch (error) {
-        console.error('Error registering consultation:', error);
-        alert('Có lỗi xảy ra khi đăng ký tư vấn. Vui lòng thử lại!');
-      }
+
+        // Kiểm tra nếu seeker chưa mua bất kỳ gói nào
+        if (user.role === 'seeker' && !user.purchasedPackage) {
+            alert("Bạn cần mua gói tư vấn để sử dụng tính năng đăng ký tư vấn!");
+            return;
+        }
+
+        try {
+            const requestData = {
+                ...formData,
+                country: formData.country.map(c => c.value),
+                city: formData.city.map(c => c.value),
+                token: user.accessToken
+            };
+
+            const response = await fetch('/api/consultation/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Đăng ký tư vấn thành công! Bạn đã được phân công tư vấn viên.");
+                console.log('Consultation registered:', result);
+                setFormData({
+                    fullName: "",
+                    email: "",
+                    phone: "",
+                    country: [],
+                    studyTime: "",
+                    city: [],
+                    educationLevel: "",
+                    adviceType: "",
+                    scholarshipGoal: "",
+                    major: "",
+                    note: "",
+                    agree: false,
+                });
+            } else {
+                alert(`Lỗi: ${result.error || result.message || 'Có lỗi xảy ra'}`);
+            }
+        } catch (error) {
+            console.error('Error registering consultation:', error);
+            alert('Có lỗi xảy ra khi đăng ký tư vấn. Vui lòng thử lại!');
+        }
     }
   };
 
