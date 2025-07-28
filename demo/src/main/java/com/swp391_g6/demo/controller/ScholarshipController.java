@@ -1,21 +1,26 @@
 package com.swp391_g6.demo.controller;
 
-import com.swp391_g6.demo.service.OrganizationService;
-import com.swp391_g6.demo.service.ScholarshipService;
-import com.swp391_g6.demo.entity.Scholarship;
-import com.swp391_g6.demo.entity.User;
-import com.swp391_g6.demo.dto.ScholarshipDTO;
-import com.swp391_g6.demo.util.JwtUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.swp391_g6.demo.dto.ScholarshipDTO;
+import com.swp391_g6.demo.entity.Scholarship;
+import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.service.OrganizationService;
+import com.swp391_g6.demo.service.ScholarshipService;
+import com.swp391_g6.demo.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/scholarships")
@@ -80,11 +85,27 @@ public class ScholarshipController {
             System.out.println("Organization Name: " + organizationName);
             String categoryId = body.get("categoryId");
             System.out.println("Category ID: " + categoryId);
-            Double amount = Double.valueOf(body.get("amount"));
+            Double amount = null;
+            if (body.get("amount") != null && !body.get("amount").isEmpty()) {
+                try {
+                    amount = Double.valueOf(body.get("amount"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Số tiền không hợp lệ");
+                }
+            }
             System.out.println("Amount: " + amount);
             String currency = body.get("currency");
             System.out.println("Currency: " + currency);
-            Integer duration = Integer.valueOf(body.get("duration"));
+            Integer duration = null;
+            if (body.get("duration") != null && !body.get("duration").isEmpty()) {
+                try {
+                    duration = Integer.valueOf(body.get("duration"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Thời hạn không hợp lệ");
+                }
+            }
             System.out.println("Duration: " + duration);
             String deadlineStr = body.get("applicationDeadline");
             System.out.println("Application Deadline: " + deadlineStr);
@@ -109,13 +130,38 @@ public class ScholarshipController {
             System.out.println("Fields of Study: " + fieldsOfStudy);
             String createdBy = user.getUserId();
             System.out.println("Creating scholarship with ID: " + createdBy);
+            String applicableIntake = body.get("applicableIntake");
+            System.out.println("Applicable Intake: " + applicableIntake);
 
-            scholarshipService.addScholarship(title, description, organizationName, categoryId, amount, currency,
-                    duration, applicationDeadline, eligibilityCriteria, countries, educationLevels, fieldsOfStudy,
-                    createdBy);
+            String fundingType = body.get("fundingType");
+            System.out.println("Funding Type: " + fundingType);
+
+            Integer viewsCount = null;
+            if (body.get("viewsCount") != null && !body.get("viewsCount").isEmpty()) {
+                try {
+                    viewsCount = Integer.valueOf(body.get("viewsCount"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Số lượng học bổng không hợp lệ");
+                }
+            }
+            System.out.println("Views Count: " + viewsCount);
+
+            String languageRequirements = body.get("languageRequirements");
+            System.out.println("Language Requirements: " + languageRequirements);
+
+            scholarshipService.addScholarship(
+        title, description, organizationName, categoryId, amount, currency,
+        duration, applicationDeadline, eligibilityCriteria, countries,
+        educationLevels, fieldsOfStudy, createdBy,
+        applicableIntake, fundingType, viewsCount, languageRequirements
+);
+
+
             return ResponseEntity.ok("Scholarship added successfully");
         } catch (Exception e) {
             System.out.println("Error adding scholarship: " + e.getMessage());
+            e.printStackTrace(); // Thêm stack trace để debug
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error adding scholarship: " + e.getMessage());
         }
@@ -125,38 +171,180 @@ public class ScholarshipController {
     @PostMapping("/update")
     public ResponseEntity<?> updateScholarship(@RequestBody Map<String, Object> body) {
         String token = (String) body.get("token");
-        String email = jwtUtil.extractEmail(token);
-        if (email == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
         }
 
-        Scholarship scholarship = scholarshipService.getScholarshipById((String) body.get("scholarshipId"));
+        User user = jwtUtil.extractUserFromToken(token);
+        if (user == null || !user.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not an admin");
+        }
+
+        String scholarshipId = (String) body.get("scholarshipId");
+        if (scholarshipId == null || scholarshipId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scholarship ID is required");
+        }
+
+        Scholarship scholarship = scholarshipService.getScholarshipById(scholarshipId);
         if (scholarship == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scholarship not found");
         }
 
         try {
-            Object deadlineObj = body.get("applicationDeadline");
-            if (deadlineObj != null) {
-                String deadlineStr = deadlineObj.toString();
-                Date deadlineDate = Date.valueOf(deadlineStr);
-                scholarship.setApplicationDeadline(deadlineDate);
+            System.out.println("Updating scholarship: " + scholarshipId);
+            
+            // Cập nhật các trường cơ bản
+            if (body.containsKey("title")) scholarship.setTitle((String) body.get("title"));
+            if (body.containsKey("description")) scholarship.setDescription((String) body.get("description"));
+            if (body.containsKey("organizationName")) {
+                String orgName = (String) body.get("organizationName");
+                if (orgName != null && !orgName.isEmpty()) {
+                    try {
+                        // Kiểm tra tổ chức tồn tại
+                        var organization = organizationService.getOrganizationByName(orgName);
+                        // Thay vì setOrganizationId, sử dụng setOrganization
+                        scholarship.setOrganization(organization);
+                    } catch (Exception ex) {
+                        System.out.println("Organization not found but continuing: " + orgName);
+                    }
+                }
+            }
+            
+            // Cập nhật trường số
+            if (body.containsKey("amount")) {
+                Object amountObj = body.get("amount");
+                if (amountObj != null) {
+                    try {
+                        String amountStr = amountObj.toString();
+                        if (!amountStr.isEmpty()) {
+                            scholarship.setAmount(Double.valueOf(amountStr));
+                        }
+                    } catch (NumberFormatException e) {
+                        // Bỏ qua nếu không phải số hợp lệ
+                    }
+                }
+            }
+            
+            if (body.containsKey("duration")) {
+                Object durationObj = body.get("duration");
+                if (durationObj != null) {
+                    try {
+                        String durationStr = durationObj.toString();
+                        if (!durationStr.isEmpty()) {
+                            scholarship.setDuration(Integer.valueOf(durationStr));
+                        }
+                    } catch (NumberFormatException e) {
+                        // Bỏ qua nếu không phải số hợp lệ
+                    }
+                }
+            }
+            
+            // Cập nhật deadline
+            if (body.containsKey("applicationDeadline")) {
+                Object deadlineObj = body.get("applicationDeadline");
+                if (deadlineObj != null) {
+                    String deadlineStr = deadlineObj.toString();
+                    if (!deadlineStr.trim().isEmpty()) {
+                        try {
+                            Date deadlineDate = Date.valueOf(deadlineStr);
+                            scholarship.setApplicationDeadline(deadlineDate);
+                        } catch (IllegalArgumentException ex) {
+                            System.out.println("Invalid date format: " + deadlineStr);
+                        }
+                    }
+                }
+            }
+            
+            // Cập nhật các trường khác với xử lý kiểu dữ liệu an toàn
+            if (body.containsKey("currency")) {
+                Object currencyObj = body.get("currency");
+                scholarship.setCurrency(currencyObj != null ? currencyObj.toString() : null);
             }
 
+            if (body.containsKey("countries")) {
+                Object countriesObj = body.get("countries");
+                scholarship.setCountries(countriesObj != null ? countriesObj.toString() : null);
+            }
+
+            if (body.containsKey("eligibilityCriteria")) {
+                Object criteriaObj = body.get("eligibilityCriteria");
+                scholarship.setEligibilityCriteria(criteriaObj != null ? criteriaObj.toString() : null);
+            }
+
+            if (body.containsKey("applicableIntake")) {
+                Object intakeObj = body.get("applicableIntake");
+                scholarship.setApplicableIntake(intakeObj != null ? intakeObj.toString() : null);
+            }
+
+            if (body.containsKey("fundingType")) {
+                Object fundingTypeObj = body.get("fundingType");
+                scholarship.setFundingType(fundingTypeObj != null ? fundingTypeObj.toString() : null);
+            }
+
+            if (body.containsKey("languageRequirements")) {
+                Object langReqObj = body.get("languageRequirements");
+                scholarship.setLanguageRequirements(langReqObj != null ? langReqObj.toString() : null);
+            }
+
+            if (body.containsKey("educationLevels")) {
+                Object eduLevelsObj = body.get("educationLevels");
+                scholarship.setEducationLevels(eduLevelsObj != null ? eduLevelsObj.toString() : null);
+            }
+
+            if (body.containsKey("fieldsOfStudy")) {
+                Object fieldsObj = body.get("fieldsOfStudy");
+                scholarship.setFieldsOfStudy(fieldsObj != null ? fieldsObj.toString() : null);
+            }
+
+            // Xử lý các trường title và description
+            if (body.containsKey("title")) scholarship.setTitle((String) body.get("title"));
+
+            if (body.containsKey("description")) {
+                Object descObj = body.get("description");
+                scholarship.setDescription(descObj != null ? descObj.toString() : null);
+            }
+            
+            // Cập nhật thời gian
+            scholarship.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            
+            // Lưu thay đổi
             scholarshipService.updateScholarship(scholarship);
             return ResponseEntity.ok("Scholarship updated successfully");
         } catch (Exception e) {
             System.out.println("Error updating scholarship: " + e.getMessage());
+            e.printStackTrace(); // Thêm stack trace để debug
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating scholarship: " + e.getMessage());
+                    .body("Error updating scholarship: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 
     // [POST] /api/scholarships/delete - Delete a scholarship
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteScholarship(String scholarshipId) {
-        scholarshipService.deleteScholarship(scholarshipId);
-        return ResponseEntity.ok("Scholarship deleted successfully");
+    public ResponseEntity<?> deleteScholarship(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+        }
+
+        User user = jwtUtil.extractUserFromToken(token);
+        if (user == null || !user.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+
+        String scholarshipId = body.get("scholarshipId");
+        if (scholarshipId == null || scholarshipId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Scholarship ID is required");
+        }
+
+        try {
+            scholarshipService.deleteScholarship(scholarshipId);
+            return ResponseEntity.ok("Scholarship deleted successfully");
+        } catch (Exception e) {
+            System.out.println("Error deleting scholarship: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting scholarship: " + e.getMessage());
+        }
     }
 
     // [POST] /api/scholarships/count-new - Count new scholarships

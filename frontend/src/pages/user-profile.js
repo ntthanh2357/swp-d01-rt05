@@ -89,8 +89,8 @@ function UserProfile() {
                     updatePurchasedPackage(response.data.purchased_package);
                 }
 
-                // Kiểm tra xem có roadmap chưa
-                if (response.data.purchased_package) {
+                // Kiểm tra xem có roadmap chưa (chỉ cho premium package)
+                if (response.data.purchased_package === 'premium' || response.data.purchased_package === 'prenium') {
                     try {
                         const roadmapResponse = await getRoadmap(user.accessToken);
                         setHasRoadmap(roadmapResponse.status === 200 && roadmapResponse.data.success);
@@ -98,6 +98,8 @@ function UserProfile() {
                         console.log("No roadmap found or error:", error);
                         setHasRoadmap(false);
                     }
+                } else {
+                    setHasRoadmap(false);
                 }
             } catch (error) {
                 console.error("Error fetching profile:", error);
@@ -107,6 +109,7 @@ function UserProfile() {
         };
 
         fetchProfile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps  
     }, [user]);
 
     if (loading) {
@@ -253,6 +256,11 @@ function UserProfile() {
     };
 
     const handleConsultationRoadmap = () => {
+        if (profile.purchased_package !== 'premium' && profile.purchased_package !== 'prenium') {
+            toast.warning("Bạn cần mua Gói Toàn diện để sử dụng tính năng Lộ trình tư vấn!");
+            return;
+        }
+        
         if (hasRoadmap) {
             navigate('/seeker/consultation-roadmap');
         } else {
@@ -453,7 +461,7 @@ function UserProfile() {
                                                         <span className="badge bg-success">
                                                             {profile.purchased_package === 'basic'
                                                                 ? 'Gói Hỗ trợ Đơn giản'
-                                                                : profile.purchased_package === 'premium'
+                                                                : (profile.purchased_package === 'premium' || profile.purchased_package === 'prenium')
                                                                     ? 'Gói Toàn diện'
                                                                     : profile.purchased_package}
                                                         </span>
@@ -461,7 +469,7 @@ function UserProfile() {
                                                         <span className="text-muted">Chưa mua gói nào</span>
                                                     )}
                                                 </div>
-                                                {profile.purchased_package && (
+                                                {(profile.purchased_package === 'premium' || profile.purchased_package === 'prenium') && (
                                                     <div>
                                                         <button
                                                             type="button"

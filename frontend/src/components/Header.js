@@ -69,6 +69,14 @@ export default function Header() {
                                     )}
                                     {user.role === 'seeker' && (
                                         <>
+                                            {/* Chỉ hiển thị MY CV cho seeker mua gói premium */}
+                                            {(user.purchasedPackage === 'premium' || user.purchasedPackage === 'prenium') && (
+                                                <li className="nav-item mx-3">
+                                                    <Link to="/seeker/my-cv" className="nav-link text-dark">MY CV</Link>
+                                                </li>
+                                            )}
+                                            {/* Debug: Always log the values */}
+                                            {console.log('Header Debug - User role:', user.role, 'Purchased package:', user.purchasedPackage, 'Show MY CV:', (user.purchasedPackage === 'premium' || user.purchasedPackage === 'prenium'))}
                                             <li className="nav-item mx-3">
                                                 <Link to="/payment" className="nav-link text-dark">PAYMENT</Link>
                                             </li>
@@ -114,7 +122,7 @@ export default function Header() {
                                             <>
                                                 <li><Link className="dropdown-item" to="/admin/manage-users">Manage Users</Link></li>
                                                 <li><Link className="dropdown-item" to="/manage-scholarships">Manage Scholarships</Link></li>
-                                                <li><Link className="dropdown-item" to="/admin/dashboard">Admin Dashboard</Link></li>
+                                                <li><Link className="dropdown-item" to="/admin/admin-profile">Profile</Link></li>
                                                 <li><hr className="dropdown-divider" /></li>
                                             </>
                                         )}
@@ -188,6 +196,14 @@ export default function Header() {
                                         )}
                                         {user.role === 'seeker' && (
                                             <>
+                                                {/* Chỉ hiển thị MY CV cho seeker mua gói premium */}
+                                                {(user.purchasedPackage === 'premium' || user.purchasedPackage === 'prenium') && (
+                                                    <li className="nav-item mb-3">
+                                                        <Link to="/seeker/my-cv" className="nav-link text-dark" onClick={() => setDrawerOpen(false)}>MY CV</Link>
+                                                    </li>
+                                                )}
+                                                {/* Debug: Always log the values */}
+                                                {console.log('Mobile Header Debug - User role:', user.role, 'Purchased package:', user.purchasedPackage, 'Show MY CV:', (user.purchasedPackage === 'premium' || user.purchasedPackage === 'prenium'))}
                                                 <li className="nav-item mb-3">
                                                     <Link to="/payment" className="nav-link text-dark" onClick={() => setDrawerOpen(false)}>PAYMENT</Link>
                                                 </li>

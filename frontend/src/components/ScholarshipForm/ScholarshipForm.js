@@ -38,25 +38,33 @@ const schema = yup.object().shape({
     fieldsOfStudy: yup.array(),
 });
 
-const ScholarshipForm = ({ onSubmit }) => {
+const ScholarshipForm = ({ onSubmit, initialData }) => {
     const { user } = useContext(UserContext);
     const [errors, setErrors] = useState({});
 
     const [form, setForm] = useState({
-        title: "",
-        description: "",
-        organizationName: "",
-        categoryId: "",
-        amount: "",
-        currency: "",
-        duration: "",
-        countries: "",
-        applicationDeadline: "",
-        eligibilityCriteria: "",
-        educationLevels: [],
-        fieldsOfStudy: [],
+        title: initialData?.title || "",
+        description: initialData?.description || "",
+        organizationName: initialData?.organizationName || "",
+        categoryId: initialData?.categoryId || "",
+        amount: initialData?.amount || "",
+        currency: initialData?.currency || "",
+        duration: initialData?.duration || "",
+        countries: initialData?.countries || "",
+        applicationDeadline: initialData?.applicationDeadline || "",
+        eligibilityCriteria: initialData?.eligibilityCriteria || "",
+        educationLevels: Array.isArray(initialData?.educationLevels) 
+            ? initialData.educationLevels 
+            : (initialData?.educationLevels ? JSON.parse(initialData.educationLevels) : []),
+        fieldsOfStudy: Array.isArray(initialData?.fieldsOfStudy)
+            ? initialData.fieldsOfStudy
+            : (initialData?.fieldsOfStudy ? JSON.parse(initialData.fieldsOfStudy) : []),
+        languageRequirements: initialData?.languageRequirements || "",
+        fundingType: initialData?.fundingType || "",
+        viewsCount: initialData?.viewsCount || "0",
+        applicableIntake: initialData?.applicableIntake || ""
     });
-
+    
     const [categoryOptions, setCategoryOptions] = useState([
         { name: "Ireland", id: "SCHOLARCATE0001" },
         { name: "New Zealand", id: "SCHOLARCATE0002" },
@@ -80,7 +88,6 @@ const ScholarshipForm = ({ onSubmit }) => {
     ]);
     const [newEducationLevel, setNewEducationLevel] = useState("");
     const [newFieldOfStudy, setNewFieldOfStudy] = useState("");
-
     const [organizations, setOrganizations] = useState([]);
 
     useEffect(() => {
@@ -152,13 +159,15 @@ const ScholarshipForm = ({ onSubmit }) => {
         }
     };
 
+    const formTitle = initialData ? "Chỉnh sửa học bổng" : "Tạo học bổng mới";
+    
     return (
         <div className="scholarship-form-container">
             <div className="form-header">
-                <h2>Tạo học bổng mới</h2>
-                <p>Vui lòng điền đầy đủ thông tin để tạo học bổng</p>
+                <h2>{formTitle}</h2>
+                <p>Vui lòng điền đầy đủ thông tin</p>
             </div>
-
+            
             <form onSubmit={handleSubmit} className="form-scroll-container">
                 {/* Thông tin cơ bản */}
                 <div className="form-section">
@@ -222,10 +231,21 @@ const ScholarshipForm = ({ onSubmit }) => {
                                 ))}
                             </select>
                         </div>
+                        <div className="col-12 mb-3">
+                            <label className="form-label">Áp dụng cho kỳ nhập học</label>
+                            <input
+                                className="form-control"
+                                name="applicableIntake"
+                                value={form.applicableIntake}
+                                onChange={handleChange}
+                                placeholder="Ví dụ: Fall 2025, Spring 2026..."
+                            />
+                            {errors.applicableIntake && <div className="text-danger small">{errors.applicableIntake}</div>}
+                        </div>
                     </div>
                 </div>
 
-                {/* Thông tin tài chính */}
+                {/* Thông tin tài chính & thời hạn */}
                 <div className="form-section">
                     <h3 className="section-title">Thông tin tài chính & thời hạn</h3>
                     <div className="row">
@@ -264,10 +284,33 @@ const ScholarshipForm = ({ onSubmit }) => {
                             />
                             {errors.duration && <div className="text-danger small">{errors.duration}</div>}
                         </div>
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Hình thức tài trợ</label>
+                            <input
+                                className="form-control"
+                                name="fundingType"
+                                value={form.fundingType}
+                                onChange={handleChange}
+                                placeholder="Toàn phần, bán phần, hỗ trợ phí sinh hoạt..."
+                            />
+                            {errors.fundingType && <div className="text-danger small">{errors.fundingType}</div>}
+                        </div>
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Số lượng học bổng có sẵn</label>
+                            <input
+                                className="form-control"
+                                type="number"
+                                name="viewsCount"
+                                value={form.viewsCount}
+                                onChange={handleChange}
+                                placeholder="Nhập số lượng học bổng"
+                            />
+                            {errors.viewsCount && <div className="text-danger small">{errors.viewsCount}</div>}
+                        </div>
                     </div>
                 </div>
 
-                {/* Điều kiện và hạn chế */}
+                {/* Điều kiện & hạn chế */}
                 <div className="form-section">
                     <h3 className="section-title">Điều kiện & hạn chế</h3>
                     <div className="row">
@@ -307,6 +350,17 @@ const ScholarshipForm = ({ onSubmit }) => {
                                 placeholder="Địa điểm"
                             />
                             {errors.countries && <div className="text-danger small">{errors.countries}</div>}
+                        </div>
+                        <div className="col-12 mb-3">
+                            <label className="form-label">Yêu cầu ngôn ngữ</label>
+                            <input
+                                className="form-control"
+                                name="languageRequirements"
+                                value={form.languageRequirements}
+                                onChange={handleChange}
+                                placeholder="Ví dụ: IELTS >= 6.5, TOEFL iBT >= 80..."
+                            />
+                            {errors.languageRequirements && <div className="text-danger small">{errors.languageRequirements}</div>}
                         </div>
                     </div>
                 </div>
@@ -396,6 +450,7 @@ const ScholarshipForm = ({ onSubmit }) => {
                 </div>
             </form>
         </div>
+
     );
 };
 

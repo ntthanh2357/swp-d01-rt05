@@ -11,7 +11,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 import com.swp391_g6.demo.entity.User;
 import com.swp391_g6.demo.entity.VerificationToken;
@@ -32,7 +32,9 @@ public class UserService {
     private EmailUtil emailUtil;
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+        // Đảm bảo mỗi user object có trạng thái isBanned
+        return users;
     }
 
     public User getUserById(String userId) {
@@ -96,4 +98,40 @@ public class UserService {
         return token.getOtp_code().equals(otp);
     }
 
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public boolean banUser(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setBanned(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean unbanUser(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.isBanned()) {
+                user.setBanned(false);
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteUser(String userId) {
+        if (userRepository.existsById(userId)) {
+            userRepository.deleteById(userId);
+            return true;
+        }
+        return false;
+    }
 }

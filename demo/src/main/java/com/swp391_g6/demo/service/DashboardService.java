@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.swp391_g6.demo.repository.SeekerStaffMappingRepository;
+import com.swp391_g6.demo.repository.MessageRepository;
 import com.swp391_g6.demo.entity.StaffReview;
 import com.swp391_g6.demo.repository.CounselingCaseRepository;
 import com.swp391_g6.demo.repository.ScholarshipRepository;
@@ -23,8 +24,12 @@ public class DashboardService {
 
     @Autowired
     private SeekerStaffMappingRepository seekerStaffMappingRepo;
+    
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MessageRepository messageRepo;
 
     @Autowired
     private CounselingCaseRepository counselingCaseRepo;
@@ -42,15 +47,7 @@ public class DashboardService {
     public Map<String, Object> getOverview(String staffId) {
         Map<String, Object> result = new HashMap<>();
         result.put("activeSeekers", seekerStaffMappingRepo.countActiveSeekersByStaff(staffId));
-
-        // SỬA: Đảm bảo lấy đúng số premium seekers
-        try {
-            int premiumCount = seekerStaffMappingRepo.countPremiumSeekersByStaff(staffId);
-            result.put("premiumSeekers", premiumCount);
-        } catch (Exception e) {
-            result.put("premiumSeekers", 0);
-        }
-
+        result.put("unreadMessages", messageRepo.countUnreadMessagesByStaff(staffId));
         // Lấy pendingCases từ staff_statistics
         StaffStatistics latestStats = staffStatisticsRepo.findTopByStaffIdOrderByStatisticDateDesc(staffId);
         int pendingCases = 0;

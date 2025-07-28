@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { seekerProfile } from "../services/seekerApi";
+import { toast } from "react-toastify";
 
 export const UserContext = createContext();
 
@@ -44,11 +45,13 @@ export function UserProvider({ children }) {
     const loadSeekerProfile = async (accessToken) => {
         try {
             const response = await seekerProfile({ token: accessToken });
-            if (response.status === 200 && response.data.purchased_package) {
+            if (response.status === 200) {
+                // Always update purchasedPackage, even if it's null
                 setUser(prevUser => ({
                     ...prevUser,
-                    purchasedPackage: response.data.purchased_package
+                    purchasedPackage: response.data.purchased_package || null
                 }));
+                console.log("Loaded seeker profile, purchased_package:", response.data.purchased_package);
             }
         } catch (error) {
             console.error("Error loading seeker profile:", error);
@@ -58,18 +61,29 @@ export function UserProvider({ children }) {
     const login = (accessToken) => {
         localStorage.setItem("accessToken", accessToken);
         const decoded = jwtDecode(accessToken);
+        
+        // Kiểm tra nếu user bị banned (nếu có thông tin này trong token)
+        if (decoded.isBanned) {
+            toast.error("Tài khoản của bạn đã bị khóa.");
+            logout();
+            return;
+        }
+        
         setUser({
             isLoggedIn: true,
             userId: decoded.userId || null,
             name: decoded.name || null,
             role: decoded.role,
             accessToken,
-            purchasedPackage: null, // Will be loaded separately if seeker
+            purchasedPackage: null,
         });
 
         // Nếu là seeker, load thông tin purchased package
         if (decoded.role === 'seeker') {
+            console.log("User is seeker, loading profile for purchased_package...");
             loadSeekerProfile(accessToken);
+        } else {
+            console.log("User is not seeker, role:", decoded.role);
         }
     };
 

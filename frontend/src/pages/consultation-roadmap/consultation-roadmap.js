@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { UserContext } from "../../contexts/UserContext";
@@ -9,6 +9,9 @@ import {
     updateStepDetailStatus
 } from "../../services/consultationRoadmapApi";
 import { seekerProfile } from "../../services/seekerApi";
+import { getMyFiles } from "../../services/fileApi";
+import { deleteFile } from "../../services/fileApi";
+import FileUploadModal from "../../components/FileUploadModal";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import "./consultation-roadmap.css";
@@ -26,30 +29,31 @@ function ConsultationRoadmap() {
     const [loadingDetails, setLoadingDetails] = useState({});
     const [error, setError] = useState("");
     const [stepStatuses, setStepStatuses] = useState({});
+    
+    // File upload modal states
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [uploadCategory, setUploadCategory] = useState('');
+    const [uploadedFiles, setUploadedFiles] = useState([]);
 
     // Refs cho từng giai đoạn để scroll
     const stageRefs = useRef({});
 
-    useEffect(() => {
-        const initialTimeout = setTimeout(() => {
-            setInitialLoading(false);
-        }, 1000);
-
-        return () => clearTimeout(initialTimeout);
-    }, []);
-
-    useEffect(() => {
-        if (!initialLoading) {
-            if (!user || !user.accessToken) {
-                navigate('/auth/login');
-                return;
+    // Load files from database
+    const loadFilesFromDatabase = useCallback(async () => {
+        try {
+            const response = await getMyFiles(user.accessToken);
+            if (response.data.success) {
+                const files = response.data.files;
+                setUploadedFiles(files);
+                
+                console.log('Loaded files from database:', files);
             }
-
-            fetchData();
+        } catch (error) {
+            console.error('Error loading files:', error);
         }
-    }, [initialLoading, user, navigate]);
+    }, [user]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             setError("");
@@ -91,7 +95,33 @@ function ConsultationRoadmap() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, navigate]);
+
+    useEffect(() => {
+        const initialTimeout = setTimeout(() => {
+            setInitialLoading(false);
+        }, 1000);
+
+        return () => clearTimeout(initialTimeout);
+    }, []);
+
+    useEffect(() => {
+        if (!initialLoading) {
+            if (!user || !user.accessToken) {
+                navigate('/auth/login');
+                return;
+            }
+
+            fetchData();
+        }
+    }, [initialLoading, user, navigate, fetchData]);
+
+    // Load files when user is available
+    useEffect(() => {
+        if (user && user.accessToken) {
+            loadFilesFromDatabase();
+        }
+    }, [user, loadFilesFromDatabase]);
 
     // SỬA: Khởi tạo trạng thái cho từng bước chi tiết
     const initializeStepStatuses = (roadmap) => {
@@ -143,6 +173,60 @@ function ConsultationRoadmap() {
         setStepStatuses(initialStatuses);
     };
 
+    // Open upload modal with step-specific category mapping
+    const openUploadModal = (stageNumber, stepNumber, stepTitle) => {
+        let category = null;
+        
+        // Map step trong giai đoạn 2 với category tương ứng
+        if (stageNumber === 2) {
+            switch (stepNumber) {
+                case 1:
+                    category = 'language_certs'; // Chứng chỉ ngôn ngữ (IELTS/TOEFL)
+                    break;
+                case 2:
+                    category = 'personal_docs'; // Hồ sơ cá nhân (CV, SOP, thư giới thiệu)
+                    break;
+                case 3:
+                    category = 'academic_docs'; // Các giấy tờ học tập và chứng chỉ
+                    break;
+                default:
+                    toast.warning('Step này chưa hỗ trợ upload file');
+                    return;
+            }
+        } else {
+            toast.info('Chỉ có thể upload file cho giai đoạn 2: Chuẩn bị hồ sơ cá nhân');
+            return;
+        }
+        
+        setUploadCategory(category);
+        setShowUploadModal(true);
+    };
+
+    // Get files for specific step in stage 2
+    const getFilesForStep = (stageNumber, stepNumber) => {
+        if (stageNumber !== 2) return [];
+        
+        let category = '';
+        if (stepNumber === 1) category = 'language_certs';
+        else if (stepNumber === 2) category = 'personal_docs';
+        else if (stepNumber === 3) category = 'academic_docs';
+        
+        return uploadedFiles.filter(file => file.category === category);
+    };
+
+    // Delete file from roadmap
+    const handleDeleteFile = async (fileId) => {
+        try {
+            await deleteFile(fileId, user.accessToken);
+            await loadFilesFromDatabase(); // Refresh file list
+            toast.success('File đã được xóa!');
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            toast.error('Lỗi khi xóa file!');
+        }
+    };
+
+    // Handle file uploaded successfully
     const refreshProgress = async () => {
         try {
             const progressResponse = await getRoadmapProgress(user.accessToken);
@@ -562,8 +646,8 @@ function ConsultationRoadmap() {
                                                                 </small>
                                                             </div>
 
-                                                            {/* SỬA: Nút xác nhận hoàn thành cho từng bước */}
-                                                            <div className="step-action">
+                                                            {/* SỬA: Nút xác nhận hoàn thành cho từng bước và nút gửi file */}
+                                                            <div className="step-action d-flex gap-2 align-items-center">
                                                                 <button
                                                                     className={getStepButtonClass(stageStatus, stepStatus)}
                                                                     onClick={() => handleStepStatusClick(stage.stepNumber, stepNumber)}
@@ -577,7 +661,59 @@ function ConsultationRoadmap() {
                                                                     {stepStatus === 'pending' && <i className="fas fa-clock me-1"></i>}
                                                                     {getStepButtonText(stageStatus, stepStatus)}
                                                                 </button>
+                                                                
+                                                                {/* Nút gửi file cho giai đoạn 2 */}
+                                                                {stage.stepNumber === 2 && (
+                                                                    <button
+                                                                        className="btn btn-sm roadmap-file-btn"
+                                                                        onClick={() => openUploadModal(stage.stepNumber, stepNumber, step.title)}
+                                                                        title="Gửi file cho bước này"
+                                                                    >
+                                                                        <i className="fas fa-upload me-1"></i>
+                                                                        Gửi file
+                                                                    </button>
+                                                                )}
                                                             </div>
+                                                            
+                                                            {/* Hiển thị files đã upload cho giai đoạn 2 */}
+                                                            {stage.stepNumber === 2 && (() => {
+                                                                const stepFiles = getFilesForStep(stage.stepNumber, stepNumber);
+                                                                if (stepFiles.length > 0) {
+                                                                    return (
+                                                                        <div className="uploaded-files-section mt-3">
+                                                                            <h6 className="files-title">
+                                                                                <i className="fas fa-paperclip me-2"></i>
+                                                                                Files đã gửi ({stepFiles.length})
+                                                                            </h6>
+                                                                            <div className="files-list">
+                                                                                {stepFiles.map((file, fileIndex) => (
+                                                                                    <div key={fileIndex} className="file-item d-flex align-items-center justify-content-between p-2 border rounded mb-2">
+                                                                                        <div className="file-info d-flex align-items-center">
+                                                                                            <i className="fas fa-file-alt me-2 text-primary"></i>
+                                                                                            <div>
+                                                                                                <div className="file-name">{file.originalName}</div>
+                                                                                                <small className="text-muted">
+                                                                                                    {new Date(file.uploadDate).toLocaleDateString('vi-VN')}
+                                                                                                </small>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div className="file-actions">
+                                                                                            <button
+                                                                                                className="btn btn-sm btn-outline-danger"
+                                                                                                onClick={() => handleDeleteFile(file.id)}
+                                                                                                title="Xóa file"
+                                                                                            >
+                                                                                                <i className="fas fa-trash"></i>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })()}
                                                         </div>
                                                     );
                                                 })}
@@ -652,6 +788,25 @@ function ConsultationRoadmap() {
                 </div>
             </div>
             <Footer />
+            
+            {/* File Upload Modal */}
+            {showUploadModal && (
+                <FileUploadModal
+                    show={showUploadModal}
+                    onClose={() => {
+                        setShowUploadModal(false);
+                        setUploadCategory('');
+                    }}
+                    category={uploadCategory}
+                    onFileUploaded={() => {
+                        // Reload files after successful upload
+                        loadFilesFromDatabase();
+                        toast.success('File uploaded successfully!');
+                    }}
+                    userToken={user?.accessToken}
+                />
+            )}
+            
             <ToastContainer />
         </div>
     );
