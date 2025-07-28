@@ -1,12 +1,14 @@
 package com.swp391_g6.demo.dto;
 
+import java.util.List;
+
 public class ConsultationRequestDTO {
     private String fullName;
     private String email;
     private String phone;
-    private String country;
+    private List<String> country;
     private String studyTime;
-    private String city;
+    private List<String> city;
     private String educationLevel;
     private String adviceType;
     private String scholarshipGoal;
@@ -18,10 +20,10 @@ public class ConsultationRequestDTO {
     // Constructors
     public ConsultationRequestDTO() {}
 
-    public ConsultationRequestDTO(String fullName, String email, String phone, String country, 
-                                 String studyTime, String city, String educationLevel, 
-                                 String adviceType, String scholarshipGoal, String major, 
-                                 String note, Boolean receivePromotions) {
+    public ConsultationRequestDTO(String fullName, String email, String phone, List<String> country, 
+                                String studyTime, List<String> city, String educationLevel, 
+                                String adviceType, String scholarshipGoal, String major, 
+                                String note, Boolean receivePromotions, String token) {
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
@@ -34,6 +36,7 @@ public class ConsultationRequestDTO {
         this.major = major;
         this.note = note;
         this.receivePromotions = receivePromotions;
+        this.token = token;
     }
 
     // Getters and Setters
@@ -61,11 +64,11 @@ public class ConsultationRequestDTO {
         this.phone = phone;
     }
 
-    public String getCountry() {
+    public List<String> getCountry() {
         return country;
     }
 
-    public void setCountry(String country) {
+    public void setCountry(List<String> country) {
         this.country = country;
     }
 
@@ -77,11 +80,11 @@ public class ConsultationRequestDTO {
         this.studyTime = studyTime;
     }
 
-    public String getCity() {
+    public List<String> getCity() {
         return city;
     }
 
-    public void setCity(String city) {
+    public void setCity(List<String> city) {
         this.city = city;
     }
 
@@ -140,4 +143,5 @@ public class ConsultationRequestDTO {
     public void setToken(String token) {
         this.token = token;
     }
-} 
+
+}
