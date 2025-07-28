@@ -46,7 +46,7 @@ function StaffCard({ staff }) {
                     <div className="col-6">
                         <div className="d-flex align-items-center mb-2">
                             <i className="fas fa-users me-2 text-success"></i>
-                            <small className="fw-semibold">Đang hỗ trợ: {staff.currentSeekerCount || 0}</small>
+                            <small className="fw-semibold">Đã hỗ trợ: {staff.currentSeekerCount || 0}</small>
                         </div>
                     </div>
                 </div>
