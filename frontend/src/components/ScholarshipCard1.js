@@ -28,7 +28,9 @@ function ScholarshipCard1({ scholarship, onEdit, onDelete }) {
     };
 
     const handleEditClick = () => {
-        setIsEditing(true);
+        if (onEdit) {
+            onEdit(scholarship); // Truyền toàn bộ scholarship object
+        }
     };
 
     const handleApplyClick = () => {

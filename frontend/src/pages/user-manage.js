@@ -2,11 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../contexts/UserContext";
-import { userManage } from "../services/userApi";
+import { userManage, banUser, unbanUser } from "../services/userApi";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UserCard from '../components/UserCard';
 import UserChart from "../components/UserChart";
+import { axiosInstance } from "../services/api"; // Import axiosInstance từ api service
 
 import "../css/user-manage.css";
 
@@ -41,7 +42,16 @@ function UserManage() {
         const fetchUser = async () => {
             try {
                 const response = await userManage({ token: contextUser.accessToken });
-                setUserData(response.data);
+                console.log("User data structure:", response.data[0]);
+                
+                // Chuẩn hóa dữ liệu, đảm bảo trường isBanned tồn tại
+                const normalizedData = response.data.map(user => ({
+                    ...user,
+                    userId: user.userId || user.user_id,  // Đảm bảo luôn có trường userId
+                    isBanned: user.isBanned === true,    // Đảm bảo isBanned là boolean
+                }));
+
+                setUserData(normalizedData);
                 setError(null);
             } catch (err) {
                 let message = "Đã xảy ra lỗi!";
@@ -60,7 +70,30 @@ function UserManage() {
                 setLoading(false);
             }
         };
-        fetchUser();
+
+        // Trong useEffect để fetch dữ liệu ban đầu
+        const fetchBannedUsers = async () => {
+            try {
+                // Giả sử bạn có API endpoint để lấy danh sách userId bị khóa
+                const response = await axiosInstance.post("/users/get-banned-users", {
+                    token: contextUser.accessToken
+                });
+                
+                const bannedUserIds = response.data;
+                
+                // Cập nhật userData với thông tin ban
+                setUserData(prevData => 
+                    prevData.map(user => ({
+                        ...user,
+                        isBanned: bannedUserIds.includes(user.userId)
+                    }))
+                );
+            } catch (error) {
+                console.error("Không thể lấy danh sách người dùng bị khóa:", error);
+            }
+        };
+
+        fetchUser().then(fetchBannedUsers);
     }, [contextUser]);
 
     // Lọc và tìm kiếm
@@ -88,6 +121,122 @@ function UserManage() {
 
     // Lấy danh sách role duy nhất từ userData
     const uniqueRoles = Array.from(new Set(userData.map(u => u.role))).filter(Boolean);
+
+    const handleBan = async (userId) => {
+        try {
+            // Thêm validation để đảm bảo có userId
+            if (!userId) {
+                toast.error("Không tìm thấy ID người dùng!");
+                console.error("userId is undefined or null:", userId);
+                return;
+            }
+            
+            // Log để kiểm tra
+            console.log('Banning user with ID:', userId);
+            
+            // Hiển thị dialog xác nhận trước khi ban
+            if (!window.confirm("Bạn có chắc chắn muốn khóa người dùng này?")) {
+                return;
+            }
+            
+            const response = await banUser({
+                userId: userId,
+                token: contextUser.accessToken
+            });
+            
+            if (response.status === 200) {
+                toast.success("Đã khóa người dùng thành công!");
+                setUserData(prev =>
+                    prev.map(u => {
+                        if (u.userId === userId || u.user_id === userId) {
+                            return { ...u, isBanned: true };
+                        }
+                        return u;
+                    })
+                );
+            }
+        } catch (err) {
+            console.error('Ban error details:', err);
+            console.error('Request data:', { userId, token: 'present' });
+            
+            let errorMessage = "Lỗi không xác định";
+            if (err.response?.data) {
+                if (typeof err.response.data === 'object') {
+                    errorMessage = err.response.data.error || JSON.stringify(err.response.data);
+                } else {
+                    errorMessage = err.response.data;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            toast.error("Khóa người dùng thất bại: " + errorMessage);
+        }
+    };
+
+    // Thêm sau hàm handleBan
+
+    const handleUnban = async (userId) => {
+        try {
+            // Thêm validation để đảm bảo có userId
+            if (!userId) {
+                toast.error("Không tìm thấy ID người dùng!");
+                console.error("userId is undefined or null:", userId);
+                return;
+            }
+            
+            // Log để kiểm tra
+            console.log('Unbanning user with ID:', userId);
+            
+            const response = await unbanUser({
+                userId: userId,
+                token: contextUser.accessToken
+            });
+            
+            if (response.status === 200) {
+                toast.success("Đã mở khóa người dùng thành công!");
+                setUserData(prev =>
+                    prev.map(u => {
+                        if (u.userId === userId || u.user_id === userId) {
+                            return { ...u, isBanned: false };
+                        }
+                        return u;
+                    })
+                );
+            }
+        } catch (err) {
+            console.error('Unban error details:', err);
+            
+            let errorMessage = "Lỗi không xác định";
+            if (err.response?.data) {
+                if (typeof err.response.data === 'object') {
+                    errorMessage = err.response.data.error || JSON.stringify(err.response.data);
+                } else {
+                    errorMessage = err.response.data;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            toast.error("Mở khóa người dùng thất bại: " + errorMessage);
+        }
+    };
+
+    // Thêm vào useEffect sau khi nhận dữ liệu
+    useEffect(() => {
+        if (userData.length > 0) {
+            const bannedUsers = userData.filter(user => user.isBanned);
+            console.log(`Tổng số người dùng: ${userData.length}, Số người dùng bị khóa: ${bannedUsers.length}`);
+            console.log("Danh sách người dùng bị khóa:", bannedUsers);
+        }
+    }, [userData]);
+
+    // Thêm vào trước return để debug
+    console.log("Rendering users with ban status:", userData.map(u => ({
+        userId: u.userId,
+        name: u.name,
+        isBanned: u.isBanned
+    })));
 
     return (
         <>
@@ -195,7 +344,11 @@ function UserManage() {
                                             <div className="row g-4">
                                                 {paginatedUsers.map(user => (
                                                     <div className="col-12 col-sm-6 col-md-4" key={user.user_id}>
-                                                        <UserCard user={user} />
+                                                        <UserCard 
+                                                            user={user} 
+                                                            onBan={handleBan} 
+                                                            onUnban={handleUnban}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>

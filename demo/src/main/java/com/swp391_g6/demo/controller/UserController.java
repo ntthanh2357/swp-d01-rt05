@@ -1,21 +1,25 @@
 package com.swp391_g6.demo.controller;
 
-import java.util.Map;
-import java.util.List;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import com.swp391_g6.demo.entity.User;
+import com.swp391_g6.demo.entity.Seeker;
 import com.swp391_g6.demo.service.UserService;
 import com.swp391_g6.demo.util.JwtUtil;
+import com.swp391_g6.demo.repository.SeekerRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,10 +30,13 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private SeekerRepository seekerRepository;
 
     // [POST] /api/users/user-manage - Quản lý người dùng
     @PostMapping("/user-manage")
-    public ResponseEntity<?> userManage(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> getUserManage(@RequestBody Map<String, String> body) {
         String token = body.get("token");
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
@@ -44,7 +51,31 @@ public class UserController {
 
         try {
             List<User> users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (User u : users) {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("userId", u.getUserId());
+                userMap.put("name", u.getName());
+                userMap.put("email", u.getEmail());
+                userMap.put("phone", u.getPhone());
+                userMap.put("dateOfBirth", u.getDateOfBirth());
+                userMap.put("gender", u.getGender());
+                userMap.put("role", u.getRole());
+                // Đảm bảo trả về trạng thái ban chính xác
+                userMap.put("isBanned", u.isBanned());
+                
+                // Thêm thông tin purchasedPackage cho seeker
+                if ("seeker".equals(u.getRole())) {
+                    Seeker seeker = seekerRepository.findByUser(u);
+                    if (seeker != null) {
+                        userMap.put("purchasedPackage", seeker.getPurchasedPackage());
+                    }
+                }
+                
+                result.add(userMap);
+            }
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while fetching users");
@@ -124,4 +155,60 @@ public class UserController {
         }
     }
 
+    // [POST] /api/users/ban-user - Khóa người dùng
+    @PostMapping("/ban-user")
+    public ResponseEntity<?> banUser(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+        }
+
+        User admin = jwtUtil.extractUserFromToken(token);
+        if (admin == null || !admin.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not an admin");
+        }
+
+        String userId = body.get("userId");
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is required");
+        }
+
+        // Không cho phép admin tự khóa chính mình
+        if (userId.equals(admin.getUserId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không thể khóa tài khoản của chính bạn");
+        }
+
+        boolean isBanned = userService.banUser(userId);
+        if (isBanned) {
+            return ResponseEntity.ok("User banned successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found or already banned");
+        }
+    }
+
+    // [POST] /api/users/unban-user - Mở khóa người dùng
+    @PostMapping("/unban-user")
+    public ResponseEntity<?> unbanUser(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is required");
+        }
+
+        User admin = jwtUtil.extractUserFromToken(token);
+        if (admin == null || !admin.getRole().equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or not an admin");
+        }
+
+        String userId = body.get("userId");
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is required");
+        }
+
+        boolean isUnbanned = userService.unbanUser(userId);
+        if (isUnbanned) {
+            return ResponseEntity.ok("User unbanned successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found or already unbanned");
+        }
+    }
 }

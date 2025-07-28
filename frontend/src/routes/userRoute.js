@@ -9,7 +9,6 @@ function UserRoute() {
             <Route path="/manage-users" element={<UserManage />} />
             <Route path="/create-staff" element={<CreateStaff />} />
             <Route path="/create-admin" element={<CreateAdmin />} />
-            <Route path="/dashboard" element={<UserManage />} />
         </Routes>
     );
 }
