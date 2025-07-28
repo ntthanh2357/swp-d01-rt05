@@ -18,6 +18,9 @@ import com.swp391_g6.demo.repository.SeekerRepository;
 import com.swp391_g6.demo.repository.VerificationTokenRepository;
 import com.swp391_g6.demo.repository.FavoriteScholarshipRepository;
 import com.swp391_g6.demo.util.EmailUtil;
+
+import java.util.Arrays;
+
 import com.swp391_g6.demo.entity.Scholarship;
 import com.swp391_g6.demo.dto.ConsultationRequestDTO;
 import com.swp391_g6.demo.entity.SeekerStaffMapping;
@@ -223,60 +226,50 @@ public class SeekerService {
 
     // Phương thức phân công staff cho seeker
     private void assignStaffToSeeker(Seeker seeker) {
-        try {
-            // Kiểm tra xem seeker đã có mapping chưa
-            SeekerStaffMapping existingMapping = seekerStaffMappingRepository.findBySeekerId(seeker.getSeekerId());
-            if (existingMapping != null) {
-                System.out.println("Seeker " + seeker.getSeekerId() + " already has staff assigned: "
-                        + existingMapping.getStaffId());
-                return;
-            }
-
-            // Lấy danh sách tất cả staff
-            List<User> staffList = userRepository.findByRole("staff");
-            if (staffList.isEmpty()) {
-                System.out.println("No staff available for assignment");
-                return;
-            }
-
-            // Logic phân công: tìm staff có ít seeker nhất
-            User selectedStaff = null;
-            int minSeekers = Integer.MAX_VALUE;
-
-            for (User staff : staffList) {
-                int currentSeekers = seekerStaffMappingRepository.countActiveSeekersByStaff(staff.getUserId());
-                if (currentSeekers < minSeekers) {
-                    minSeekers = currentSeekers;
-                    selectedStaff = staff;
-                }
-            }
-
-            if (selectedStaff != null) {
-                // Tạo mapping mới
-                SeekerStaffMapping mapping = new SeekerStaffMapping();
-                mapping.setSeekerId(seeker.getSeekerId());
-                mapping.setStaffId(selectedStaff.getUserId());
-                mapping.setAssignedAt(new Timestamp(System.currentTimeMillis()));
-                mapping.setStatus(SeekerStaffMapping.Status.active);
-
-                // Lưu mapping
-                seekerStaffMappingRepository.save(mapping);
-
-                // Cập nhật assignedStaff cho seeker
-                seeker.setAssignedStaff(selectedStaff);
-                seekerRepository.save(seeker);
-
-                System.out.println("Successfully assigned staff " + selectedStaff.getUserId() +
-                        " to seeker " + seeker.getSeekerId());
-            } else {
-                System.out.println("Failed to assign staff to seeker " + seeker.getSeekerId());
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error assigning staff to seeker: " + e.getMessage());
-            e.printStackTrace();
+    try {
+        // 1. Kiểm tra trùng phân công
+        if (seeker.getAssignedStaff() != null) {
+            System.out.println("[SKIP] Seeker " + seeker.getSeekerId() 
+                + " đã có staff: " + seeker.getAssignedStaff().getUserId());
+            return;
         }
+
+        // 2. Lấy danh sách staff online
+        List<User> availableStaff = userRepository.findOnlineStaffs();
+
+        // 3. Nếu không có staff online, lấy 2 staff mặc định
+        if (availableStaff.isEmpty()) {
+            availableStaff = userRepository.findDefaultStaffs();
+            
+            // Check thêm nếu 2 staff mặc định không tồn tại
+            if (availableStaff.isEmpty()) {
+                throw new IllegalStateException("Không tìm thấy staff mặc định (USER0000000002/USER0000000004)");
+            }
+        }
+
+        // 4. Chọn ngẫu nhiên
+        User assignedStaff = availableStaff.get(new Random().nextInt(availableStaff.size()));
+
+        // 5. Tạo mapping
+        SeekerStaffMapping mapping = new SeekerStaffMapping();
+        mapping.setSeekerId(seeker.getSeekerId());
+        mapping.setStaffId(assignedStaff.getUserId());
+        mapping.setAssignedAt(new Timestamp(System.currentTimeMillis()));
+        mapping.setStatus(SeekerStaffMapping.Status.active);
+
+        // 6. Lưu dữ liệu
+        seekerStaffMappingRepository.save(mapping);
+        seeker.setAssignedStaff(assignedStaff);
+        seekerRepository.save(seeker);
+
+        System.out.println("[SUCCESS] Đã phân công staff " + assignedStaff.getUserId() 
+            + " (" + assignedStaff.getName() + ") cho seeker " + seeker.getSeekerId());
+
+    } catch (Exception e) {
+        System.err.println("[ERROR] Lỗi phân công staff: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
     // Phương thức lấy danh sách seeker được phân công cho một staff
     public List<SeekerStaffMapping> getSeekersByStaff(String staffId) {
