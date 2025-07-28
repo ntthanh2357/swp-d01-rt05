@@ -16,6 +16,7 @@ function DetailStaff() {
     // Thay đổi: rating bằng icon sao lớn, hover/chọn trực tiếp
     const [hoverRating, setHoverRating] = useState(0);
     const maxReviewLength = 500;
+    const [showAllReviews, setShowAllReviews] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -112,7 +113,7 @@ function DetailStaff() {
                                         </div>
                                         <div className="col-md-6 mb-2">
                                             <i className="fas fa-users me-2 text-success"></i>
-                                            <strong>Đang hỗ trợ:</strong> {profile.currentSeekerCount || 0}
+                                            <strong>Đã hỗ trợ:</strong> {profile.currentSeekerCount || 0}
                                         </div>
                                         <div className="col-md-6 mb-2">
                                             <i className="fas fa-envelope me-2 text-secondary"></i>
@@ -132,7 +133,7 @@ function DetailStaff() {
                                         <div className="text-muted">Chưa có đánh giá nào.</div>
                                     ) : (
                                         <div className="list-group mb-4">
-                                            {reviews.map((review, idx) => (
+                                            {(showAllReviews ? reviews : reviews.slice(0, 3)).map((review, idx) => (
                                                 <div className="list-group-item border-0 border-bottom" key={idx}>
                                                     <div className="d-flex align-items-center mb-1">
                                                         <div className="avatar-circle me-3" style={{ width: 36, height: 36, borderRadius: '50%', background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 600 }}>
@@ -150,6 +151,24 @@ function DetailStaff() {
                                                     <div className="mb-1 ps-5">{review.reviewContent}</div>
                                                 </div>
                                             ))}
+                                            {reviews.length > 3 && !showAllReviews && (
+                                                <button
+                                                    className="btn btn-link p-0 mt-2"
+                                                    style={{ fontWeight: 600 }}
+                                                    onClick={() => setShowAllReviews(true)}
+                                                >
+                                                    Xem tất cả {reviews.length} đánh giá
+                                                </button>
+                                            )}
+                                            {reviews.length > 3 && showAllReviews && (
+                                                <button
+                                                    className="btn btn-link p-0 mt-2"
+                                                    style={{ fontWeight: 600 }}
+                                                    onClick={() => setShowAllReviews(false)}
+                                                >
+                                                    Ẩn bớt
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                     {/* Form gửi đánh giá */}
