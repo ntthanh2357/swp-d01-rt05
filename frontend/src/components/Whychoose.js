@@ -7,18 +7,21 @@ const reasons = [
         title: 'Hơn 55 kinh nghiệm',
         text: 'Với 55 năm kinh nghiệm, chúng tôi đã truyền cảm hứng cho hàng triệu sinh viên tạo nên những dấu ấn đáng nhớ trên...',
         link: 'Tìm hiểu thêm',
+        url: '/about', // Trang giới thiệu
     },
     {
         icon: <FaUsers size={28} />,
         title: 'Thay đổi tương lai:',
         text: 'Heatwave đồng hành cùng hàng triệu sinh viên và đã biến giấc mơ du học tại các trường Đại học hàng đầu trở thành hiện thực.',
         link: 'Trò chuyện với tư vấn',
+        url: '/pages/consultation-roadmap/consultation-roadmap', // Trang tư vấn
     },
     {
         icon: <FaGlobe size={28} />,
         title: 'Mạng lưới toàn cầu, hỗ trợ cá nhân hóa:',
         text: 'Với 210 văn phòng và 2.200 tư vấn viên tại 35 quốc gia, IDP cam kết hỗ trợ hành trình của bạn.',
         link: 'Liên hệ ngay',
+        url: 'https://facebook.com/NamGudBoizz', // Link Facebook
     }
 ];
 
@@ -34,7 +37,7 @@ export default function WhyChoose() {
                                 <div className="text-primary mb-2">{reason.icon}</div>
                                 <h5 className="fw-bold">{reason.title}</h5>
                                 <p className="text-muted">{reason.text}</p>
-                                <a href="#" className="text-primary fw-semibold">{reason.link} &rsaquo;</a>
+                                <a href={reason.url} className="text-primary fw-semibold">{reason.link} &rsaquo;</a>
                             </div>
                         </div>
                     ))}

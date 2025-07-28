@@ -6,37 +6,37 @@ const chooseData = [
         icon: '⚡',
         title: 'Nhanh chóng hiện thực hóa giấc mơ du học',
         description: 'Sử dụng tính năng IDP FastLane để kiểm tra nhanh chóng xem bạn có đủ điều kiện xét tuyển các khóa học.',
-        link: '#'
+        link: 'https://www.idp.com/vietnam/fastlane/'
     },
     {
         icon: '🎓',
         title: 'Học bổng – hơn 5.100 cơ hội đang chờ đón',
         description: 'Giới thiệu các cơ hội học bổng từ hơn 370 tổ chức trên toàn thế giới và từng bước thực hiện để biến ước mơ của bạn thành hiện thực.',
-        link: '#'
+        link: 'https://www.idp.com/vietnam/scholarships/'
     },
     {
         icon: '🧮',
         title: 'Công cụ tính toán chi phí',
         description: 'Công cụ này giúp sinh viên quốc tế quản lý ngân sách của mình dễ dàng với tiện ích tính chi phí tiện lợi.',
-        link: '#'
+        link: 'https://www.idp.com/vietnam/cost-of-living-calculator/'
     },
     {
         icon: '📱',
         title: 'IDP trong tầm tay bạn',
         description: 'Ứng dụng IDP Live cho phép người dùng tìm kiếm các khóa học, nộp đơn hồ sơ vào các trường Đại học và theo dõi tiến trình của mình.',
-        link: '#'
+        link: 'https://www.idp.com/vietnam/idp-live-app/'
     },
     {
         icon: '🏠',
         title: 'Những điều cần thiết cho sinh viên',
         description: 'Cung cấp các dịch vụ hỗ trợ cho nhiều khía cạnh khác nhau của việc du học, bao gồm visa, chỗ ở và bảo hiểm sức khỏe.',
-        link: '#'
+        link: 'https://www.idp.com/vietnam/student-essentials/'
     },
     {
         icon: '👨‍🎓',
         title: 'Tư vấn chuyên nghiệp',
         description: 'Hướng dẫn tận tâm từ các chuyên gia tư vấn, những người có thể hỗ trợ sinh viên trong suốt hành trình du học của mình.',
-        link: '#'
+        link: 'https://www.idp.com/vietnam/study-abroad-education-counsellors/'
     }
 ];
 
