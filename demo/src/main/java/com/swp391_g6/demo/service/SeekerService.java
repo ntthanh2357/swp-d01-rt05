@@ -1,5 +1,6 @@
 package com.swp391_g6.demo.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -145,6 +146,9 @@ public class SeekerService {
         }
     }
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     // Phương thức đăng ký tư vấn
     public Seeker registerConsultation(ConsultationRequestDTO request, User user) {
         // Tìm hoặc tạo seeker profile
@@ -156,7 +160,6 @@ public class SeekerService {
 
         // Cập nhật thông tin từ form
         seeker.setStudyTime(request.getStudyTime());
-        seeker.setCity(request.getCity());
         seeker.setAdviceType(request.getAdviceType());
         seeker.setScholarshipGoal(request.getScholarshipGoal());
         seeker.setMajor(request.getMajor());
@@ -164,6 +167,25 @@ public class SeekerService {
         seeker.setReceivePromotions(request.getReceivePromotions());
         seeker.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         seeker.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+        // Xử lý danh sách thành phố và quốc gia
+        try {
+            if (request.getCity() != null) {
+                seeker.setCity(objectMapper.writeValueAsString(request.getCity()));
+            }
+            if (request.getCountry() != null) {
+                seeker.setTargetCountries(objectMapper.writeValueAsString(request.getCountry()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Fallback: chuyển thành chuỗi phân cách bằng dấu phẩy
+            if (request.getCity() != null) {
+                seeker.setCity(String.join(",", request.getCity()));
+            }
+            if (request.getCountry() != null) {
+                seeker.setTargetCountries(String.join(",", request.getCountry()));
+            }
+        }
 
         // Map education level
         if (request.getEducationLevel() != null) {
@@ -187,11 +209,6 @@ public class SeekerService {
 
         // Map field of study
         seeker.setFieldOfStudy(request.getMajor());
-
-        // Map target countries
-        if (request.getCountry() != null) {
-            seeker.setTargetCountries("[\"" + request.getCountry() + "\"]");
-        }
 
         // Lưu seeker profile
         seeker = seekerRepository.save(seeker);

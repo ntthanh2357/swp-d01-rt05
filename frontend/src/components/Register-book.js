@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import { UserContext } from "../contexts/UserContext";
+import Select from "react-select";
 import "../css/register-book.css";
 
 const defaultCityOptionsByCountry = {
@@ -21,9 +22,9 @@ const RegisterForm = ({ countryList }) => {
     fullName: user ? user.name || "" : "",
     email: user ? user.email || "" : "",
     phone: user ? user.phone || "" : "",
-    country: "",
+    country: [],
     studyTime: "",
-    city: "",
+    city: [],
     educationLevel: "",
     adviceType: "",
     scholarshipGoal: "",
@@ -34,15 +35,28 @@ const RegisterForm = ({ countryList }) => {
 
   const [errors, setErrors] = useState({});
 
+  // Prepare options for react-select
+  const countryOptions = (countryList && countryList.length > 0 ? countryList : Object.keys(defaultCityOptionsByCountry))
+    .map(c => ({ value: c, label: c }));
+
+  const cityOptionsByCountry = defaultCityOptionsByCountry;
+  const filteredCities = formData.country.length > 0
+    ? formData.country.flatMap(c => cityOptionsByCountry[c.value] || [])
+    : [];
+  const cityOptions = filteredCities.map(city => ({ value: city, label: city }));
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (name === "country") {
+    const { name, value, type, checked } = e.target || {};
+    
+    // Handle react-select changes
+    if (!e.target && e.name) {
       setFormData({
         ...formData,
-        [name]: value,
-        city: "", // reset city
+        [e.name]: e.value || [],
       });
-    } else {
+    } 
+    // Handle regular input changes
+    else {
       setFormData({
         ...formData,
         [name]: type === "checkbox" ? checked : value,
@@ -55,9 +69,8 @@ const RegisterForm = ({ countryList }) => {
     if (!formData.fullName.trim()) newErrors.fullName = "Vui lòng nhập họ và tên";
     if (!formData.email.includes("@")) newErrors.email = "Email không hợp lệ";
     if (!formData.phone.match(/^0\d{9}$/)) newErrors.phone = "SĐT không hợp lệ";
-    if (!formData.country) newErrors.country = "Chọn quốc gia";
+    if (!formData.country || formData.country.length === 0) newErrors.country = "Chọn quốc gia";
     if (!formData.studyTime) newErrors.studyTime = "Chọn thời gian";
-    if (!formData.city) newErrors.city = "Chọn ít nhất một thành phố";
     if (!formData.educationLevel) newErrors.educationLevel = "Chọn bậc học";
     if (!formData.adviceType) newErrors.adviceType = "Chọn hình thức tư vấn";
     if (!formData.scholarshipGoal.trim()) newErrors.scholarshipGoal = "Nhập mục tiêu học bổng";
@@ -72,7 +85,6 @@ const RegisterForm = ({ countryList }) => {
     setErrors(foundErrors);
     
     if (Object.keys(foundErrors).length === 0) {
-      // Kiểm tra user đã đăng nhập chưa
       if (!user || !user.accessToken) {
         alert("Vui lòng đăng nhập để đăng ký tư vấn!");
         return;
@@ -81,6 +93,8 @@ const RegisterForm = ({ countryList }) => {
       try {
         const requestData = {
           ...formData,
+          country: formData.country.map(c => c.value),
+          city: formData.city.map(c => c.value),
           token: user.accessToken
         };
 
@@ -97,14 +111,13 @@ const RegisterForm = ({ countryList }) => {
         if (response.ok) {
           alert("Đăng ký tư vấn thành công! Bạn đã được phân công tư vấn viên.");
           console.log('Consultation registered:', result);
-          // Reset form
           setFormData({
             fullName: "",
             email: "",
             phone: "",
-            country: "",
+            country: [],
             studyTime: "",
-            city: "",
+            city: [],
             educationLevel: "",
             adviceType: "",
             scholarshipGoal: "",
@@ -121,11 +134,6 @@ const RegisterForm = ({ countryList }) => {
       }
     }
   };
-
-  // Ưu tiên countryList prop, fallback về keys của defaultCityOptionsByCountry
-  const countryOptions = countryList && countryList.length > 0 ? countryList : Object.keys(defaultCityOptionsByCountry);
-  const cityOptionsByCountry = defaultCityOptionsByCountry;
-  const filteredCities = cityOptionsByCountry[formData.country] || [];
 
   return (
     <div className="form-container">
@@ -176,19 +184,20 @@ const RegisterForm = ({ countryList }) => {
           </div>
         </div>
 
-        <div className="row">
-          <div className="form-group">
-            <select name="country" value={formData.country} onChange={handleChange}>
-              <option value="">Quốc gia bạn muốn du học*</option>
-              {countryOptions.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
-            {errors.country && <span className="error-msg">{errors.country}</span>}
-          </div>
+        <div className="form-group">
+          <Select
+            isMulti
+            name="country"
+            options={countryOptions}
+            value={formData.country}
+            onChange={(value) => handleChange({ name: "country", value })}
+            placeholder="Quốc gia bạn muốn du học*"
+            classNamePrefix="react-select"
+          />
+          {errors.country && <span className="error-msg">{errors.country}</span>}
+        </div>
 
+        <div className="row">
           <div className="form-group">
             <select name="studyTime" value={formData.studyTime} onChange={handleChange}>
               <option value="">Thời gian dự định du học*</option>
@@ -202,19 +211,16 @@ const RegisterForm = ({ countryList }) => {
         </div>
 
         <div className="form-group">
-          <select
+          <Select
+            isMulti
             name="city"
+            options={cityOptions}
             value={formData.city}
-            onChange={handleChange}
-            disabled={!filteredCities.length}
-          >
-            <option value="">Thành phố có học bổng*</option>
-            {filteredCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleChange({ name: "city", value })}
+            placeholder="Thành phố có học bổng*"
+            isDisabled={cityOptions.length === 0}
+            classNamePrefix="react-select"
+          />
           {errors.city && <span className="error-msg">{errors.city}</span>}
         </div>
 
